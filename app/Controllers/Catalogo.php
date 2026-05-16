@@ -11,7 +11,18 @@ class Catalogo extends BaseController
     public function index()
     {
         $model = new ProductoModel();
-        $data['productos'] = $model->findAll();
+        $productos = $model->select('t_inventario.*, t_categorias.nombre as nombre_categoria')
+            ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
+            ->findAll();
+
+        $data = [
+            'productos' => $productos,
+            'titulo'    => 'Catálogo de Productos'
+        ];
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return view('catalogo/_lista_productos', $data);
+        }
 
         return view('catalogo/index', $data);
     }
@@ -26,9 +37,16 @@ class Catalogo extends BaseController
             ->where('t_inventario.id_categoria', $categoriaId)
             ->findAll();
 
-        // Retornamos una vista parcial para usar con HTMX
-        return view('catalogo/_lista_productos', [
-            'productos' => $productos
-        ]);
+        $data = [
+            'productos' => $productos,
+            'titulo'    => 'Productos de la Categoría'
+        ];
+
+        // Retornamos una vista parcial para usar con HTMX o la vista completa con layout si se recarga la página
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return view('catalogo/_lista_productos', $data);
+        }
+
+        return view('catalogo/por_categoria', $data);
     }
 }

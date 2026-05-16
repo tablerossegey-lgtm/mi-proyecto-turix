@@ -13,6 +13,10 @@ class Categorias extends BaseController
         $model = new CategoriaModel();
         $data['categorias'] = $model->findAll();
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return view('categorias/_lista_categorias', $data);
+        }
+
         return view('categorias/index', $data);
     }
 }
