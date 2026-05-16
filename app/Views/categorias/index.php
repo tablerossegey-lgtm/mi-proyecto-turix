@@ -11,7 +11,7 @@
                 <div class="card h-100 border-0 shadow-sm card-categoria">
 
                     <div class="contenedor-imagen-categoria">
-                        <img src="<?= base_url('images/cats/' . ($cat['imagen'] ?: 'sinImagen.png')) ?>"
+                        <img src="<?= base_url('images/categorias/' . ($cat['imagen'] ?: 'sinImagen.png')) ?>"
                             class="img-fluid foto-categoria" alt="<?= esc($cat['nombre']) ?>">
                     </div>
 
