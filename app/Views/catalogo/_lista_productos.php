@@ -8,7 +8,7 @@
 <div class="row g-4">
     <?php if (!empty($productos)): ?>
         <?php foreach ($productos as $index => $p): ?>
-            <div class="col-12 col-md-6 col-lg-3">
+            <div class="col-6 col-md-4 col-lg-3 col-xl-2">
                 <div class="card h-100 card-producto">
                     
                     <span class="sku-badge"><?= esc($p['codigo_sku']) ?></span>
