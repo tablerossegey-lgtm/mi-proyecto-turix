@@ -8,6 +8,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="<?= base_url('css/estilos.css') ?>">
+    <link rel="icon" type="image/x-icon" href="<?= base_url('favicon_turix.ico') ?>">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
 </head>
 
@@ -15,8 +16,9 @@
 
     <nav class="navbar navbar-dark shadow-sm">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="<?= base_url() ?>">
-                TURIX<span style="color: var(--turix-yellow);">SHOP</span>
+            <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="<?= base_url() ?>">
+                <img src="<?= base_url('images/logoTurix.png') ?>" alt="Logo TurixShop" class="logo-navbar">
+                <span>TURIX<span style="color: var(--turix-yellow);">SHOP</span></span>
             </a>
         </div>
     </nav>

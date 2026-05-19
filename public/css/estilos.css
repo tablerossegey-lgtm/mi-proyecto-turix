@@ -5,7 +5,6 @@
     --turix-accent: #ff8c00;
     --turix-yellow: #ffcc00;
     --turix-bg: #f1f5f9;
-    /* Un poco más fuerte para que resalten los cuadros blancos */
     --turix-card-bg: rgba(255, 255, 255, 0.8);
     --turix-glow: rgba(255, 140, 0, 0.3);
     --glass-border: rgba(255, 255, 255, 0.2);
@@ -28,18 +27,34 @@ h5,
     font-family: 'Outfit', sans-serif;
 }
 
-/* Navbar Moderna */
+/* Navbar Moderna Premium (Slate) */
 .navbar {
-    background: rgba(0, 18, 51, 0.95);
+    background: rgba(15, 23, 42, 0.98);
     backdrop-filter: blur(10px);
-    border-bottom: 1px solid var(--glass-border);
-    padding: 1rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 0.8rem 0;
 }
 
 .navbar-brand {
     font-size: 1.5rem;
     letter-spacing: 2px;
     text-transform: uppercase;
+    color: #ffffff !important;
+}
+
+/* Logo Navbar */
+.logo-navbar {
+    height: 75px;
+    width: 75px;
+    object-fit: contain;
+    margin: -10px 0;
+    filter: drop-shadow(0 0 8px rgba(255, 204, 0, 0.3));
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.navbar-brand:hover .logo-navbar {
+    transform: scale(1.05) rotate(3deg);
+    filter: drop-shadow(0 0 12px rgba(255, 204, 0, 0.6));
 }
 
 /* Contenedor de Categorías */
@@ -69,15 +84,14 @@ h5,
 .contenedor-imagen-categoria {
     width: 100%;
     height: 250px;
-    /* Altura fija para uniformidad */
     overflow: hidden;
+    border-bottom: 3px solid var(--turix-accent);
 }
 
 .foto-categoria {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    /* Asegura que la imagen llene el espacio sin deformarse */
     transition: transform 0.5s ease;
 }
 
@@ -85,13 +99,11 @@ h5,
     transform: scale(1.1);
 }
 
-/* Diseño de Productos (Innovador y Tecnológico) */
+/* Diseño de Productos */
 .card-producto {
     background: white;
     border-radius: 20px;
-    /* Reducido un poco para mayor elegancia */
     border: 1px solid #e2e8f0;
-    /* Define el cuadro contra el fondo de la web */
     overflow: hidden;
     position: relative;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -127,7 +139,7 @@ h5,
     overflow: hidden;
     position: relative;
     background: linear-gradient(to bottom, #ffffff 70%, #f1f5f9 100%);
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 3px solid var(--turix-accent);
 }
 
 .foto-producto {
@@ -161,7 +173,6 @@ h5,
 .card-body {
     padding: 1.2rem;
     background: #1e293b;
-    /* Azul pizarra profundo (Premium Slate) */
     color: white;
 }
 
@@ -169,7 +180,6 @@ h5,
     font-size: 0.9rem;
     font-weight: 600;
     color: #f8fafc;
-    /* Color claro para fondo oscuro */
     line-height: 1.3;
     margin-bottom: 0.8rem;
     height: 2.4rem;
@@ -182,10 +192,8 @@ h5,
 
 .precio-tag {
     font-size: 1.2rem;
-    /* Reducido de 1.4rem */
     font-weight: 800;
     color: var(--turix-yellow);
-    /* Cambiado a amarillo para mejor contraste y aspecto 'oro' */
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -194,11 +202,8 @@ h5,
 
 .btn-turix {
     background: rgba(255, 255, 255, 0.05);
-    /* Efecto cristal limpio */
     color: white;
-    /* Texto blanco para máxima legibilidad */
     border: 1px solid rgba(255, 255, 255, 0.1);
-    /* Borde sutil blanco */
     border-radius: 12px;
     padding: 8px 16px;
     font-size: 0.85rem;
@@ -210,16 +215,14 @@ h5,
     justify-content: center;
     gap: 8px;
     box-shadow: none;
-    /* Quitamos la sombra estática para mayor limpieza */
 }
 
 .btn-turix:hover {
-    background: var(--turix-accent);
-    /* Se llena de color al pasar el mouse */
-    color: white;
+    background: rgba(255, 140, 0, 0.2);
+    color: #ffffff;
     border-color: var(--turix-accent);
     transform: scale(1.02);
-    box-shadow: 0 8px 20px rgba(255, 140, 0, 0.25);
+    box-shadow: 0 8px 20px rgba(255, 140, 0, 0.15);
 }
 
 /* Animaciones */
@@ -241,9 +244,14 @@ h5,
 
 /* Footer elegante */
 footer {
-    background: #f1f5f9;
-    border-top: 1px solid #e2e8f0;
+    background: #0f172a;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
     padding: 3rem 0;
+    color: #f8fafc;
+}
+
+footer .text-muted {
+    color: #94a3b8 !important;
 }
 
 /* Barra de scroll personalizada */
