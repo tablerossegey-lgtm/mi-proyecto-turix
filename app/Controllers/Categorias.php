@@ -11,7 +11,7 @@ class Categorias extends BaseController
     public function index()
     {
         $model = new CategoriaModel();
-        $data['categorias'] = $model->findAll();
+        $data['categorias'] = $model->orderBy('nombre', 'ASC')->findAll();
 
         if ($this->request->getHeaderLine('HX-Request')) {
             return view('categorias/_lista_categorias', $data);

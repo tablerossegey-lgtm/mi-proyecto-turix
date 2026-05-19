@@ -4,7 +4,8 @@
     --turix-dark: #001233;
     --turix-accent: #ff8c00;
     --turix-yellow: #ffcc00;
-    --turix-bg: #f1f5f9; /* Un poco más fuerte para que resalten los cuadros blancos */
+    --turix-bg: #f1f5f9;
+    /* Un poco más fuerte para que resalten los cuadros blancos */
     --turix-card-bg: rgba(255, 255, 255, 0.8);
     --turix-glow: rgba(255, 140, 0, 0.3);
     --glass-border: rgba(255, 255, 255, 0.2);
@@ -18,7 +19,12 @@ body {
     overflow-x: hidden;
 }
 
-h1, h2, h3, h4, h5, .navbar-brand {
+h1,
+h2,
+h3,
+h4,
+h5,
+.navbar-brand {
     font-family: 'Outfit', sans-serif;
 }
 
@@ -62,14 +68,16 @@ h1, h2, h3, h4, h5, .navbar-brand {
 
 .contenedor-imagen-categoria {
     width: 100%;
-    height: 250px; /* Altura fija para uniformidad */
+    height: 250px;
+    /* Altura fija para uniformidad */
     overflow: hidden;
 }
 
 .foto-categoria {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Asegura que la imagen llene el espacio sin deformarse */
+    object-fit: cover;
+    /* Asegura que la imagen llene el espacio sin deformarse */
     transition: transform 0.5s ease;
 }
 
@@ -80,8 +88,10 @@ h1, h2, h3, h4, h5, .navbar-brand {
 /* Diseño de Productos (Innovador y Tecnológico) */
 .card-producto {
     background: white;
-    border-radius: 20px; /* Reducido un poco para mayor elegancia */
-    border: 1px solid #e2e8f0; /* Define el cuadro contra el fondo de la web */
+    border-radius: 20px;
+    /* Reducido un poco para mayor elegancia */
+    border: 1px solid #e2e8f0;
+    /* Define el cuadro contra el fondo de la web */
     overflow: hidden;
     position: relative;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -110,9 +120,10 @@ h1, h2, h3, h4, h5, .navbar-brand {
     transform: translateX(100%);
 }
 
+
 .contenedor-foto {
     width: 100%;
-    height: 180px; /* Reducido para cuadros más chicos */
+    height: 180px;
     overflow: hidden;
     position: relative;
     background: linear-gradient(to bottom, #ffffff 70%, #f1f5f9 100%);
@@ -122,8 +133,8 @@ h1, h2, h3, h4, h5, .navbar-brand {
 .foto-producto {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Cambiado de contain a cover para ocupar todo el espacio */
-    padding: 0; /* Eliminado el padding para que la imagen llegue a los bordes */
+    object-fit: cover;
+    padding: 0;
     transition: transform 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
     z-index: 1;
 }
@@ -149,14 +160,16 @@ h1, h2, h3, h4, h5, .navbar-brand {
 
 .card-body {
     padding: 1.2rem;
-    background: #1e293b; /* Azul pizarra profundo (Premium Slate) */
+    background: #1e293b;
+    /* Azul pizarra profundo (Premium Slate) */
     color: white;
 }
 
 .descripcion-producto {
     font-size: 0.9rem;
     font-weight: 600;
-    color: #f8fafc; /* Color claro para fondo oscuro */
+    color: #f8fafc;
+    /* Color claro para fondo oscuro */
     line-height: 1.3;
     margin-bottom: 0.8rem;
     height: 2.4rem;
@@ -168,9 +181,11 @@ h1, h2, h3, h4, h5, .navbar-brand {
 }
 
 .precio-tag {
-    font-size: 1.2rem; /* Reducido de 1.4rem */
+    font-size: 1.2rem;
+    /* Reducido de 1.4rem */
     font-weight: 800;
-    color: var(--turix-yellow); /* Cambiado a amarillo para mejor contraste y aspecto 'oro' */
+    color: var(--turix-yellow);
+    /* Cambiado a amarillo para mejor contraste y aspecto 'oro' */
     margin-bottom: 1rem;
     display: flex;
     align-items: center;
@@ -178,9 +193,12 @@ h1, h2, h3, h4, h5, .navbar-brand {
 }
 
 .btn-turix {
-    background: rgba(255, 255, 255, 0.05); /* Efecto cristal limpio */
-    color: white; /* Texto blanco para máxima legibilidad */
-    border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil blanco */
+    background: rgba(255, 255, 255, 0.05);
+    /* Efecto cristal limpio */
+    color: white;
+    /* Texto blanco para máxima legibilidad */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    /* Borde sutil blanco */
     border-radius: 12px;
     padding: 8px 16px;
     font-size: 0.85rem;
@@ -191,11 +209,13 @@ h1, h2, h3, h4, h5, .navbar-brand {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: none; /* Quitamos la sombra estática para mayor limpieza */
+    box-shadow: none;
+    /* Quitamos la sombra estática para mayor limpieza */
 }
 
 .btn-turix:hover {
-    background: var(--turix-accent); /* Se llena de color al pasar el mouse */
+    background: var(--turix-accent);
+    /* Se llena de color al pasar el mouse */
     color: white;
     border-color: var(--turix-accent);
     transform: scale(1.02);
@@ -204,8 +224,15 @@ h1, h2, h3, h4, h5, .navbar-brand {
 
 /* Animaciones */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .card-producto {
@@ -235,4 +262,4 @@ footer {
 
 ::-webkit-scrollbar-thumb:hover {
     background: var(--turix-accent);
-}
+}
