@@ -36,4 +36,23 @@ class ProductoModel extends Model
             ->where('t_inventario.id_categoria', $categoriaId)
             ->findAll();
     }
+
+    /**
+     * Busca productos por término, opcionalmente filtrando por categoría
+     */
+    public function buscarProductos(string $termino, ?int $categoriaId = null)
+    {
+        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria')
+                        ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
+                        ->groupStart()
+                            ->like('t_inventario.descripcion', $termino)
+                            ->orLike('t_inventario.codigo_sku', $termino)
+                        ->groupEnd();
+
+        if ($categoriaId) {
+            $builder->where('t_inventario.id_categoria', $categoriaId);
+        }
+
+        return $builder->findAll();
+    }
 }

@@ -43,7 +43,8 @@ class Catalogo extends BaseController
 
         $data = [
             'productos' => $productos,
-            'titulo' => 'Productos' . $nombreCategoria
+            'titulo' => 'Productos' . $nombreCategoria,
+            'categoria_id' => $categoriaId // Pasamos el ID para la barra de búsqueda
         ];
 
         // Retornamos una vista parcial para usar con HTMX o la vista completa con layout si se recarga la página
@@ -52,5 +53,27 @@ class Catalogo extends BaseController
         }
 
         return view('catalogo/por_categoria', $data);
+    }
+
+    /**
+     * Endpoint para la búsqueda en vivo vía HTMX
+     */
+    public function buscar($categoriaId = null)
+    {
+        $termino = $this->request->getPost('q');
+        
+        // Si no hay término, simplemente regresamos los productos normales
+        if (empty(trim((string)$termino))) {
+            if ($categoriaId) {
+                $productos = $this->productoModel->obtenerPorCategoria((int)$categoriaId);
+            } else {
+                $productos = $this->productoModel->obtenerTodosConCategoria();
+            }
+        } else {
+            // Buscamos con el término ingresado
+            $productos = $this->productoModel->buscarProductos((string)$termino, $categoriaId ? (int)$categoriaId : null);
+        }
+
+        return view('catalogo/_grid_productos', ['productos' => $productos]);
     }
 }
