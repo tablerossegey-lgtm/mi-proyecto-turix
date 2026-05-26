@@ -55,4 +55,38 @@ class ProductoModel extends Model
 
         return $builder->findAll();
     }
+
+    /**
+     * Obtiene un producto por su ID junto con el nombre de su categoría
+     */
+    public function obtenerPorIdConCategoria(int $id)
+    {
+        return $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria')
+                    ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
+                    ->find($id);
+    }
+
+    /**
+     * Obtiene todos los productos con el conteo de imágenes adicionales en galería y filtros de búsqueda
+     *
+     * @param string|null $termino
+     * @return array
+     */
+    public function obtenerTodosConConteoImagenes(?string $termino = null): array
+    {
+        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria, COUNT(t_inventario_imagenes.id) as total_imagenes')
+            ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
+            ->join('t_inventario_imagenes', 't_inventario_imagenes.id_producto = t_inventario.id', 'left')
+            ->groupBy('t_inventario.id')
+            ->orderBy('t_inventario.id', 'DESC');
+
+        if (!empty($termino)) {
+            $builder->groupStart()
+                    ->like('t_inventario.descripcion', $termino)
+                    ->orLike('t_inventario.codigo_sku', $termino)
+                    ->groupEnd();
+        }
+
+        return $builder->findAll();
+    }
 }

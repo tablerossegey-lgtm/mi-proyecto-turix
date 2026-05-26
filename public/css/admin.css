@@ -1,0 +1,335 @@
+/* ==========================================================================
+   ESTILOS PREMIUM PARA EL PANEL DE ADMINISTRACIÓN DE GALERÍAS (LIGHT THEME)
+   ========================================================================== */
+
+/* Fondo general de la administración */
+.admin-body {
+    background-color: #f8fafc !important;
+}
+
+/* Encabezados y títulos */
+.admin-title {
+    color: #1e293b;
+}
+
+.admin-subtitle-line {
+    width: 60px;
+    height: 4px;
+    background: var(--turix-accent, #ffc107);
+    margin-top: 10px;
+    border-radius: 2px;
+}
+
+/* Tarjetas de Administración (Premium Soft Dark Slate Theme) */
+.admin-card {
+    background: #1f222b !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+    overflow: hidden !important; /* Prevents nested container backgrounds from overlapping and squaring rounded corners */
+}
+
+.admin-card .card-body {
+    background: transparent !important;
+    border-radius: inherit !important;
+}
+
+.admin-card .table-responsive {
+    border-radius: inherit !important;
+}
+
+/* Buscador Input Group (Pill Shape with zero inner borders) */
+.admin-search-group {
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 50px !important;
+    overflow: hidden !important;
+    background-color: #15181e !important;
+    display: flex !important;
+    transition: all 0.3s ease !important;
+}
+
+.admin-search-group > :first-child {
+    border-top-left-radius: 50px !important;
+    border-bottom-left-radius: 50px !important;
+}
+
+.admin-search-group > :last-child {
+    border-top-right-radius: 50px !important;
+    border-bottom-right-radius: 50px !important;
+}
+
+.admin-search-group:focus-within {
+    border-color: var(--turix-accent, #ffc107) !important;
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.15) !important;
+    background-color: #1a1d24 !important;
+}
+
+.admin-search-text {
+    background-color: transparent !important;
+    border: none !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    padding-left: 1.25rem !important;
+    display: flex;
+    align-items: center;
+}
+
+.admin-search-input {
+    background-color: transparent !important;
+    border: none !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+.admin-search-input:focus {
+    background-color: transparent !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+}
+
+.admin-search-input::placeholder {
+    color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.admin-search-btn {
+    border: none !important;
+    border-radius: 0; /* Let parent classes or specific pseudo-classes handle the rounded corners on the ends */
+    padding-left: 1.75rem !important;
+    padding-right: 1.75rem !important;
+    transition: all 0.2s ease-in-out !important;
+}
+
+.admin-search-btn:hover {
+    filter: brightness(1.1);
+    transform: none !important;
+}
+
+/* Tabla Administrativa */
+.admin-table {
+    --bs-table-bg: transparent !important;
+    --bs-table-hover-bg: transparent !important;
+    background-color: transparent !important;
+    color: #ffffff !important;
+    border-collapse: collapse !important;
+}
+
+.admin-table tr, 
+.admin-table td, 
+.admin-table th {
+    background-color: transparent !important;
+    color: #ffffff !important;
+}
+
+.admin-table-thead {
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1) !important;
+    background-color: rgba(0, 0, 0, 0.25) !important;
+}
+
+.admin-table-th {
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 600 !important;
+}
+
+.admin-table-tr {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    transition: background-color 0.25s ease-in-out !important;
+}
+
+.admin-table tbody tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.015) !important; /* Soft, premium alternating light gray/white tint */
+}
+
+.admin-table tbody tr:nth-of-type(even) {
+    background-color: transparent !important;
+}
+
+.admin-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.035) !important; /* Soft premium white glow on hover */
+}
+
+/* Imágenes e items en listas */
+.admin-img-thumb-container {
+    width: 60px;
+    height: 60px;
+    border: 1px solid #cbd5e1 !important;
+    background-color: #f1f5f9 !important;
+}
+
+.admin-img-thumb {
+    max-height: 100%;
+    max-width: 100%;
+    object-fit: cover;
+}
+
+.admin-sku-badge {
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.admin-product-title {
+    color: #ffffff !important;
+}
+
+.admin-gallery-badge-empty {
+    border: 1px dashed rgba(255, 255, 255, 0.25) !important;
+    color: rgba(255, 255, 255, 0.4) !important;
+    background: transparent !important;
+}
+
+/* Efectos hover para botones de warning */
+.hover-warning:hover {
+    background-color: #e0a800 !important;
+    border-color: #d39e00 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3) !important;
+}
+
+/* Zona de Carga Arrastrable (Drag-and-Drop) */
+.admin-drag-zone {
+    border: 2px dashed rgba(255, 193, 7, 0.3) !important;
+    background: rgba(255, 193, 7, 0.01) !important;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.admin-drag-zone:hover {
+    border-color: var(--turix-accent, #ffc107) !important;
+    background: rgba(255, 193, 7, 0.03) !important;
+    transform: translateY(-2px);
+}
+
+.admin-gallery-card {
+    transition: all 0.3s ease;
+    border: 1px solid #e2e8f0 !important;
+}
+
+.admin-gallery-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08) !important;
+    border-color: rgba(255, 193, 7, 0.4) !important;
+}
+
+.admin-gallery-card-ratio {
+    border-bottom: 1px solid #cbd5e1 !important;
+    background-color: #ffffff !important;
+}
+
+.admin-gallery-delete-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0 !important;
+}
+
+.admin-info-img-container {
+    border: 1px solid #cbd5e1 !important;
+    background-color: #f1f5f9 !important;
+    min-height: 200px;
+    height: 220px !important;
+}
+
+.admin-info-img {
+    max-height: 190px !important;
+    object-fit: contain;
+}
+
+.object-fit-cover {
+    object-fit: cover !important;
+    width: 100%;
+    height: 100%;
+}
+
+.object-fit-contain {
+    object-fit: contain !important;
+    width: 100%;
+    height: 100%;
+}
+
+/* Ajustes contextuales para elementos de texto y utilidades dentro de las tarjetas oscuras */
+.admin-card .admin-title {
+    color: #ffffff !important;
+}
+
+.admin-card .text-muted {
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.admin-card .text-secondary {
+    color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.admin-card .bg-light {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Tarjetas de estadísticas (Precio y Stock) */
+.admin-stat-card {
+    padding: 0.8rem 1rem !important;
+    border-radius: 12px !important;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    transition: all 0.3s ease;
+}
+
+.admin-stat-card:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-2px);
+}
+
+.admin-stat-card-price {
+    border-left: 3px solid var(--turix-accent, #ffc107) !important;
+}
+
+.admin-stat-card-stock {
+    border-left: 3px solid #0dcaf0 !important;
+}
+
+.admin-stat-label {
+    font-size: 0.75rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: rgba(255, 255, 255, 0.5) !important;
+    margin-bottom: 0.25rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.admin-stat-label i {
+    font-size: 0.8rem;
+}
+
+.admin-stat-card-price .admin-stat-label i {
+    color: var(--turix-accent, #ffc107);
+}
+
+.admin-stat-card-stock .admin-stat-label i {
+    color: #0dcaf0;
+}
+
+.admin-stat-value {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: #ffffff;
+    font-family: 'Outfit', sans-serif;
+}
+
+.admin-stat-card-price .admin-stat-value {
+    color: var(--turix-accent, #ffc107);
+}
+
+.admin-stat-unit {
+    font-size: 0.85rem !important;
+    font-weight: 400 !important;
+    color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.admin-stat-value.text-danger {
+    color: #ef4444 !important; /* Soft premium red */
+}
+
+.admin-stat-value.text-success {
+    color: #10b981 !important; /* Soft premium green */
+}

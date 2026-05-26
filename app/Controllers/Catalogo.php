@@ -76,4 +76,21 @@ class Catalogo extends BaseController
 
         return view('catalogo/_grid_productos', ['productos' => $productos]);
     }
+
+    public function detalle($id)
+    {
+        $producto = $this->productoModel->obtenerPorIdConCategoria((int)$id);
+
+        if (!$producto) {
+            return '<div class="p-4 text-white">Producto no encontrado.</div>';
+        }
+
+        // Cargar imágenes adicionales del inventario
+        $inventarioImagenesModel = new \App\Models\InventarioImagenesModel();
+        $imagenesAdicionales = $inventarioImagenesModel->obtenerPorProducto((int)$producto['id']);
+
+        $data['p'] = $producto;
+        $data['imagenes_adicionales'] = $imagenesAdicionales;
+        return view('catalogo/_detalle_modal', $data);
+    }
 }

@@ -7,11 +7,25 @@
 
                 <div class="contenedor-foto">
                     <?php 
-                        $categoriaFolder = isset($p['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($p['nombre_categoria']))) : '';
-                        $rutaImagen = $p['foto'] ? "uploads/{$categoriaFolder}/" . $p['foto'] : 'images/categorias/SinCategoria.png';
+                        $foto = $p['foto'] ?? '';
+                        $isUrl = (strpos($foto, 'http://') === 0 || strpos($foto, 'https://') === 0);
+                        if ($isUrl) {
+                            $srcUrl = $foto;
+                        } else {
+                            $categoriaFolder = isset($p['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($p['nombre_categoria']))) : '';
+                            $rutaImagen = 'uploads/SinImagen.png';
+                            if (!empty($foto)) {
+                                $pathIntento = "uploads/{$categoriaFolder}/" . $foto;
+                                if (file_exists(FCPATH . $pathIntento)) {
+                                    $rutaImagen = $pathIntento;
+                                }
+                            }
+                            $srcUrl = base_url($rutaImagen);
+                        }
                     ?>
-                    <img src="<?= base_url($rutaImagen) ?>"
-                        class="img-fluid foto-producto" alt="<?= esc($p['descripcion']) ?>">
+                    <img src="<?= $srcUrl ?>"
+                        class="img-fluid foto-producto" alt="<?= esc($p['descripcion']) ?>"
+                        onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
                 </div>
 
                 <div class="card-body">
@@ -23,13 +37,12 @@
                         <span style="font-size: 1rem; opacity: 0.7;">$</span>
                         <?= number_format($p['precio'], 2) ?>
                     </div>
-
-                    <button class="btn btn-turix w-100 shadow-sm"
+                    <button class="btn btn-turix w-100 shadow-sm fw-bold" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#modalDetalle"
                         hx-get="<?= base_url('catalogo/detalle/' . $p['id']) ?>" 
-                        hx-target="#main-content"
-                        style="transition: all 0.3s ease;">
-                        <span>Ver Detalles</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                        hx-target="#contenido-modal">
+                        Ver Detalles <i class="fas fa-search-plus ms-1"></i>
                     </button>
                 </div>
             </div>
