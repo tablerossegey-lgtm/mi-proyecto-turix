@@ -7,6 +7,28 @@ if (isset($categoria_id)) {
     $categoriaId = $categoria_id;
 }
 $searchUrl = base_url('catalogo/buscar' . ($categoriaId ? '/' . $categoriaId : ''));
+
+// Escaneo dinámico de subcarpetas si estamos en una categoría
+$subcarpetas = [];
+$categoriaNombre = '';
+if ($categoriaId) {
+    // Cargar la categoría para saber el nombre de la carpeta
+    $categoriaModel = new \App\Models\CategoriaModel();
+    $catData = $categoriaModel->find($categoriaId);
+    if ($catData) {
+        $categoriaNombre = $catData['nombre'];
+        $categoriaFolder = str_replace(' ', '', ucwords(strtolower($categoriaNombre)));
+        $dirPath = FCPATH . 'uploads/' . $categoriaFolder;
+        if (is_dir($dirPath)) {
+            $files = scandir($dirPath);
+            foreach ($files as $file) {
+                if ($file !== '.' && $file !== '..' && is_dir($dirPath . '/' . $file)) {
+                    $subcarpetas[] = $file;
+                }
+            }
+        }
+    }
+}
 ?>
 <div class="row mb-4 align-items-center">
     <div class="col-md-6 mb-3 mb-md-0">
@@ -29,6 +51,42 @@ $searchUrl = base_url('catalogo/buscar' . ($categoriaId ? '/' . $categoriaId : '
     </div>
 </div>
 
+<?php if (!empty($subcarpetas)): ?>
+    <!-- Filtros premium dinámicos por subcarpetas -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-center flex-wrap">
+            <div class="btn-group shadow-sm bg-white p-1 rounded-pill flex-wrap justify-content-center" role="group" aria-label="Filtrar Subcategorías">
+                <button type="button" class="btn btn-turix-filter active rounded-pill px-4 py-2" data-filter="all">
+                    <i class="fas fa-th-large me-2"></i>Todos
+                </button>
+                <?php foreach ($subcarpetas as $sub): ?>
+                    <?php 
+                        $subCss = str_replace(
+                            ['á', 'é', 'í', 'ó', 'ú', 'ñ', ' '], 
+                            ['a', 'e', 'i', 'o', 'u', 'n', ''], 
+                            strtolower($sub)
+                        );
+                        // Emojis representativos
+                        $emoji = '✨ ';
+                        $subLower = strtolower($sub);
+                        if (strpos($subLower, 'navidad') !== false || strpos($subLower, 'navide') !== false) {
+                            $emoji = '🎄 ';
+                        } elseif (strpos($subLower, 'valentin') !== false || strpos($subLower, 'amor') !== false) {
+                            $emoji = '❤️ ';
+                        }
+                    ?>
+                    <button type="button" class="btn btn-turix-filter rounded-pill px-4 py-2" data-filter="<?= $subCss ?>">
+                        <?= $emoji ?><?= esc($sub) ?>
+                    </button>
+                <?php endforeach; ?>
+                <button type="button" class="btn btn-turix-filter rounded-pill px-4 py-2" data-filter="otros">
+                    📦 Otros
+                </button>
+            </div>
+        </div>
+    </div>
+<?php endif; ?>
+
 <div class="row g-4" id="productos-grid">
     <?= $this->include('catalogo/_grid_productos') ?>
 </div>
@@ -44,3 +102,83 @@ $searchUrl = base_url('catalogo/buscar' . ($categoriaId ? '/' . $categoriaId : '
         </button>
     </div>
 </div>
+
+<?php if (!empty($subcarpetas)): ?>
+<script>
+    // Inicializar al cargar
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSubcatFilters);
+    } else {
+        initSubcatFilters();
+    }
+
+    // Reinicializar al ocurrir swaps de HTMX para mantener el filtrado vivo
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'productos-grid' || evt.detail.target.id === 'main-content') {
+            initSubcatFilters();
+        }
+    });
+
+    function initSubcatFilters() {
+        const filterButtons = document.querySelectorAll('.btn-turix-filter');
+        if (filterButtons.length === 0) return;
+
+        // Mantener la categoría seleccionada al buscar
+        let activeFilter = 'all';
+        const currentActive = document.querySelector('.btn-turix-filter.active');
+        if (currentActive) {
+            activeFilter = currentActive.getAttribute('data-filter');
+        }
+
+        filterButtons.forEach(button => {
+            // Clonar para limpiar handlers anteriores y evitar fugas de memoria o múltiples llamadas
+            const newBtn = button.cloneNode(true);
+            button.parentNode.replaceChild(newBtn, button);
+            
+            // Si coincide con el filtro activo, mantener activo
+            if (newBtn.getAttribute('data-filter') === activeFilter) {
+                newBtn.classList.add('active');
+            } else {
+                newBtn.classList.remove('active');
+            }
+
+            newBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Desactivar botones y activar el seleccionado
+                document.querySelectorAll('.btn-turix-filter').forEach(btn => btn.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filterValue = this.getAttribute('data-filter');
+                const products = document.querySelectorAll('.prod-filtrable');
+                
+                products.forEach(p => {
+                    if (filterValue === 'all') {
+                        p.style.display = 'block';
+                    } else {
+                        if (p.classList.contains('prod-subcat-' + filterValue)) {
+                            p.style.display = 'block';
+                        } else {
+                            p.style.display = 'none';
+                        }
+                    }
+                });
+            });
+        });
+
+        // Aplicar el filtro actual al redibujar
+        const products = document.querySelectorAll('.prod-filtrable');
+        products.forEach(p => {
+            if (activeFilter === 'all') {
+                p.style.display = 'block';
+            } else {
+                if (p.classList.contains('prod-subcat-' + activeFilter)) {
+                    p.style.display = 'block';
+                } else {
+                    p.style.display = 'none';
+                }
+            }
+        });
+    }
+</script>
+<?php endif; ?>

@@ -371,3 +371,32 @@ footer .text-muted {
     line-height: 1.6;
     color: #cbd5e1;
 }
+
+/* ==========================================================================
+   ESTILOS PREMIUM PARA BOTONES DE FILTRADO DINÁMICO (SUBCATEGORÍAS)
+   ========================================================================== */
+
+.btn-turix-filter {
+    background: transparent;
+    color: var(--turix-dark);
+    border: none;
+    font-size: 0.9rem;
+    font-weight: 700;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: none !important;
+}
+
+.btn-turix-filter:hover {
+    color: var(--turix-accent);
+}
+
+.btn-turix-filter.active {
+    background: var(--turix-dark) !important;
+    color: var(--turix-yellow) !important;
+    box-shadow: 0 4px 12px rgba(0, 18, 51, 0.15) !important;
+}
+
+/* Asegurar transiciones suaves cuando se ocultan/muestran productos */
+.prod-filtrable {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
