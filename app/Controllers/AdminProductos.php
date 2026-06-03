@@ -30,7 +30,7 @@ class AdminProductos extends BaseController
             'q' => $q
         ];
 
-        if ($this->request->getHeaderLine('HX-Request')) {
+        if ($this->request->getHeaderLine('HX-Request') && $this->request->getHeaderLine('HX-Target') === 'productos-tabla-body') {
             return view('admin_productos/_tabla_productos', $data);
         }
 
@@ -293,6 +293,134 @@ class AdminProductos extends BaseController
         return redirect()->back()->withInput()->with('error', 'Ocurrió un error al registrar el producto.');
     }
 
+    public function editar($id)
+    {
+        $producto = $this->productoModel->find($id);
+
+        if (!$producto) {
+            return redirect()->to(base_url('admin/productos'))->with('error', 'Producto no encontrado.');
+        }
+
+        $sku = $this->request->getPost('codigo_sku');
+        $descripcion = $this->request->getPost('descripcion');
+        $idCategoria = $this->request->getPost('id_categoria');
+        $precio = $this->request->getPost('precio');
+        $precioPromo = $this->request->getPost('precio_promo') ?: 0.00;
+        $stock = $this->request->getPost('stock');
+        $masDetalle = $this->request->getPost('masDetalle') ?: null;
+
+        $oldIdCategoria = $producto['id_categoria'];
+
+        // Validaciones básicas
+        if (empty($sku) || empty($descripcion) || empty($idCategoria) || $precio === null || $stock === null) {
+            return redirect()->back()->withInput()->with('error', 'Por favor complete todos los campos obligatorios.');
+        }
+
+        // Validar SKU único
+        $existing = $this->productoModel->where('codigo_sku', $sku)->where('id !=', $id)->first();
+        if ($existing) {
+            return redirect()->back()->withInput()->with('error', 'El SKU ingresado ya se encuentra registrado por otro producto.');
+        }
+
+        // Obtener nombres de categoría antigua para mover/borrar fotos
+        $oldCategoria = $this->categoriaModel->find($oldIdCategoria);
+        $oldCategoriaFolder = isset($oldCategoria['nombre']) ? str_replace(' ', '', ucwords(strtolower($oldCategoria['nombre']))) : '';
+        $oldSubfolder = '';
+        if (strtolower($oldCategoriaFolder) === 'festividades') {
+            $oldSubfolder = $this->obtenerSubfolderFestividades($producto['descripcion']);
+        }
+
+        // Obtener nombres de categoría nueva
+        $newCategoria = $this->categoriaModel->find($idCategoria);
+        $newCategoriaFolder = isset($newCategoria['nombre']) ? str_replace(' ', '', ucwords(strtolower($newCategoria['nombre']))) : '';
+        $newSubfolder = '';
+        if (strtolower($newCategoriaFolder) === 'festividades') {
+            $newSubfolder = $this->obtenerSubfolderFestividades($descripcion);
+        }
+
+        // Procesar foto principal
+        $fotoName = $producto['foto'];
+        $file = $this->request->getFile('foto_principal');
+        $hasNewFile = ($file && $file->isValid() && !$file->hasMoved());
+
+        if ($hasNewFile) {
+            $mimeType = $file->getMimeType();
+            if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif'])) {
+                $uploadPath = FCPATH . 'uploads/' . $newCategoriaFolder;
+                if (!empty($newSubfolder)) {
+                    $uploadPath .= '/' . $newSubfolder;
+                }
+
+                if (!is_dir($uploadPath)) {
+                    mkdir($uploadPath, 0755, true);
+                }
+
+                // Eliminar foto anterior si existía localmente y no es la por defecto
+                $oldFoto = $producto['foto'] ?? '';
+                if (!empty($oldFoto)) {
+                    $isUrl = (strpos($oldFoto, 'http://') === 0 || strpos($oldFoto, 'https://') === 0);
+                    if (!$isUrl && $oldFoto !== 'SinImagen.png') {
+                        $oldFilePath = FCPATH . 'uploads/' . $oldCategoriaFolder;
+                        if (!empty($oldSubfolder)) {
+                            $oldFilePath .= '/' . $oldSubfolder;
+                        }
+                        $oldFilePath .= '/' . $oldFoto;
+                        
+                        if (file_exists($oldFilePath)) {
+                            @unlink($oldFilePath);
+                        }
+                    }
+                }
+
+                $fotoName = 'principal_' . $file->getRandomName();
+                $file->move($uploadPath, $fotoName);
+            }
+        } else {
+            // Si la categoría o el subfolder cambiaron y ya tiene foto, mover la foto física
+            if (($idCategoria != $oldIdCategoria || $newSubfolder !== $oldSubfolder) && !empty($fotoName)) {
+                $isUrl = (strpos($fotoName, 'http://') === 0 || strpos($fotoName, 'https://') === 0);
+                if (!$isUrl && $fotoName !== 'SinImagen.png') {
+                    $oldFilePath = FCPATH . 'uploads/' . $oldCategoriaFolder;
+                    if (!empty($oldSubfolder)) {
+                        $oldFilePath .= '/' . $oldSubfolder;
+                    }
+                    $oldFileFullPath = $oldFilePath . '/' . $fotoName;
+
+                    $newFilePath = FCPATH . 'uploads/' . $newCategoriaFolder;
+                    if (!empty($newSubfolder)) {
+                        $newFilePath .= '/' . $newSubfolder;
+                    }
+                    $newFileFullPath = $newFilePath . '/' . $fotoName;
+
+                    if (file_exists($oldFileFullPath)) {
+                        if (!is_dir($newFilePath)) {
+                            mkdir($newFilePath, 0755, true);
+                        }
+                        @rename($oldFileFullPath, $newFileFullPath);
+                    }
+                }
+            }
+        }
+
+        // Actualizar registro
+        $datosActualizar = [
+            'codigo_sku'   => $sku,
+            'descripcion'  => $descripcion,
+            'id_categoria' => $idCategoria,
+            'precio'       => $precio,
+            'precio_promo' => $precioPromo,
+            'stock'        => $stock,
+            'foto'         => $fotoName,
+            'masDetalle'   => $masDetalle
+        ];
+
+        if ($this->productoModel->update($id, $datosActualizar)) {
+            return redirect()->to(base_url('admin/productos'))->with('success', 'Producto actualizado exitosamente.');
+        }
+
+        return redirect()->back()->withInput()->with('error', 'Ocurrió un error al actualizar el producto.');
+    }
+
     public function actualizarOrden($id)
     {
         $imagen = $this->inventarioImagenesModel->find($id);
@@ -349,9 +477,53 @@ class AdminProductos extends BaseController
             strpos($descLower, 'amor') !== false || 
             strpos($descLower, 'corazón') !== false || 
             strpos($descLower, 'corazon') !== false || 
-            strpos($descLower, 'amistad') !== false
+            strpos($descLower, 'amistad') !== false ||
+            strpos($descLower, 'vela') !== false ||
+            strpos($descLower, 'flor') !== false ||
+            strpos($descLower, 'rosa') !== false ||
+            strpos($descLower, 'rosas') !== false ||
+            strpos($descLower, 'peluche') !== false ||
+            strpos($descLower, 'ramo') !== false ||
+            strpos($descLower, 'bouquet') !== false ||
+            strpos($descLower, 'lazo') !== false ||
+            strpos($descLower, 'listón') !== false ||
+            strpos($descLower, 'liston') !== false ||
+            strpos($descLower, 'chocolate') !== false ||
+            strpos($descLower, 'romantico') !== false ||
+            strpos($descLower, 'romántico') !== false ||
+            strpos($descLower, 'romantica') !== false ||
+            strpos($descLower, 'romántica') !== false ||
+            strpos($descLower, 'cupido') !== false
         ) {
             return 'SanValentín';
+        }
+        
+        if (
+            strpos($descLower, 'cumpleaños') !== false ||
+            strpos($descLower, 'cumpleanos') !== false ||
+            strpos($descLower, 'pastel') !== false ||
+            strpos($descLower, 'globo') !== false ||
+            strpos($descLower, 'globos') !== false ||
+            strpos($descLower, 'confeti') !== false ||
+            strpos($descLower, 'letrero') !== false ||
+            strpos($descLower, 'cortina') !== false ||
+            strpos($descLower, 'flecos') !== false ||
+            strpos($descLower, 'bolsa de regalo') !== false ||
+            strpos($descLower, 'holográfica') !== false ||
+            strpos($descLower, 'holografica') !== false ||
+            strpos($descLower, 'metalizada') !== false ||
+            strpos($descLower, 'piñata') !== false ||
+            strpos($descLower, 'pinata') !== false ||
+            strpos($descLower, 'festejo') !== false ||
+            strpos($descLower, 'celebración') !== false ||
+            strpos($descLower, 'celebracion') !== false ||
+            strpos($descLower, 'fiesta') !== false ||
+            strpos($descLower, 'velita') !== false ||
+            strpos($descLower, 'velitas') !== false ||
+            strpos($descLower, 'decoración') !== false ||
+            strpos($descLower, 'decoracion') !== false
+        ) {
+            return 'Cumpleaños';
         }
         
         return '';

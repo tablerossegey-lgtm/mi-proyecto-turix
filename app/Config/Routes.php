@@ -19,6 +19,7 @@ $routes->group('admin', function($routes) {
     $routes->get('productos', 'AdminProductos::index');
     $routes->post('productos', 'AdminProductos::index');
     $routes->post('productos/crear', 'AdminProductos::crear');
+    $routes->post('productos/editar/(:num)', 'AdminProductos::editar/$1');
     $routes->get('productos/galeria/(:num)', 'AdminProductos::galeria/$1');
     $routes->post('productos/subir-imagen/(:num)', 'AdminProductos::subirImagen/$1');
     $routes->post('productos/cambiar-principal/(:num)', 'AdminProductos::cambiarPrincipal/$1');

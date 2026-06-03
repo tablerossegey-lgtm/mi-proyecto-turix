@@ -75,9 +75,51 @@
                     strpos($descLower, 'amor') !== false || 
                     strpos($descLower, 'corazón') !== false || 
                     strpos($descLower, 'corazon') !== false || 
-                    strpos($descLower, 'amistad') !== false
+                    strpos($descLower, 'amistad') !== false ||
+                    strpos($descLower, 'vela') !== false ||
+                    strpos($descLower, 'flor') !== false ||
+                    strpos($descLower, 'rosa') !== false ||
+                    strpos($descLower, 'rosas') !== false ||
+                    strpos($descLower, 'peluche') !== false ||
+                    strpos($descLower, 'ramo') !== false ||
+                    strpos($descLower, 'bouquet') !== false ||
+                    strpos($descLower, 'lazo') !== false ||
+                    strpos($descLower, 'listón') !== false ||
+                    strpos($descLower, 'liston') !== false ||
+                    strpos($descLower, 'chocolate') !== false ||
+                    strpos($descLower, 'romantico') !== false ||
+                    strpos($descLower, 'romántico') !== false ||
+                    strpos($descLower, 'romantica') !== false ||
+                    strpos($descLower, 'romántica') !== false ||
+                    strpos($descLower, 'cupido') !== false
                 ) {
                     $subcategoria = 'sanvalentin';
+                } elseif (
+                    strpos($descLower, 'cumpleaños') !== false ||
+                    strpos($descLower, 'cumpleanos') !== false ||
+                    strpos($descLower, 'pastel') !== false ||
+                    strpos($descLower, 'globo') !== false ||
+                    strpos($descLower, 'globos') !== false ||
+                    strpos($descLower, 'confeti') !== false ||
+                    strpos($descLower, 'letrero') !== false ||
+                    strpos($descLower, 'cortina') !== false ||
+                    strpos($descLower, 'flecos') !== false ||
+                    strpos($descLower, 'bolsa de regalo') !== false ||
+                    strpos($descLower, 'holográfica') !== false ||
+                    strpos($descLower, 'holografica') !== false ||
+                    strpos($descLower, 'metalizada') !== false ||
+                    strpos($descLower, 'piñata') !== false ||
+                    strpos($descLower, 'pinata') !== false ||
+                    strpos($descLower, 'festejo') !== false ||
+                    strpos($descLower, 'celebración') !== false ||
+                    strpos($descLower, 'celebracion') !== false ||
+                    strpos($descLower, 'fiesta') !== false ||
+                    strpos($descLower, 'velita') !== false ||
+                    strpos($descLower, 'velitas') !== false ||
+                    strpos($descLower, 'decoración') !== false ||
+                    strpos($descLower, 'decoracion') !== false
+                ) {
+                    $subcategoria = 'cumpleanos';
                 }
             }
 

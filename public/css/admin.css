@@ -356,29 +356,35 @@
 }
 
 /* Estilos de Formulario y Modales (admin_productos/index.php) */
-#modalNuevoProducto .modal-content {
+#modalNuevoProducto .modal-content,
+#modalEditarProducto .modal-content {
     background: #1f222b !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-radius: 1.25rem !important;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
 }
 
-#modalNuevoProducto .modal-header {
+#modalNuevoProducto .modal-header,
+#modalEditarProducto .modal-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-#modalNuevoProducto .modal-footer {
+#modalNuevoProducto .modal-footer,
+#modalEditarProducto .modal-footer {
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
 
-#modalNuevoProducto .form-label {
+#modalNuevoProducto .form-label,
+#modalEditarProducto .form-label {
     color: #e2e8f0 !important;
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
 
 #modalNuevoProducto .form-control,
-#modalNuevoProducto .form-select {
+#modalNuevoProducto .form-select,
+#modalEditarProducto .form-control,
+#modalEditarProducto .form-select {
     background-color: #2a2e3d !important;
     border: 1px solid rgba(255, 255, 255, 0.12) !important;
     border-radius: 0.5rem !important;
@@ -388,19 +394,23 @@
     transition: all 0.25s ease-in-out !important;
 }
 
-#modalNuevoProducto .form-control::placeholder {
+#modalNuevoProducto .form-control::placeholder,
+#modalEditarProducto .form-control::placeholder {
     color: rgba(255, 255, 255, 0.45) !important;
 }
 
 #modalNuevoProducto .form-control:focus,
-#modalNuevoProducto .form-select:focus {
+#modalNuevoProducto .form-select:focus,
+#modalEditarProducto .form-control:focus,
+#modalEditarProducto .form-select:focus {
     border-color: #ffc107 !important;
     box-shadow: 0 0 10px rgba(255, 193, 7, 0.3) !important;
     background-color: #313647 !important;
     color: #ffffff !important;
 }
 
-#modalNuevoProducto input[type="file"]::file-selector-button {
+#modalNuevoProducto input[type="file"]::file-selector-button,
+#modalEditarProducto input[type="file"]::file-selector-button {
     background-color: #ffc107 !important;
     color: #1e293b !important;
     border: none !important;
@@ -412,7 +422,8 @@
     transition: all 0.2s ease-in-out !important;
 }
 
-#modalNuevoProducto input[type="file"]::file-selector-button:hover {
+#modalNuevoProducto input[type="file"]::file-selector-button:hover,
+#modalEditarProducto input[type="file"]::file-selector-button:hover {
     background-color: #e0a800 !important;
     transform: scale(1.03);
 }

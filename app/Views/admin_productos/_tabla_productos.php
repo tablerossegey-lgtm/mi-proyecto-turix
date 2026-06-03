@@ -51,9 +51,15 @@
                        class="btn btn-outline-info btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-info-btn">
                         <i class="fas fa-cart-plus"></i> Encargar
                     </a>
+                    <button type="button" 
+                            class="btn btn-warning btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-warning text-dark" 
+                            title="Editar datos de producto"
+                            onclick="abrirEditarProducto(<?= htmlspecialchars(json_encode($p), ENT_QUOTES, 'UTF-8') ?>)">
+                        <i class="fas fa-edit text-dark"></i> Editar
+                    </button>
                     <a href="<?= base_url('admin/productos/galeria/' . $p['id']) ?>" 
-                       class="btn btn-warning btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-warning text-dark">
-                        <i class="fas fa-photo-video text-dark"></i> Galerías
+                       class="btn btn-outline-light btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm">
+                        <i class="fas fa-photo-video"></i> Galerías
                     </a>
                 </div>
             </td>

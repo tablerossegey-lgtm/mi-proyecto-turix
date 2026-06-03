@@ -73,15 +73,14 @@ if ($categoriaId) {
                             $emoji = '🎄 ';
                         } elseif (strpos($subLower, 'valentin') !== false || strpos($subLower, 'amor') !== false) {
                             $emoji = '❤️ ';
+                        } elseif (strpos($subLower, 'cumple') !== false || strpos($subLower, 'cumpleanos') !== false) {
+                            $emoji = '🎂 ';
                         }
                     ?>
                     <button type="button" class="btn btn-turix-filter rounded-pill px-4 py-2" data-filter="<?= $subCss ?>">
                         <?= $emoji ?><?= esc($sub) ?>
                     </button>
                 <?php endforeach; ?>
-                <button type="button" class="btn btn-turix-filter rounded-pill px-4 py-2" data-filter="otros">
-                    📦 Otros
-                </button>
             </div>
         </div>
     </div>
