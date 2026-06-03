@@ -23,6 +23,7 @@ class ProductoModel extends Model
     {
         return $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria')
             ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
+            ->orderBy('t_inventario.id', 'DESC')
             ->findAll();
     }
 
@@ -34,6 +35,7 @@ class ProductoModel extends Model
         return $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria')
             ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria')
             ->where('t_inventario.id_categoria', $categoriaId)
+            ->orderBy('t_inventario.id', 'DESC')
             ->findAll();
     }
 
@@ -53,7 +55,7 @@ class ProductoModel extends Model
             $builder->where('t_inventario.id_categoria', $categoriaId);
         }
 
-        return $builder->findAll();
+        return $builder->orderBy('t_inventario.id', 'DESC')->findAll();
     }
 
     /**
@@ -74,7 +76,7 @@ class ProductoModel extends Model
      */
     public function obtenerTodosConConteoImagenes(?string $termino = null): array
     {
-        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria, COUNT(t_inventario_imagenes.id) as total_imagenes')
+        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria, COUNT(t_inventario_imagenes.id) as total_imagenes, (SELECT COALESCE(SUM(pe.cantidad), 0) FROM t_pedidos_encargados pe WHERE pe.id_producto = t_inventario.id AND pe.estado = \'Pendiente\') as total_encargos_pendientes')
             ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
             ->join('t_inventario_imagenes', 't_inventario_imagenes.id_producto = t_inventario.id', 'left')
             ->groupBy('t_inventario.id')

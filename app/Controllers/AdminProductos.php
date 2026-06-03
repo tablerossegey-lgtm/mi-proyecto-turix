@@ -27,10 +27,14 @@ class AdminProductos extends BaseController
         $data = [
             'productos' => $productos,
             'categorias' => $categorias,
-            'titulo' => 'Administración de Galerías de Productos',
             'q' => $q
         ];
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return view('admin_productos/_tabla_productos', $data);
+        }
+
+        $data['titulo'] = 'Administración de Galerías de Productos';
         return view('admin_productos/index', $data);
     }
 
@@ -65,7 +69,15 @@ class AdminProductos extends BaseController
 
         if (isset($files['imagenes'])) {
             $categoriaFolder = isset($producto['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) : '';
+            $subfolder = '';
+            if (strtolower($categoriaFolder) === 'festividades') {
+                $subfolder = $this->obtenerSubfolderFestividades($producto['descripcion']);
+            }
+            
             $uploadPath = FCPATH . 'uploads/' . $categoriaFolder;
+            if (!empty($subfolder)) {
+                $uploadPath .= '/' . $subfolder;
+            }
 
             // Asegurar que exista el directorio
             if (!is_dir($uploadPath)) {
@@ -119,11 +131,26 @@ class AdminProductos extends BaseController
 
         if ($producto) {
             $categoriaFolder = isset($producto['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) : '';
-            $filePath = FCPATH . 'uploads/' . $categoriaFolder . '/' . $imagen['ruta_foto'];
+            $subfolder = '';
+            if (strtolower($categoriaFolder) === 'festividades') {
+                $subfolder = $this->obtenerSubfolderFestividades($producto['descripcion']);
+            }
+            
+            $filePath = FCPATH . 'uploads/' . $categoriaFolder;
+            if (!empty($subfolder)) {
+                $filePath .= '/' . $subfolder;
+            }
+            $filePath .= '/' . $imagen['ruta_foto'];
             
             // Eliminar archivo físico
             if (file_exists($filePath)) {
                 @unlink($filePath);
+            }
+            
+            // Intentar borrar también del directorio raíz por si acaso
+            $rootPath = FCPATH . 'uploads/' . $categoriaFolder . '/' . $imagen['ruta_foto'];
+            if (file_exists($rootPath)) {
+                @unlink($rootPath);
             }
         }
 
@@ -150,7 +177,16 @@ class AdminProductos extends BaseController
                 // Obtener el nombre de la categoría del producto (para la carpeta)
                 $categoria = $this->productoModel->obtenerPorIdConCategoria((int)$id);
                 $categoriaFolder = isset($categoria['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($categoria['nombre_categoria']))) : '';
+                
+                $subfolder = '';
+                if (strtolower($categoriaFolder) === 'festividades') {
+                    $subfolder = $this->obtenerSubfolderFestividades($categoria['descripcion']);
+                }
+                
                 $uploadPath = FCPATH . 'uploads/' . $categoriaFolder;
+                if (!empty($subfolder)) {
+                    $uploadPath .= '/' . $subfolder;
+                }
 
                 // Asegurar que exista el directorio
                 if (!is_dir($uploadPath)) {
@@ -169,6 +205,10 @@ class AdminProductos extends BaseController
                         $oldFilePath = $uploadPath . '/' . $oldFoto;
                         if (file_exists($oldFilePath)) {
                             @unlink($oldFilePath);
+                        }
+                        $rootOldPath = FCPATH . 'uploads/' . $categoriaFolder . '/' . $oldFoto;
+                        if (file_exists($rootOldPath)) {
+                            @unlink($rootOldPath);
                         }
                     }
                 }
@@ -214,7 +254,16 @@ class AdminProductos extends BaseController
             if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif'])) {
                 $categoria = $this->categoriaModel->find($idCategoria);
                 $categoriaFolder = isset($categoria['nombre']) ? str_replace(' ', '', ucwords(strtolower($categoria['nombre']))) : '';
+                
+                $subfolder = '';
+                if (strtolower($categoriaFolder) === 'festividades') {
+                    $subfolder = $this->obtenerSubfolderFestividades($descripcion);
+                }
+                
                 $uploadPath = FCPATH . 'uploads/' . $categoriaFolder;
+                if (!empty($subfolder)) {
+                    $uploadPath .= '/' . $subfolder;
+                }
 
                 if (!is_dir($uploadPath)) {
                     mkdir($uploadPath, 0755, true);
@@ -263,6 +312,49 @@ class AdminProductos extends BaseController
         }
 
         return redirect()->back()->with('error', 'El número de orden debe ser mayor o igual a 1.');
+    }
+
+    /**
+     * Detecta si un producto de Festividades pertenece a Navidad o SanValentín
+     * basándose en su descripción (mismo criterio del catálogo).
+     */
+    private function obtenerSubfolderFestividades(string $descripcion): string
+    {
+        $descLower = strtolower($descripcion);
+        if (
+            strpos($descLower, 'navidad') !== false || 
+            strpos($descLower, 'navideñ') !== false || 
+            strpos($descLower, 'navide') !== false || 
+            strpos($descLower, 'grinch') !== false || 
+            strpos($descLower, 'santa') !== false || 
+            strpos($descLower, 'nochebuena') !== false ||
+            strpos($descLower, 'luces') !== false ||
+            strpos($descLower, 'serie') !== false ||
+            strpos($descLower, 'led') !== false ||
+            strpos($descLower, 'campana') !== false ||
+            strpos($descLower, 'esfera') !== false ||
+            strpos($descLower, 'guirnalda') !== false ||
+            strpos($descLower, 'pino') !== false ||
+            strpos($descLower, 'baston') !== false ||
+            strpos($descLower, 'bastón') !== false ||
+            strpos($descLower, 'copo') !== false ||
+            strpos($descLower, 'reno') !== false
+        ) {
+            return 'Navidad';
+        }
+        
+        if (
+            strpos($descLower, 'valentin') !== false || 
+            strpos($descLower, 'valentín') !== false || 
+            strpos($descLower, 'amor') !== false || 
+            strpos($descLower, 'corazón') !== false || 
+            strpos($descLower, 'corazon') !== false || 
+            strpos($descLower, 'amistad') !== false
+        ) {
+            return 'SanValentín';
+        }
+        
+        return '';
     }
 }
 

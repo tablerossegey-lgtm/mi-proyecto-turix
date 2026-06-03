@@ -2,23 +2,6 @@
 
 <?= $this->section('styles') ?>
 <link rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
-<style>
-    .btn-cambiar-principal {
-        border: 2px dashed #ffc107 !important;
-        color: #ffc107 !important;
-        background-color: transparent !important;
-        font-size: 0.85rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    .btn-cambiar-principal:hover {
-        background-color: #ffc107 !important;
-        color: #1e293b !important;
-        border-style: solid !important;
-        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.25) !important;
-        transform: translateY(-1px);
-    }
-</style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -63,21 +46,7 @@
                 <!-- Imagen Principal -->
                 <div class="product-image-container rounded-4 mb-3 d-flex align-items-center justify-content-center p-3 admin-info-img-container">
                     <?php 
-                        $foto = $p['foto'] ?? '';
-                        $isUrl = (strpos($foto, 'http://') === 0 || strpos($foto, 'https://') === 0);
-                        if ($isUrl) {
-                            $srcUrl = $foto;
-                        } else {
-                            $categoriaFolder = isset($p['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($p['nombre_categoria']))) : '';
-                            $rutaImagen = 'uploads/SinImagen.png';
-                            if (!empty($foto)) {
-                                $pathIntento = "uploads/{$categoriaFolder}/" . $foto;
-                                if (file_exists(FCPATH . $pathIntento)) {
-                                    $rutaImagen = $pathIntento;
-                                }
-                            }
-                            $srcUrl = base_url($rutaImagen);
-                        }
+                        $srcUrl = obtener_ruta_imagen($p['foto'] ?? '', $p['nombre_categoria'] ?? '');
                     ?>
                     <img src="<?= $srcUrl ?>" 
                          alt="<?= esc($p['descripcion']) ?>" 
@@ -87,7 +56,7 @@
 
                 <!-- Modificar Imagen Principal -->
                 <div class="mb-3 text-center">
-                    <form action="<?= base_url('admin/productos/cambiar-principal/' . $p['id']) ?>" method="POST" enctype="multipart/form-data" id="form-foto-principal" class="m-0">
+                    <form action="<?= base_url('admin/productos/cambiar-principal/' . $p['id']) ?>" method="POST" enctype="multipart/form-data" id="form-foto-principal" class="m-0" hx-boost="true">
                         <label for="fotoPrincipalInput" class="btn btn-cambiar-principal w-100 fw-bold py-2 rounded-3 d-flex align-items-center justify-content-center gap-2">
                             <i class="fas fa-camera fs-6"></i> Cambiar Imagen Principal
                         </label>
@@ -141,7 +110,7 @@
             <!-- Sección de Carga -->
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 admin-card">
                 <h5 class="fw-bold mb-3 admin-title"><i class="fas fa-cloud-upload-alt me-1 text-warning"></i> Cargar Imágenes Nuevas</h5>
-                <form action="<?= base_url('admin/productos/subir-imagen/' . $p['id']) ?>" method="POST" enctype="multipart/form-data">
+                <form action="<?= base_url('admin/productos/subir-imagen/' . $p['id']) ?>" method="POST" enctype="multipart/form-data" hx-boost="true">
                     <div class="drag-zone p-4 rounded-4 text-center d-flex flex-column align-items-center justify-content-center border-dashed admin-drag-zone">
                         <input type="file" name="imagenes[]" id="fileInput" multiple accept="image/jpeg, image/png" class="d-none">
                         <div class="mb-3 icon-container">
@@ -169,14 +138,7 @@
                     <div class="row g-3 row-cols-2 row-cols-sm-3 row-cols-md-4">
                         <?php foreach ($imagenes_adicionales as $img): ?>
                             <?php 
-                                $adicionalFoto = $img['ruta_foto'] ?? '';
-                                $isAdicionalUrl = (strpos($adicionalFoto, 'http://') === 0 || strpos($adicionalFoto, 'https://') === 0);
-                                if ($isAdicionalUrl) {
-                                    $foto_src = $adicionalFoto;
-                                } else {
-                                    $ruta = 'uploads/' . $categoriaFolder . '/' . $adicionalFoto;
-                                    $foto_src = (!empty($adicionalFoto) && file_exists(FCPATH . $ruta)) ? base_url($ruta) : base_url('uploads/SinImagen.png');
-                                }
+                                $foto_src = obtener_ruta_imagen($img['ruta_foto'] ?? '', $p['nombre_categoria'] ?? '');
                             ?>
                             <div class="col">
                                 <div class="card border-0 rounded-4 overflow-hidden position-relative bg-light shadow-sm gallery-card admin-gallery-card h-100">
@@ -193,7 +155,8 @@
                                         <form action="<?= base_url('admin/productos/eliminar-imagen/' . $img['id']) ?>" 
                                               method="POST" 
                                               class="m-0"
-                                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta imagen de la galería? Esta acción no se puede deshacer.');">
+                                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta imagen de la galería? Esta acción no se puede deshacer.');"
+                                              hx-boost="true">
                                             <button type="submit" 
                                                     class="btn btn-danger btn-sm rounded-circle d-flex align-items-center justify-content-center shadow admin-gallery-delete-btn" 
                                                     title="Eliminar esta foto">
@@ -202,7 +165,7 @@
                                         </form>
                                     </div>
                                      <div class="p-2 text-center bg-white border-top" style="color: #475569 !important;">
-                                         <form action="<?= base_url('admin/productos/actualizar-orden/' . $img['id']) ?>" method="POST" class="m-0 d-flex align-items-center justify-content-center gap-2">
+                                         <form action="<?= base_url('admin/productos/actualizar-orden/' . $img['id']) ?>" method="POST" class="m-0 d-flex align-items-center justify-content-center gap-2" hx-boost="true">
                                              <label for="orden-input-<?= $img['id'] ?>" class="small font-monospace m-0 fw-semibold">Orden:</label>
                                              <input type="number" 
                                                     id="orden-input-<?= $img['id'] ?>"

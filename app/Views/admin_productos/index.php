@@ -2,70 +2,6 @@
 
 <?= $this->section('styles') ?>
 <link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
-<style>
-    /* Estilos Premium para la modal de creación */
-    #modalNuevoProducto .modal-content {
-        background: #1f222b !important;
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-        border-radius: 1.25rem !important;
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
-    }
-    
-    #modalNuevoProducto .modal-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
-    }
-    
-    #modalNuevoProducto .modal-footer {
-        border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
-    }
-    
-    #modalNuevoProducto .form-label {
-        color: #e2e8f0 !important; /* Lighter labels for premium readability */
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-    
-    #modalNuevoProducto .form-control,
-    #modalNuevoProducto .form-select {
-        background-color: #2a2e3d !important; /* Lighter soft-dark container for fields */
-        border: 1px solid rgba(255, 255, 255, 0.12) !important;
-        border-radius: 0.5rem !important;
-        color: #f8fafc !important; /* Crisp white text */
-        padding: 0.75rem 1rem !important;
-        font-size: 0.9rem !important;
-        transition: all 0.25s ease-in-out !important;
-    }
-    
-    #modalNuevoProducto .form-control::placeholder {
-        color: rgba(255, 255, 255, 0.45) !important; /* High contrast placeholders */
-    }
-    
-    #modalNuevoProducto .form-control:focus,
-    #modalNuevoProducto .form-select:focus {
-        border-color: #ffc107 !important;
-        box-shadow: 0 0 10px rgba(255, 193, 7, 0.3) !important;
-        background-color: #313647 !important;
-        color: #ffffff !important;
-    }
-
-    /* Estilo premium del file input button native */
-    #modalNuevoProducto input[type="file"]::file-selector-button {
-        background-color: #ffc107 !important;
-        color: #1e293b !important;
-        border: none !important;
-        border-radius: 0.375rem !important;
-        padding: 0.375rem 1rem !important;
-        margin-right: 1rem !important;
-        font-weight: bold;
-        cursor: pointer;
-        transition: all 0.2s ease-in-out !important;
-    }
-    
-    #modalNuevoProducto input[type="file"]::file-selector-button:hover {
-        background-color: #e0a800 !important;
-        transform: scale(1.03);
-    }
-</style>
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -90,7 +26,7 @@
     <!-- Buscador Premium -->
     <div class="card border-0 shadow-sm mb-4 admin-card">
         <div class="card-body p-4">
-            <form method="GET" action="<?= base_url('admin/productos') ?>">
+            <form hx-post="<?= base_url('admin/productos') ?>" hx-target="#productos-tabla-body" hx-swap="innerHTML" class="m-0">
                 <div class="input-group admin-search-group">
                     <span class="input-group-text admin-search-text">
                         <i class="fas fa-search"></i>
@@ -99,11 +35,24 @@
                            class="form-control py-3 admin-search-input" 
                            placeholder="Buscar producto por SKU o descripción..." 
                            name="q" 
-                           value="<?= esc($q ?? '') ?>">
+                           value="<?= esc($q ?? '') ?>"
+                           hx-post="<?= base_url('admin/productos') ?>"
+                           hx-trigger="input changed delay:300ms, search"
+                           hx-target="#productos-tabla-body"
+                           hx-swap="innerHTML"
+                           oninput="toggleLimpiarBtn(this.value)">
                     <button class="btn btn-warning px-4 fw-bold admin-search-btn" type="submit">Buscar</button>
-                    <?php if (!empty($q)): ?>
-                        <a href="<?= base_url('admin/productos') ?>" class="btn btn-secondary px-3 d-flex align-items-center justify-content-center admin-search-btn">Limpiar</a>
-                    <?php endif; ?>
+                    <button id="btn-limpiar-busqueda" 
+                            class="btn btn-secondary px-3 d-flex align-items-center justify-content-center admin-search-btn" 
+                            type="button"
+                            hx-post="<?= base_url('admin/productos') ?>"
+                            hx-vals='{"q": ""}'
+                            hx-target="#productos-tabla-body"
+                            hx-swap="innerHTML"
+                            style="display: <?= !empty($q) ? 'flex' : 'none' ?>;"
+                            onclick="document.querySelector('.admin-search-input').value = ''; this.style.display = 'none';">
+                        Limpiar
+                    </button>
                 </div>
             </form>
         </div>
@@ -135,80 +84,12 @@
                         <th class="py-3 admin-table-th">Descripción</th>
                         <th class="py-3 admin-table-th">Categoría</th>
                         <th class="py-3 text-center admin-table-th">Imágenes Galería</th>
+                        <th class="py-3 text-center admin-table-th">Encargos Pendientes</th>
                         <th class="py-3 text-end pe-4 admin-table-th">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <?php if (!empty($productos)): ?>
-                        <?php foreach ($productos as $p): ?>
-                            <?php 
-                                $foto = $p['foto'] ?? '';
-                                $isUrl = (strpos($foto, 'http://') === 0 || strpos($foto, 'https://') === 0);
-                                if ($isUrl) {
-                                    $srcUrl = $foto;
-                                } else {
-                                    $categoriaFolder = isset($p['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($p['nombre_categoria']))) : '';
-                                    $rutaImagen = 'uploads/SinImagen.png';
-                                    if (!empty($foto)) {
-                                        $pathIntento = "uploads/{$categoriaFolder}/" . $foto;
-                                        if (file_exists(FCPATH . $pathIntento)) {
-                                            $rutaImagen = $pathIntento;
-                                        }
-                                    }
-                                    $srcUrl = base_url($rutaImagen);
-                                }
-                            ?>
-                            <tr class="admin-table-tr">
-                                <td class="ps-4 py-3">
-                                    <div class="rounded-3 overflow-hidden d-flex align-items-center justify-content-center admin-img-thumb-container">
-                                        <img src="<?= $srcUrl ?>" 
-                                             alt="<?= esc($p['descripcion']) ?>" 
-                                             class="img-fluid admin-img-thumb" 
-                                             onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
-                                    </div>
-                                </td>
-                                <td class="py-3">
-                                    <span class="badge text-dark font-monospace px-2.5 py-1.5 admin-sku-badge">
-                                        <?= esc($p['codigo_sku']) ?>
-                                    </span>
-                                </td>
-                                <td class="py-3">
-                                    <div class="fw-semibold admin-product-title"><?= esc($p['descripcion']) ?></div>
-                                    <div class="text-white-50 small mt-1">ID: <?= $p['id'] ?> | Precio: <strong class="text-warning">$<?= number_format($p['precio'], 2) ?></strong></div>
-                                </td>
-                                <td class="py-3">
-                                    <span class="text-white-50 fw-medium"><?= esc($p['nombre_categoria'] ?: 'Sin Categoría') ?></span>
-                                </td>
-                                <td class="py-3 text-center">
-                                    <?php if ($p['total_imagenes'] > 0): ?>
-                                        <span class="badge bg-warning text-dark fw-bold rounded-pill px-3 py-1.5 shadow-sm">
-                                            <i class="fas fa-images me-1"></i> <?= $p['total_imagenes'] ?>
-                                        </span>
-                                    <?php else: ?>
-                                        <span class="badge rounded-pill px-3 py-1.5 text-muted admin-gallery-badge-empty">
-                                            Vacía
-                                        </span>
-                                    <?php endif; ?>
-                                </td>
-                                <td class="py-3 text-end pe-4">
-                                    <a href="<?= base_url('admin/productos/galeria/' . $p['id']) ?>" 
-                                       class="btn btn-warning btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-warning text-dark">
-                                        <i class="fas fa-photo-video text-dark"></i> Galerías
-                                    </a>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    <?php else: ?>
-                        <tr>
-                            <td colspan="6" class="text-center py-5 text-muted">
-                                <div class="mb-3">
-                                    <i class="fas fa-search fs-1 text-muted opacity-50"></i>
-                                </div>
-                                <h5 class="fw-bold admin-product-title">No se encontraron productos</h5>
-                                <p class="mb-0">Prueba con otro término de búsqueda o SKU.</p>
-                            </td>
-                        </tr>
-                    <?php endif; ?>
+                <tbody id="productos-tabla-body">
+                    <?= $this->include('admin_productos/_tabla_productos') ?>
                 </tbody>
             </table>
         </div>
@@ -225,7 +106,7 @@
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form action="<?= base_url('admin/productos/crear') ?>" method="POST" enctype="multipart/form-data">
+                <form action="<?= base_url('admin/productos/crear') ?>" method="POST" enctype="multipart/form-data" hx-boost="true">
                     <div class="modal-body p-4">
                         <div class="row g-3">
                             <!-- SKU -->
@@ -345,6 +226,13 @@
 
 <script>
     document.body.classList.add('admin-body');
+
+    function toggleLimpiarBtn(val) {
+        const btn = document.getElementById('btn-limpiar-busqueda');
+        if (btn) {
+            btn.style.display = val.trim() !== '' ? 'flex' : 'none';
+        }
+    }
 
     function sugerirSKU() {
         const nombreInput = document.getElementById('descripcion');

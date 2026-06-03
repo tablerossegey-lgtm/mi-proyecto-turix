@@ -55,7 +55,18 @@
                     strpos($descLower, 'navide') !== false || 
                     strpos($descLower, 'grinch') !== false || 
                     strpos($descLower, 'santa') !== false || 
-                    strpos($descLower, 'nochebuena') !== false
+                    strpos($descLower, 'nochebuena') !== false ||
+                    strpos($descLower, 'luces') !== false ||
+                    strpos($descLower, 'serie') !== false ||
+                    strpos($descLower, 'led') !== false ||
+                    strpos($descLower, 'campana') !== false ||
+                    strpos($descLower, 'esfera') !== false ||
+                    strpos($descLower, 'guirnalda') !== false ||
+                    strpos($descLower, 'pino') !== false ||
+                    strpos($descLower, 'baston') !== false ||
+                    strpos($descLower, 'bastón') !== false ||
+                    strpos($descLower, 'copo') !== false ||
+                    strpos($descLower, 'reno') !== false
                 ) {
                     $subcategoria = 'navidad';
                 } elseif (
@@ -76,6 +87,7 @@
                 ['a', 'e', 'i', 'o', 'u', 'n', ''], 
                 strtolower($subcategoria)
             );
+            $p['foto_url'] = $srcUrl;
         ?>
         <div class="col-6 col-md-4 col-lg-3 col-xl-2 prod-filtrable prod-subcat-<?= $subcategoriaCss ?>">
             <div class="card h-100 card-producto">
@@ -86,6 +98,12 @@
                     <img src="<?= $srcUrl ?>"
                         class="img-fluid foto-producto" alt="<?= esc($p['descripcion']) ?>"
                         onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
+                    <button type="button" 
+                            class="btn-quick-whatsapp shadow-sm"
+                            title="Agregar al Carrito"
+                            onclick="agregarAlCarritoRapido(<?= esc(json_encode($p)) ?>)">
+                        <i class="bi bi-cart-plus"></i>
+                    </button>
                 </div>
 
                 <div class="card-body">
@@ -94,7 +112,7 @@
                     </h6>
 
                     <div class="precio-tag">
-                        <span style="font-size: 1rem; opacity: 0.7;">$</span>
+                        <span class="simbolo-moneda">$</span>
                         <?= number_format($p['precio'], 2) ?>
                     </div>
                     <button class="btn btn-turix w-100 shadow-sm fw-bold" 
@@ -102,7 +120,7 @@
                         data-bs-target="#modalDetalle"
                         hx-get="<?= base_url('catalogo/detalle/' . $p['id']) ?>" 
                         hx-target="#contenido-modal">
-                        Ver Detalles <i class="fas fa-search-plus ms-1"></i>
+                        Ver Detalles <i class="bi bi-zoom-in ms-1"></i>
                     </button>
                 </div>
             </div>

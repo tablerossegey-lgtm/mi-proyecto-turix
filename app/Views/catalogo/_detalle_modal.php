@@ -7,32 +7,7 @@
         onclick="const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetalle')); if(modal) modal.hide();">
 </button>
 
-<style>
-    .extra-thumb {
-        width: 70px;
-        height: 70px;
-        object-fit: cover;
-        cursor: pointer;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        border: 2px solid rgba(255, 255, 255, 0.1);
-        border-radius: 8px;
-        opacity: 0.6;
-    }
-    .extra-thumb:hover {
-        transform: translateY(-2px);
-        border-color: rgba(255, 193, 7, 0.5);
-        opacity: 0.9;
-    }
-    .extra-thumb.active {
-        transform: translateY(-2px);
-        border-color: #ffc107;
-        box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
-        opacity: 1;
-    }
-    .product-zoom {
-        transition: opacity 0.15s ease-in-out;
-    }
-</style>
+
 
 <div class="modal-body p-4 p-md-5">
     <div class="row g-4 mt-1">
@@ -40,20 +15,15 @@
         <div class="col-12 col-md-6">
             <div class="product-image-container d-flex align-items-center justify-content-center p-4 rounded-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); min-height: 320px;">
                 <?php 
-                $foto = $p['foto'] ?? '';
-                $isUrl = (strpos($foto, 'http://') === 0 || strpos($foto, 'https://') === 0);
-                if ($isUrl) {
-                    $foto_final_src = $foto;
-                } else {
-                    $categoriaFolder = isset($p['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($p['nombre_categoria']))) : '';
-                    $ruta_foto = 'uploads/' . $categoriaFolder . '/' . $foto;
-                    $foto_final_src = (!empty($foto) && file_exists(FCPATH . $ruta_foto)) ? base_url($ruta_foto) : base_url('uploads/SinImagen.png');
-                }
+                $foto_final_src = obtener_ruta_imagen($p['foto'] ?? '', $p['nombre_categoria'] ?? '');
                 ?>
                 <img id="main-img" src="<?= $foto_final_src ?>" 
                      class="img-fluid product-zoom" 
                      alt="<?= esc($p['descripcion']) ?>"
                      onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
+                <div class="zoom-hint">
+                    <i class="fas fa-search-plus"></i> Pasa el cursor para hacer zoom
+                </div>
             </div>
             <?php if (!empty($imagenes_adicionales)): ?>
             <div class="extra-images mt-3 d-flex flex-wrap gap-2 justify-content-center">
@@ -65,14 +35,7 @@
                      onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
                 
                 <?php foreach ($imagenes_adicionales as $img):
-                    $adicionalFoto = $img['ruta_foto'] ?? '';
-                    $isAdicionalUrl = (strpos($adicionalFoto, 'http://') === 0 || strpos($adicionalFoto, 'https://') === 0);
-                    if ($isAdicionalUrl) {
-                        $foto_src = $adicionalFoto;
-                    } else {
-                        $ruta = 'uploads/' . $categoriaFolder . '/' . $adicionalFoto;
-                        $foto_src = (!empty($adicionalFoto) && file_exists(FCPATH . $ruta)) ? base_url($ruta) : base_url('uploads/SinImagen.png');
-                    }
+                    $foto_src = obtener_ruta_imagen($img['ruta_foto'] ?? '', $p['nombre_categoria'] ?? '');
                 ?>
                     <img src="<?= $foto_src ?>" 
                          class="img-thumbnail extra-thumb" 
@@ -98,6 +61,32 @@
                 }
             </script>
             <?php endif; ?>
+            <script>
+                // Efecto de Zoom Interactivo en Hover Premium
+                (function() {
+                    const container = document.querySelector('.product-image-container');
+                    const img = document.getElementById('main-img');
+                    
+                    if (container && img) {
+                        container.addEventListener('mousemove', function(e) {
+                            const rect = container.getBoundingClientRect();
+                            const x = e.clientX - rect.left;
+                            const y = e.clientY - rect.top;
+                            
+                            const xPercent = (x / rect.width) * 100;
+                            const yPercent = (y / rect.height) * 100;
+                            
+                            img.style.transformOrigin = `${xPercent}% ${yPercent}%`;
+                            img.style.transform = 'scale(2.2)';
+                        });
+
+                        container.addEventListener('mouseleave', function() {
+                            img.style.transformOrigin = 'center center';
+                            img.style.transform = 'scale(1)';
+                        });
+                    }
+                })();
+            </script>
         </div>
 
         <!-- Columna de Detalles del Producto -->
@@ -146,12 +135,31 @@
                 <?php endif; ?>
             </div>
 
+            <!-- Selector de Cantidad -->
+            <div class="mb-4 d-flex align-items-center gap-3">
+                <span class="text-white-50 fw-semibold small">Cantidad:</span>
+                <div class="cant-selector">
+                    <button class="cant-btn" type="button" onclick="const input = document.getElementById('detalle-cantidad-input'); if(parseInt(input.value) > 1) input.value = parseInt(input.value) - 1;">
+                        <i class="bi bi-dash"></i>
+                    </button>
+                    <input class="cant-input" type="text" id="detalle-cantidad-input" value="1" readonly>
+                    <button class="cant-btn" type="button" onclick="const input = document.getElementById('detalle-cantidad-input'); input.value = parseInt(input.value) + 1;">
+                        <i class="bi bi-plus"></i>
+                    </button>
+                </div>
+            </div>
+
             <!-- Botones de Acción -->
             <div class="d-grid gap-2 mt-3">
+                <button type="button" 
+                        class="btn btn-warning text-dark fw-bold py-3 shadow d-flex align-items-center justify-content-center gap-2"
+                        onclick="agregarAlCarritoDetalle('<?= $p['id'] ?>', '<?= esc(addslashes($p['descripcion'])) ?>', '<?= $p['precio'] ?>', '<?= esc(addslashes($foto_final_src)) ?>', '<?= esc(addslashes($p['codigo_sku'] ?? '')) ?>', '<?= esc(addslashes($p['nombre_categoria'] ?? '')) ?>')">
+                    <i class="bi bi-cart-plus-fill fs-5"></i> Agregar al Carrito
+                </button>
                 <a href="https://wa.me/529995441466?text=Hola, me interesa el producto: <?= urlencode($p['descripcion']) ?>" 
                    target="_blank" 
-                   class="btn btn-whatsapp-premium fw-bold py-3 shadow d-flex align-items-center justify-content-center gap-2">
-                    <i class="fab fa-whatsapp fs-5"></i> Preguntar por WhatsApp
+                   class="btn btn-whatsapp-premium fw-bold py-2 shadow d-flex align-items-center justify-content-center gap-2">
+                    <i class="fab fa-whatsapp"></i> Preguntar por WhatsApp
                 </a>                    
                 <button type="button" class="btn btn-outline-secondary text-white border-secondary d-flex align-items-center justify-content-center py-2" data-bs-dismiss="modal" onclick="const modal = bootstrap.Modal.getInstance(document.getElementById('modalDetalle')); if(modal) modal.hide();">
                     Seguir explorando

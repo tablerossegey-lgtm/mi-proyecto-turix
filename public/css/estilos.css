@@ -400,3 +400,489 @@ footer .text-muted {
 .prod-filtrable {
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ==========================================================================
+   ESTILOS DE MENÚ DE NAVEGACIÓN Y PORTADA PREMIUM (MIGRADOS)
+   ========================================================================== */
+
+/* Navbar links */
+.nav-link {
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0.5rem 1rem !important;
+}
+.nav-link::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background-color: var(--turix-yellow);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+.nav-link.active::after,
+.nav-link:hover::after {
+    width: 80%;
+}
+.nav-link:hover {
+    color: #ffffff !important;
+}
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* Hero Banner Area */
+.hero-banner {
+    position: relative;
+    min-height: 520px;
+    border-radius: 30px;
+    overflow: hidden;
+    background: url('../images/portada.jpg') no-repeat center center;
+    background-size: cover;
+    box-shadow: var(--shadow-premium);
+    display: flex;
+    align-items: center;
+    margin-bottom: 3.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hero-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(0, 18, 51, 0.85) 0%, rgba(15, 23, 42, 0.45) 100%);
+    z-index: 1;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 650px;
+    padding: 3rem;
+    margin-left: 2rem;
+    background: rgba(17, 34, 64, 0.85); /* Tono azul marino más claro y vivo */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.16); /* Borde de cristal con mayor contraste */
+    border-radius: 24px;
+    color: #ffffff;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 35px rgba(255, 204, 0, 0.15); /* Brillo dorado premium acorde al logo */
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero-title {
+    font-size: 2.8rem;
+    font-weight: 800;
+    line-height: 1.15;
+    margin-bottom: 1.2rem;
+    background: linear-gradient(45deg, #ffffff 60%, var(--turix-yellow) 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+    margin-bottom: 2rem;
+}
+
+/* Secciones */
+.section-title {
+    font-size: 2rem;
+    font-weight: 800;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: var(--turix-dark);
+    letter-spacing: -0.5px;
+}
+
+.section-subtitle {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 2.5rem;
+    font-size: 1rem;
+}
+
+/* Novedades Grid */
+.novedades-container {
+    margin-bottom: 4rem;
+}
+
+@media (min-width: 992px) {
+    .row-cols-lg-5 > * {
+        flex: 0 0 auto;
+        width: 20%;
+    }
+}
+
+.novedad-card {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid #cbd5e1;
+}
+
+.novedad-card:hover {
+    transform: translateY(-10px);
+    border-color: var(--turix-accent);
+    box-shadow: 0 15px 30px rgba(255, 140, 0, 0.15) !important;
+}
+
+.novedad-card:hover .foto-producto {
+    transform: scale(1.08) rotate(1deg);
+}
+
+/* Categorías Destacadas */
+.categorias-section {
+    background: #fdf8e8; /* Tono crema / champán cálido y premium */
+    padding: 4rem 2rem;
+    border-radius: 40px;
+    box-shadow: 0 15px 35px rgba(0, 18, 51, 0.04);
+    margin-bottom: 4rem;
+    border: 1px solid #ebdca5; /* Borde dorado/ámbar suave */
+}
+
+.categorias-section .section-title {
+    color: var(--turix-dark) !important;
+}
+
+.categorias-section .section-subtitle {
+    color: #5c523d !important; /* Tono marrón/dorado oscuro para legibilidad y armonía */
+}
+
+.cat-grid-card {
+    background: white;
+    border: 1px solid rgba(0, 0, 0, 0.06);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+}
+
+.cat-grid-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: var(--turix-accent) !important;
+    box-shadow: 0 15px 30px rgba(255, 140, 0, 0.12);
+}
+
+.cat-grid-img-wrapper {
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    border-bottom: 2px solid var(--turix-accent);
+    background-color: #f8fafc;
+}
+
+.cat-grid-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.cat-grid-card:hover .cat-grid-img {
+    transform: scale(1.1);
+}
+
+.cat-grid-body {
+    padding: 1.2rem;
+    text-align: center;
+    background: var(--turix-dark);
+    color: white;
+}
+
+.cat-grid-title {
+    font-size: 1rem;
+    font-weight: 700;
+    margin: 0;
+    color: #ffffff;
+    transition: color 0.3s ease;
+}
+
+.cat-grid-card:hover .cat-grid-title {
+    color: var(--turix-yellow);
+}
+
+/* Botones CTA */
+.btn-gradient {
+    background: linear-gradient(135deg, var(--turix-accent) 0%, #ff5500 100%);
+    color: white !important;
+    border: none;
+    box-shadow: 0 8px 20px rgba(255, 140, 0, 0.3);
+    transition: all 0.3s ease;
+}
+
+.btn-gradient:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(255, 140, 0, 0.45);
+    filter: brightness(1.05);
+}
+
+.btn-outline-white {
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    color: white !important;
+    background: transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-white:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: #ffffff;
+    transform: translateY(-2px);
+}
+
+/* Estilo premium unificado para botones del Hero */
+.hero-content .btn {
+    font-size: 0.88rem !important;
+    padding: 0.65rem 1.25rem !important;
+    white-space: nowrap !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+    .hero-banner {
+        min-height: 450px;
+        border-radius: 20px;
+        margin-bottom: 2rem;
+    }
+
+    .hero-content {
+        margin: 1.5rem;
+        padding: 2rem;
+        border-radius: 16px;
+    }
+
+    .hero-title {
+        font-size: 2rem;
+    }
+}
+
+/* Símbolo de Moneda */
+.simbolo-moneda {
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+/* ==========================================================================
+   ESTILOS PREMIUM PARA EL DETALLE DE PRODUCTOS (MIGRADOS)
+   ========================================================================== */
+.extra-thumb {
+    width: 70px;
+    height: 70px;
+    object-fit: cover;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    opacity: 0.6;
+}
+.extra-thumb:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 193, 7, 0.5);
+    opacity: 0.9;
+}
+.extra-thumb.active {
+    transform: translateY(-2px);
+    border-color: #ffc107;
+    box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+    opacity: 1;
+}
+.product-image-container {
+    overflow: hidden !important;
+    position: relative !important;
+    cursor: zoom-in !important;
+}
+.product-zoom {
+    transition: transform 0.1s ease-out, opacity 0.15s ease-in-out !important;
+    transform-origin: center center;
+}
+.zoom-hint {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0, 0, 0, 0.6);
+    color: rgba(255, 255, 255, 0.8);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: opacity 0.3s ease;
+    z-index: 10;
+}
+.product-image-container:hover .zoom-hint {
+    opacity: 0;
+}
+
+/* ==========================================================================
+   BOTÓN FLOTANTE SCROLL-TO-TOP
+   ========================================================================== */
+.btn-scroll-top {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 46px;
+    height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1050;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+    cursor: pointer;
+    border: none;
+    background-color: var(--turix-accent, #ff8c00);
+    color: white !important;
+    font-size: 1.25rem;
+    box-shadow: 0 4px 15px rgba(255, 140, 0, 0.35) !important;
+}
+
+.btn-scroll-top:hover {
+    background-color: #ff5500;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(255, 140, 0, 0.5) !important;
+}
+
+.btn-scroll-top.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Botón flotante rápido de WhatsApp en la tarjeta */
+.btn-quick-whatsapp {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    width: 38px;
+    height: 38px;
+    background-color: #25d366;
+    color: white !important;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    z-index: 5;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    border: none;
+    text-decoration: none;
+}
+
+.btn-quick-whatsapp:hover {
+    transform: scale(1.18) rotate(8deg);
+    background-color: #20ba5a;
+    box-shadow: 0 6px 15px rgba(37, 211, 102, 0.45) !important;
+}
+
+/* ==========================================================================
+   ESTILOS DE LA INTERFAZ DEL CARRITO DE COMPRAS
+   ========================================================================== */
+
+/* Badge del Carrito en Navbar */
+.nav-cart-btn {
+    position: relative;
+}
+
+.cart-badge {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    background-color: var(--turix-accent, #ff8c00);
+    color: white !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #0f172a;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    z-index: 10;
+    transition: all 0.3s ease;
+}
+
+/* Animación de Pulso para cuando se agregue un producto */
+.badge-pulse {
+    animation: cart-pulse 0.45s ease-out;
+}
+
+@keyframes cart-pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.4);
+        box-shadow: 0 0 10px var(--turix-accent);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Selector de Cantidades en Detalle Modal */
+.cant-selector {
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 120px;
+}
+
+.cant-btn {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.2s;
+}
+
+.cant-btn:hover {
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+.cant-input {
+    width: 40px;
+    text-align: center;
+    border: none;
+    background: transparent;
+    color: white;
+    font-weight: bold;
+    font-size: 0.95rem;
+}
+
+.cant-input:focus {
+    outline: none;
+}

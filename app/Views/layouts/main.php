@@ -8,6 +8,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="<?= base_url('css/estilos.css') ?>">
     <?= $this->renderSection('styles') ?>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon_turix.ico') ?>">
@@ -16,15 +17,49 @@
 
 <body>
 
-    <nav class="navbar navbar-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="<?= base_url() ?>">
                 <img src="<?= base_url('images/logoTurix.png') ?>" alt="Logo TurixShop" class="logo-navbar">
                 <span>TURIX<span style="color: var(--turix-yellow);">SHOP</span></span>
             </a>
-            <a class="btn btn-outline-warning btn-sm rounded-pill px-3 py-1.5 fw-bold d-flex align-items-center gap-2" href="<?= base_url('admin/productos') ?>">
-                <i class="fas fa-images"></i> Panel Galería
-            </a>
+            
+            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <!-- Enlaces del Público -->
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-lg-2">
+                    <li class="nav-item">
+                        <a class="nav-link <?= (url_is('') || url_is('/')) ? 'active fw-bold text-warning' : 'text-white-50' ?>" href="<?= base_url() ?>">
+                            <i class="bi bi-house me-1"></i> Inicio
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= (url_is('catalogo') || strpos(current_url(), 'catalogo') !== false) ? 'active fw-bold text-warning' : 'text-white-50' ?>" href="<?= base_url('catalogo') ?>">
+                            <i class="bi bi-bag me-1"></i> Catálogo
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white-50 nav-cart-btn" href="#" data-bs-toggle="modal" data-bs-target="#modalCarrito" onclick="renderCarritoModal()">
+                            <i class="bi bi-cart3 me-1"></i> Carrito
+                            <span class="cart-badge" style="display: none;">0</span>
+                        </a>
+                    </li>
+                </ul>
+                
+                <!-- Enlaces Administrativos -->
+                <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
+                    <span class="text-white-50 small me-lg-2 d-none d-lg-inline-block opacity-50"><i class="bi bi-shield-lock"></i> Admin:</span>
+                    <a class="btn btn-outline-warning btn-sm rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-2" href="<?= base_url('admin/productos') ?>">
+                        <i class="bi bi-images"></i> Panel Galería
+                    </a>
+                    <a class="btn btn-outline-info btn-sm rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-2" href="<?= base_url('admin/encargos') ?>">
+                        <i class="bi bi-card-list"></i> Pedidos Encargados
+                    </a>
+                </div>
+            </div>
         </div>
     </nav>
 
@@ -43,11 +78,48 @@
         </div>
     </div>
 
+    <!-- Modal de Carrito -->
+    <div class="modal fade" id="modalCarrito" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-md">
+            <div class="modal-content border-0 shadow-lg" style="background-color: #1a252f; color: #ffffff; border-radius: 20px;">
+                <div class="modal-header border-bottom border-secondary border-opacity-25 p-4">
+                    <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2">
+                        <i class="bi bi-cart3 text-warning"></i> Tu Carrito de Compras
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4" style="max-height: 400px; overflow-y: auto;" id="lista-carrito-modal">
+                    <!-- Los productos se cargarán dinámicamente aquí -->
+                </div>
+                <div class="modal-footer border-top border-secondary border-opacity-25 p-4 flex-column gap-3">
+                    <div class="d-flex justify-content-between align-items-center w-100 p-3 rounded-3" style="background: rgba(0, 0, 0, 0.2); border: 1px solid rgba(255, 255, 255, 0.05); margin-bottom: 0.5rem;">
+                        <span class="fw-bold text-uppercase" style="font-size: 0.85rem; letter-spacing: 0.5px; color: rgba(255, 255, 255, 0.6);">Total estimado:</span>
+                        <span class="text-white fs-3" id="total-carrito-modal" style="font-family: 'Outfit', sans-serif; font-weight: 800;">$0.00</span>
+                    </div>
+                    <div class="d-grid gap-2 w-100">
+                        <button type="button" class="btn btn-whatsapp-premium fw-bold py-3 shadow d-flex align-items-center justify-content-center gap-2" id="btn-enviar-pedido-whatsapp" onclick="enviarPedidoWhatsApp()">
+                            <i class="fab fa-whatsapp fs-5"></i> Confirmar Pedido por WhatsApp
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary text-white border-secondary py-2" data-bs-dismiss="modal">
+                            Seguir Comprando
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <footer class="text-center py-4 mt-5 border-top">
         <p class="text-muted small">&copy; <?= date('Y') ?> TurixShop - Catálogo</p>
     </footer>
 
+    <!-- Botón Scroll-To-Top Flotante -->
+    <button type="button" class="btn btn-warning rounded-circle btn-scroll-top" id="btnScrollTop" aria-label="Ir arriba">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= base_url('js/carrito.js?v=1.3') ?>"></script>
     <script>
         // Limpiar el contenido del modal al cerrarse para evitar que se muestre información del producto anterior
         document.getElementById('modalDetalle').addEventListener('hidden.bs.modal', function () {
@@ -57,6 +129,22 @@
                     <p class="mt-2">Cargando información del producto...</p>
                 </div>
             `;
+        });
+
+        // Lógica del botón Scroll-To-Top
+        const btnScrollTop = document.getElementById('btnScrollTop');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                btnScrollTop.classList.add('show');
+            } else {
+                btnScrollTop.classList.remove('show');
+            }
+        });
+        btnScrollTop.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
         });
     </script>
 </body>
