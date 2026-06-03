@@ -495,7 +495,7 @@ class AdminProductos extends BaseController
             strpos($descLower, 'romántica') !== false ||
             strpos($descLower, 'cupido') !== false
         ) {
-            return 'SanValentín';
+            return 'San Valentín';
         }
         
         if (

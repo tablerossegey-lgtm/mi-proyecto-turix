@@ -20,20 +20,51 @@
         </div>
     </div>
 
-    <!-- Mensajes de Notificación -->
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success border-0 rounded-3 shadow-sm py-3 mb-4 d-flex align-items-center gap-2">
-            <i class="fas fa-check-circle fs-5 text-success"></i>
-            <div><?= session()->getFlashdata('success') ?></div>
-        </div>
-    <?php endif; ?>
+    <!-- Notificaciones flotantes tipo Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+        <?php if (session()->getFlashdata('success')): ?>
+            <?php
+                $successMsg = session()->getFlashdata('success');
+                $title = '¡Exitoso!';
+                if (stripos($successMsg, 'cargaron') !== false || stripos($successMsg, 'subieron') !== false) {
+                    $title = '¡Imágenes guardadas!';
+                } elseif (stripos($successMsg, 'principal') !== false) {
+                    $title = '¡Imagen actualizada!';
+                } elseif (stripos($successMsg, 'eliminada') !== false) {
+                    $title = '¡Imagen eliminada!';
+                } elseif (stripos($successMsg, 'orden') !== false) {
+                    $title = '¡Orden actualizado!';
+                }
+            ?>
+            <div id="toast-success" class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong><?= $title ?></strong><br>
+                            <span class="small text-white-50"><?= esc($successMsg) ?></span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        <?php endif; ?>
 
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger border-0 rounded-3 shadow-sm py-3 mb-4 d-flex align-items-center gap-2">
-            <i class="fas fa-exclamation-circle fs-5 text-danger"></i>
-            <div><?= session()->getFlashdata('error') ?></div>
-        </div>
-    <?php endif; ?>
+        <?php if (session()->getFlashdata('error')): ?>
+            <div id="toast-error" class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-circle-fill text-danger fs-5"></i>
+                        <div>
+                            <strong>¡Error!</strong><br>
+                            <span class="small text-white-50"><?= esc(session()->getFlashdata('error')) ?></span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
 
     <div class="row g-4">
         <!-- Columna de Detalles del Producto -->
@@ -198,6 +229,18 @@
 
 <script>
     document.body.classList.add('admin-body');
+
+    // Inicializar y mostrar toasts de notificaciones del servidor
+    document.addEventListener('DOMContentLoaded', function() {
+        const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
+        toasts.forEach(toastEl => {
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => {
+                toastEl.remove();
+            });
+        });
+    });
 
     const dragZone = document.querySelector('.drag-zone');
     const fileInput = document.querySelector('#fileInput');
