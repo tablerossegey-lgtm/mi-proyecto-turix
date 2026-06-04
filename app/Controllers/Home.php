@@ -16,8 +16,8 @@ class Home extends BaseController
                                    ->limit(5)
                                    ->findAll();
 
-        // Categorías ordenadas alfabéticamente
-        $categorias = $categoriaModel->orderBy('nombre', 'ASC')->findAll();
+        // Categorías que tienen al menos un producto asociado, ordenadas alfabéticamente
+        $categorias = $categoriaModel->obtenerCategoriasConProductos();
 
         $data = [
             'novedades'  => $novedades,
