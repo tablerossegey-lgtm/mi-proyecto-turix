@@ -475,6 +475,8 @@ class AdminProductos extends BaseController
             strpos($descLower, 'valentin') !== false || 
             strpos($descLower, 'valentín') !== false || 
             strpos($descLower, 'amor') !== false || 
+            strpos($descLower, 'te amo') !== false || 
+            strpos($descLower, 'te_amo') !== false || 
             strpos($descLower, 'corazón') !== false || 
             strpos($descLower, 'corazon') !== false || 
             strpos($descLower, 'amistad') !== false ||

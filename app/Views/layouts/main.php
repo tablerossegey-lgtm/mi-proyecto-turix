@@ -50,15 +50,38 @@
                 </ul>
                 
                 <!-- Enlaces Administrativos -->
+                <?php if (session()->get('isLoggedIn')): ?>
                 <div class="d-flex flex-column flex-lg-row gap-2 align-items-lg-center">
-                    <span class="text-white-50 small me-lg-2 d-none d-lg-inline-block opacity-50"><i class="bi bi-shield-lock"></i> Admin:</span>
-                    <a class="btn btn-outline-warning btn-sm rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-2" href="<?= base_url('admin/productos') ?>">
-                        <i class="bi bi-images"></i> Panel Galería
-                    </a>
-                    <a class="btn btn-outline-info btn-sm rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-2" href="<?= base_url('admin/encargos') ?>">
-                        <i class="bi bi-card-list"></i> Pedidos Encargados
-                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-warning btn-sm dropdown-toggle rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-2" type="button" id="adminDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-shield-lock"></i> Admin
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end shadow-lg border-0 p-2 mt-2 custom-admin-dropdown" aria-labelledby="adminDropdown">
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-gallery" href="<?= base_url('admin/productos') ?>">
+                                    <i class="bi bi-images"></i> Panel Galería
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-orders" href="<?= base_url('admin/encargos') ?>">
+                                    <i class="bi bi-card-list"></i> Pedidos Encargados
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-accounts" href="<?= base_url('admin/cuentas') ?>">
+                                    <i class="bi bi-wallet2"></i> Cuentas Clientes
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider border-secondary opacity-25 my-2"></li>
+                            <li>
+                                <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-logout" href="<?= base_url('logout') ?>">
+                                    <i class="bi bi-box-arrow-right"></i> Salir
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </nav>
@@ -110,7 +133,12 @@
     </div>
 
     <footer class="text-center py-4 mt-5 border-top">
-        <p class="text-muted small">&copy; <?= date('Y') ?> TurixShop - Catálogo</p>
+        <p class="text-muted small">
+            &copy; <?= date('Y') ?> TurixShop - Catálogo 
+            <a href="<?= base_url('login') ?>" class="text-secondary ms-2 opacity-50 text-decoration-none" title="Administración">
+                <i class="bi bi-lock-fill" style="font-size: 0.8rem;"></i>
+            </a>
+        </p>
     </footer>
 
     <!-- Botón Scroll-To-Top Flotante -->

@@ -9,5 +9,12 @@ class UsuarioModel extends Model
     protected $table = 't_usuarios';
     protected $primaryKey = 'id'; // Default primary key
     protected $returnType = 'array';
-    protected $allowedFields = [];
+    protected $allowedFields = [
+        'nombre_usuario',
+        'correo_electronico',
+        'contrasena_hash',
+        'nombre_completo',
+        'rol',
+        'fecha_creacion'
+    ];
 }

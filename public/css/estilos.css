@@ -886,3 +886,74 @@ footer .text-muted {
 .cant-input:focus {
     outline: none;
 }
+
+/* ==========================================================================
+   ESTILOS PREMIUM PARA EL MENÚ DROPDOWN DE ADMIN
+   ========================================================================== */
+.custom-admin-dropdown {
+    background: rgba(15, 23, 42, 0.96) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 16px !important;
+    min-width: 230px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 204, 0, 0.05) !important;
+    padding: 8px !important;
+    margin-top: 10px !important;
+    animation: fadeInDropdown 0.2s ease-out;
+}
+
+@keyframes fadeInDropdown {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.custom-admin-dropdown .dropdown-item {
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+/* Hover styles for each dropdown item with their unique colored accent */
+.custom-admin-dropdown .admin-item-gallery {
+    color: var(--turix-yellow) !important;
+}
+.custom-admin-dropdown .admin-item-gallery:hover {
+    background: rgba(255, 204, 0, 0.1) !important;
+    border-left-color: var(--turix-yellow);
+    transform: translateX(3px);
+}
+
+.custom-admin-dropdown .admin-item-orders {
+    color: #0dcaf0 !important; /* cyan info */
+}
+.custom-admin-dropdown .admin-item-orders:hover {
+    background: rgba(13, 202, 240, 0.1) !important;
+    border-left-color: #0dcaf0;
+    transform: translateX(3px);
+}
+
+.custom-admin-dropdown .admin-item-accounts {
+    color: #198754 !important; /* green success */
+}
+.custom-admin-dropdown .admin-item-accounts:hover {
+    background: rgba(25, 135, 84, 0.1) !important;
+    border-left-color: #198754;
+    transform: translateX(3px);
+}
+
+.custom-admin-dropdown .admin-item-logout {
+    color: #dc3545 !important; /* red danger */
+}
+.custom-admin-dropdown .admin-item-logout:hover {
+    background: rgba(220, 53, 69, 0.1) !important;
+    border-left-color: #dc3545;
+    transform: translateX(3px);
+}
