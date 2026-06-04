@@ -106,20 +106,38 @@
         </div>
     </div>
 
-    <!-- Notificaciones -->
-    <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success border-0 rounded-3 shadow-sm py-3 mb-4 d-flex align-items-center gap-2">
-            <i class="fas fa-check-circle fs-5 text-success"></i>
-            <div><?= session()->getFlashdata('success') ?></div>
-        </div>
-    <?php endif; ?>
+    <!-- Notificaciones flotantes tipo Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;">
+        <?php if (session()->getFlashdata('success')): ?>
+            <div id="toast-success" class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>¡Exitoso!</strong><br>
+                            <span class="small text-white-50"><?= esc(session()->getFlashdata('success')) ?></span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        <?php endif; ?>
 
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger border-0 rounded-3 shadow-sm py-3 mb-4 d-flex align-items-center gap-2">
-            <i class="fas fa-exclamation-circle fs-5 text-danger"></i>
-            <div><?= session()->getFlashdata('error') ?></div>
-        </div>
-    <?php endif; ?>
+        <?php if (session()->getFlashdata('error')): ?>
+            <div id="toast-error" class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                        <i class="bi bi-exclamation-circle-fill text-danger fs-5"></i>
+                        <div>
+                            <strong>¡Error!</strong><br>
+                            <span class="small text-white-50"><?= esc(session()->getFlashdata('error')) ?></span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
 
     <!-- Listado de Pedidos Encargados -->
     <div class="card border-0 shadow-sm admin-card">
@@ -304,7 +322,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formNuevoEncargo" action="<?= base_url('admin/encargos/crear') ?>" method="POST" hx-boost="true">
+            <form id="formNuevoEncargo" action="<?= base_url('admin/encargos/crear') ?>" method="POST">
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <!-- Producto -->
@@ -433,7 +451,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formEditarEncargo" action="" method="POST" hx-boost="true">
+            <form id="formEditarEncargo" action="" method="POST">
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <!-- Producto -->
@@ -724,7 +742,7 @@
         const modal = new bootstrap.Modal(document.getElementById('modalEditarEncargo'));
         
         // Configurar acción del formulario dinámicamente con la URL de edición
-        document.getElementById('formEditarEncargo').action = "<?= base_url('admin/encargos/editar/') ?>" + encargo.id;
+        document.getElementById('formEditarEncargo').setAttribute('action', "<?= base_url('admin/encargos/editar/') ?>" + encargo.id);
         
         // Rellenar campos del formulario
         document.getElementById('edit_estado').value = encargo.estado;
@@ -806,6 +824,20 @@
                 }
             });
         }
+
+        // Inicializar y mostrar toasts de notificaciones del servidor
+        function inicializarToasts() {
+            const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
+            toasts.forEach(toastEl => {
+                const toast = new bootstrap.Toast(toastEl);
+                toast.show();
+                toastEl.addEventListener('hidden.bs.toast', () => {
+                    toastEl.remove();
+                });
+            });
+        }
+
+        inicializarToasts();
     });
 </script>
 <?= $this->endSection() ?>

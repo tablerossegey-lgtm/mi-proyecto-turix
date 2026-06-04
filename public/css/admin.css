@@ -544,3 +544,148 @@
     background-color: rgba(13, 202, 240, 0.15) !important;
     color: #0dcaf0 !important;
 }
+
+/* Estilos para el buscador de categorías en dropdown */
+.dropdown-search-select .dropdown-menu {
+    background-color: #1f222b !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+    padding: 0.75rem !important;
+}
+
+.dropdown-search-select .dropdown-item {
+    color: #e2e8f0 !important;
+    font-size: 0.9rem !important;
+    padding: 0.6rem 0.8rem !important;
+    border-radius: 0.5rem !important;
+    transition: all 0.2s ease-in-out !important;
+    background: transparent !important;
+    text-align: left;
+    width: 100%;
+}
+
+.dropdown-search-select .dropdown-item:hover {
+    background-color: #ffc107 !important;
+    color: #1e293b !important;
+}
+
+.dropdown-search-select .dropdown-item.active, 
+.dropdown-search-select .dropdown-item:active {
+    background-color: #ffc107 !important;
+    color: #1e293b !important;
+}
+
+.dropdown-search-select .search-input {
+    background-color: #2a2e3d !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 0.5rem !important;
+    color: #ffffff !important;
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.85rem !important;
+}
+
+.dropdown-search-select .search-input:focus {
+    border-color: #ffc107 !important;
+    box-shadow: 0 0 8px rgba(255, 193, 7, 0.3) !important;
+    background-color: #313647 !important;
+}
+
+.dropdown-search-select .options-list {
+    max-height: 200px;
+    overflow-y: auto;
+    margin-top: 0.5rem;
+}
+
+/* Personalizar el scrollbar */
+.dropdown-search-select .options-list::-webkit-scrollbar {
+    width: 6px;
+}
+.dropdown-search-select .options-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 10px;
+}
+.dropdown-search-select .options-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 10px;
+}
+.dropdown-search-select .options-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* Botón de limpiar búsqueda */
+.dropdown-search-select .btn-clear-search {
+    transition: color 0.2s ease-in-out !important;
+}
+.dropdown-search-select .btn-clear-search:hover {
+    color: #ffc107 !important;
+}
+
+/* Estilos de Cuentas Clientes (cuentas_clientes/index.php) */
+.client-sidebar {
+    max-height: 650px;
+    overflow-y: auto;
+}
+.client-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+    background: rgba(255, 255, 255, 0.02);
+}
+.client-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-left-color: var(--turix-yellow);
+}
+.client-item.active {
+    background: rgba(255, 140, 0, 0.08);
+    border-left-color: var(--turix-accent);
+}
+.autocomplete-dropdown {
+    position: absolute;
+    width: 100%;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1050;
+    background: #2a2e3d;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 0.5rem;
+    display: none;
+}
+.autocomplete-item {
+    background: transparent;
+    color: #ffffff;
+    border: none;
+    width: 100%;
+    text-align: left;
+    padding: 0.6rem 1rem;
+    font-size: 0.85rem;
+    transition: background 0.2s ease;
+}
+.autocomplete-item:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--turix-yellow);
+}
+.htmx-indicator {
+    display: none;
+}
+.htmx-request .htmx-indicator {
+    display: inline-block;
+}
+.htmx-request.htmx-indicator {
+    display: inline-block;
+}
+
+/* Variables de Switch CSS Premium */
+.form-switch-premium .form-check-input {
+    width: 2.8em;
+    height: 1.5em;
+    cursor: pointer;
+}
+.form-switch-premium .form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+.form-switch-premium .form-check-input:not(:checked) {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}

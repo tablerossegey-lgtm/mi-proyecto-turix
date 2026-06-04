@@ -1,76 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('styles') ?>
-<link rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
-<style>
-    .client-sidebar {
-        max-height: 650px;
-        overflow-y: auto;
-    }
-    .client-item {
-        cursor: pointer;
-        transition: all 0.2s ease;
-        border-left: 4px solid transparent;
-        background: rgba(255, 255, 255, 0.02);
-    }
-    .client-item:hover {
-        background: rgba(255, 255, 255, 0.05);
-        border-left-color: var(--turix-yellow);
-    }
-    .client-item.active {
-        background: rgba(255, 140, 0, 0.08);
-        border-left-color: var(--turix-accent);
-    }
-    .autocomplete-dropdown {
-        position: absolute;
-        width: 100%;
-        max-height: 250px;
-        overflow-y: auto;
-        z-index: 1050;
-        background: #2a2e3d;
-        border: 1px solid rgba(255, 255, 255, 0.15);
-        border-radius: 0.5rem;
-        display: none;
-    }
-    .autocomplete-item {
-        background: transparent;
-        color: #ffffff;
-        border: none;
-        width: 100%;
-        text-align: left;
-        padding: 0.6rem 1rem;
-        font-size: 0.85rem;
-        transition: background 0.2s ease;
-    }
-    .autocomplete-item:hover {
-        background: rgba(255, 255, 255, 0.08);
-        color: var(--turix-yellow);
-    }
-    .htmx-indicator {
-        display: none;
-    }
-    .htmx-request .htmx-indicator {
-        display: inline-block;
-    }
-    .htmx-request.htmx-indicator {
-        display: inline-block;
-    }
-    
-    /* Variables de Switch CSS Premium */
-    .form-switch-premium .form-check-input {
-        width: 2.8em;
-        height: 1.5em;
-        cursor: pointer;
-    }
-    .form-switch-premium .form-check-input:checked {
-        background-color: #198754;
-        border-color: #198754;
-    }
-    .form-switch-premium .form-check-input:not(:checked) {
-        background-color: #dc3545;
-        border-color: #dc3545;
-    }
-</style>
+<link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>

@@ -20,9 +20,9 @@ if ($totalPendiente > 0) {
     if (!empty($lineasPendientes)) {
         $mensaje .= "*COMPRAS PENDIENTES:*\n" . implode("\n", $lineasPendientes) . "\n\n";
     }
-    if ($totalPagado > 0) {
-        $mensaje .= "*Total Compras:* $" . number_format($totalCompras, 2) . "\n";
-        $mensaje .= "*Total Abonado:* $" . number_format($totalPagado, 2) . "\n";
+    if ($totalPagadoActivo > 0) {
+        $mensaje .= "*Suma de Adeudos:* $" . number_format($totalComprasActivas, 2) . "\n";
+        $mensaje .= "*Abonado a Cuenta:* $" . number_format($totalPagadoActivo, 2) . "\n";
     }
     $mensaje .= "*Saldo Pendiente a Liquidar: $" . number_format($totalPendiente, 2) . "*\n";
 } else {
@@ -67,14 +67,14 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
     <div class="row g-3 mt-3">
         <div class="col-12 col-md-4">
             <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15);">
-                <div class="admin-stat-label opacity-75"><i class="fas fa-shopping-bag me-1 text-info"></i> Total Compras</div>
-                <div class="fs-4 fw-bold text-white mt-1" id="lbl-total-compras">$<?= number_format($totalCompras, 2) ?></div>
+                <div class="admin-stat-label opacity-75"><i class="fas fa-shopping-bag me-1 text-info"></i> Suma de Adeudos</div>
+                <div class="fs-4 fw-bold text-white mt-1" id="lbl-total-compras">$<?= number_format($totalComprasActivas, 2) ?></div>
             </div>
         </div>
         <div class="col-12 col-md-4">
             <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15);">
-                <div class="admin-stat-label opacity-75"><i class="fas fa-check-circle me-1 text-success"></i> Total Pagado</div>
-                <div class="fs-4 fw-bold text-success mt-1" id="lbl-total-pagado">$<?= number_format($totalPagado, 2) ?></div>
+                <div class="admin-stat-label opacity-75"><i class="fas fa-check-circle me-1 text-success"></i> Abonado a Cuenta</div>
+                <div class="fs-4 fw-bold text-success mt-1" id="lbl-total-pagado">$<?= number_format($totalPagadoActivo, 2) ?></div>
             </div>
         </div>
         <div class="col-12 col-md-4">
@@ -89,7 +89,7 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
 <!-- Listado de Compras -->
 <div class="card border-0 shadow-sm admin-card">
     <div class="card-header border-bottom border-secondary border-opacity-25 py-3 bg-transparent">
-        <h6 class="fw-bold mb-0 text-white"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Desglose de Cuenta</h6>
+        <h6 class="fw-bold mb-0 text-white"><i class="fas fa-file-invoice-dollar me-2 text-warning"></i> Adeudos Pendientes</h6>
     </div>
     
     <div class="table-responsive">
@@ -106,8 +106,11 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                 </tr>
             </thead>
             <tbody>
-                <?php if (!empty($compras)): ?>
-                    <?php foreach ($compras as $c): ?>
+                <?php 
+                $comprasPendientes = array_filter($compras, function($c) { return $c['estatusCompra'] == '0'; });
+                if (!empty($comprasPendientes)): 
+                ?>
+                    <?php foreach ($comprasPendientes as $c): ?>
                         <tr class="admin-table-tr" id="compra-row-<?= $c['idCompra'] ?>" style="<?= $c['estatusCompra'] == '1' ? 'opacity: 0.75;' : '' ?>">
                             <td class="ps-4 py-3 text-white-50 small">
                                 <?= date('d/m/Y', strtotime($c['fechaCompra'])) ?>
@@ -183,8 +186,8 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                             <div class="mb-3">
                                 <i class="fas fa-file-invoice fs-1 text-muted opacity-50"></i>
                             </div>
-                            <h5 class="fw-bold text-white-50">Sin registros de compras</h5>
-                            <p class="mb-0 small">Registra la primera compra de este cliente usando el botón superior.</p>
+                            <h5 class="fw-bold text-white-50">Sin adeudos pendientes</h5>
+                            <p class="mb-0 small">El cliente no tiene compras pendientes de pago en este momento.</p>
                         </td>
                     </tr>
                 <?php endif; ?>
@@ -197,7 +200,7 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
 <div class="card border-0 shadow-sm admin-card mt-4">
     <div class="card-header border-bottom border-secondary border-opacity-25 py-3 bg-transparent d-flex justify-content-between align-items-center">
         <h6 class="fw-bold mb-0 text-white"><i class="fas fa-hand-holding-usd me-2 text-success"></i> Historial de Abonos / Pagos</h6>
-        <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.8rem;">Total Recibido: $<?= number_format($totalPagado, 2) ?></span>
+        <span class="badge bg-success rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.8rem;">Total Recibido Histórico: $<?= number_format($totalPagadoHistorico, 2) ?></span>
     </div>
     
     <div class="table-responsive">

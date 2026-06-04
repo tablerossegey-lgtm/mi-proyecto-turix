@@ -67,26 +67,34 @@ class CuentasClientes extends BaseController
             ->get()
             ->getResultArray();
 
-        // Calcular balances
-        $totalCompras = 0;
+        // Calcular balances históricos matemáticos
+        $totalComprasHistorico = 0;
+        $totalComprasActivas = 0;
         foreach ($compras as $c) {
-            $totalCompras += $c['totalProduc'];
+            $totalComprasHistorico += $c['totalProduc'];
+            if ($c['estatusCompra'] == '0') {
+                $totalComprasActivas += $c['totalProduc'];
+            }
         }
 
-        $totalPagado = 0;
+        $totalPagadoHistorico = 0;
         foreach ($abonos as $a) {
-            $totalPagado += $a['abono'];
+            $totalPagadoHistorico += $a['abono'];
         }
 
-        $totalPendiente = $totalCompras - $totalPagado;
+        $totalPendiente = $totalComprasHistorico - $totalPagadoHistorico;
+        
+        // Lo abonado hacia las compras pendientes actuales
+        $abonadoActivo = $totalComprasActivas - $totalPendiente;
 
         $data = [
             'cliente' => $cliente,
             'compras' => $compras,
             'abonos'  => $abonos,
             'totalPendiente' => $totalPendiente,
-            'totalPagado' => $totalPagado,
-            'totalCompras' => $totalCompras
+            'totalPagadoActivo' => $abonadoActivo,
+            'totalComprasActivas' => $totalComprasActivas,
+            'totalPagadoHistorico' => $totalPagadoHistorico
         ];
 
         return view('cuentas_clientes/_tabla_compras', $data);
@@ -145,6 +153,9 @@ class CuentasClientes extends BaseController
         ];
 
         if ($this->cuentaClienteModel->insert($nuevaCompra)) {
+            if ($estatusCompra == '1') {
+                $this->registrarPagoCaja($idCliente, $totalProduc);
+            }
             return redirect()->to(base_url('admin/cuentas'))->with('success', 'Compra registrada con éxito.');
         }
 
@@ -190,6 +201,11 @@ class CuentasClientes extends BaseController
             'estatusCompra' => $estatusCompra
         ]);
 
+        // Si cambió de Pendiente a Pagado, registrar pago
+        if ($compra['estatusCompra'] == '0' && $estatusCompra == '1') {
+            $this->registrarPagoCaja($compra['idCliente'], $totalProduc);
+        }
+
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Compra modificada con éxito.');
     }
 
@@ -225,30 +241,39 @@ class CuentasClientes extends BaseController
         $nuevoEstado = $compra['estatusCompra'] == '0' ? '1' : '0';
         $this->cuentaClienteModel->update($idCompra, ['estatusCompra' => $nuevoEstado]);
 
+        if ($nuevoEstado == '1') {
+            $this->registrarPagoCaja($compra['idCliente'], $compra['totalProduc']);
+        }
+
         // Recalcular saldo total del cliente para enviarlo de vuelta
         $compras = $this->cuentaClienteModel->obtenerComprasPorCliente($compra['idCliente']);
         
-        $totalCompras = 0;
+        $totalComprasHistorico = 0;
+        $totalComprasActivas = 0;
         foreach ($compras as $c) {
-            $totalCompras += $c['totalProduc'];
+            $totalComprasHistorico += $c['totalProduc'];
+            if ($c['estatusCompra'] == '0') {
+                $totalComprasActivas += $c['totalProduc'];
+            }
         }
 
         $db = \Config\Database::connect();
-        $totalPagado = $db->table('t_abono_cliente')
+        $totalPagadoHistorico = $db->table('t_abono_cliente')
             ->where('idCliente', $compra['idCliente'])
             ->selectSum('abono')
             ->get()
             ->getRow()
             ->abono ?? 0;
 
-        $totalPendiente = $totalCompras - $totalPagado;
+        $totalPendiente = $totalComprasHistorico - $totalPagadoHistorico;
+        $abonadoActivo = $totalComprasActivas - $totalPendiente;
 
         return $this->response->setJSON([
             'success' => true,
             'nuevoEstado' => $nuevoEstado,
             'totalPendiente' => number_format($totalPendiente, 2),
-            'totalPagado' => number_format($totalPagado, 2),
-            'totalCompras' => number_format($totalCompras, 2)
+            'totalPagado' => number_format($abonadoActivo, 2),
+            'totalCompras' => number_format($totalComprasActivas, 2)
         ]);
     }
 
@@ -297,5 +322,28 @@ class CuentasClientes extends BaseController
         ]);
 
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Datos del cliente actualizados con éxito.');
+    }
+
+    private function registrarPagoCaja($idCliente, $monto)
+    {
+        $db = \Config\Database::connect();
+        $cliente = $this->clienteModel->find($idCliente);
+        $nombreCliente = $cliente ? $cliente['nombre'] : 'Desconocido';
+
+        // Insertar abono
+        $db->table('t_abono_cliente')->insert([
+            'idCliente'  => $idCliente,
+            'fechaAbono' => date('Y-m-d'),
+            'abono'      => $monto,
+            'idCompra'   => 0
+        ]);
+
+        // Insertar en caja chica
+        $db->table('t_caja_chica')->insert([
+            'fecha'       => date('Y-m-d'),
+            'descripcion' => 'Abono de cliente: ' . $nombreCliente,
+            'monto'       => $monto,
+            'tipo'        => 'Ingreso'
+        ]);
     }
 }
