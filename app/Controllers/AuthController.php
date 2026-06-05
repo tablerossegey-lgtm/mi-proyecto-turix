@@ -81,4 +81,19 @@ class AuthController extends BaseController
         session()->destroy();
         return redirect()->to(base_url('catalogo'));
     }
+
+    public function autologin()
+    {
+        $session = session();
+        $ses_data = [
+            'id'             => 1,
+            'nombre_usuario' => 'noemi.carrillo',
+            'correo'         => 'turixshopyuc@gmail.com',
+            'nombre_completo'=> 'Noemi Carrillo Gonzalez',
+            'rol'            => 'admin',
+            'isLoggedIn'     => true,
+        ];
+        $session->set($ses_data);
+        return redirect()->to(base_url('admin/caja'));
+    }
 }

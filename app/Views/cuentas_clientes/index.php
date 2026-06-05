@@ -121,7 +121,7 @@
 
 <!-- MODAL: REGISTRAR COMPRA -->
 <div class="modal fade" id="modalNuevaCompra" tabindex="-1" aria-labelledby="modalNuevaCompraLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content modal-encargo-content text-white">
             <div class="modal-header modal-encargo-header py-3 px-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
                 <h5 class="modal-title fw-bold text-white" id="modalNuevaCompraLabel">
@@ -133,85 +133,115 @@
                 <input type="hidden" name="id_cliente" id="modal_id_cliente" value="">
                 
                 <div class="modal-body p-4">
-                    <!-- Selector de Tipo de Compra -->
-                    <div class="mb-4 text-center">
-                        <label class="form-label modal-encargo-label d-block text-start">Origen del Producto</label>
-                        <div class="btn-group w-100" role="group">
-                            <input type="radio" class="btn-check" name="tipo_compra" id="tipo_inventario" value="inventario" checked onclick="toggleTipoForm('inventario')">
-                            <label class="btn btn-outline-success fw-bold" for="tipo_inventario"><i class="bi bi-box-seam me-1"></i> Del Inventario</label>
-                            
-                            <input type="radio" class="btn-check" name="tipo_compra" id="tipo_libre" value="libre" onclick="toggleTipoForm('libre')">
-                            <label class="btn btn-outline-success fw-bold" for="tipo_libre"><i class="bi bi-pen me-1"></i> Formato Libre</label>
-                        </div>
-                    </div>
-
-                    <!-- Campos de Producto del Inventario -->
-                    <div id="seccion-inventario" class="mb-3">
-                        <div class="position-relative mb-3">
-                            <label for="producto_search" class="form-label modal-encargo-label">Buscar en Inventario *</label>
-                            <input type="hidden" name="id_inventario" id="modal_id_inventario" value="0">
-                            <input type="text" class="form-control modal-encargo-control text-white w-100" id="producto_search" placeholder="Escribe SKU o Nombre..." autocomplete="off">
-                            <div class="autocomplete-dropdown shadow-lg" id="dropdown_productos"></div>
-                        </div>
-                        
-                        <div class="form-check form-switch mb-3">
-                            <input class="form-check-input" type="checkbox" role="switch" id="descontar_stock" name="descontar_stock" value="1" checked>
-                            <label class="form-check-label modal-encargo-label text-white-50" for="descontar_stock" style="margin-left: 0.5rem;">Descontar unidades del inventario actual</label>
-                        </div>
-                    </div>
-
-                    <!-- Campos Comunes / Formato Libre -->
-                    <div class="row g-3">
-                        <!-- Descripción del Producto (libre) -->
-                        <div class="col-12" id="seccion-desc-libre" style="display: none;">
-                            <label for="desc_producto" class="form-label modal-encargo-label">Descripción del Producto *</label>
-                            <input type="text" class="form-control modal-encargo-control text-white" id="desc_producto" name="desc_producto" placeholder="Ej: Bolsa de regalo grande decorada">
-                        </div>
-
-                        <!-- Fecha de Compra -->
-                        <div class="col-12">
+                    <!-- Datos Generales de la Compra -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-6">
                             <label for="fecha_compra" class="form-label modal-encargo-label">Fecha de Compra</label>
                             <input type="date" class="form-control modal-encargo-control text-white" id="fecha_compra" name="fecha_compra" value="<?= date('Y-m-d') ?>">
                         </div>
-
-                        <!-- Cantidad -->
-                        <div class="col-6">
-                            <label for="cantidad" class="form-label modal-encargo-label">Cantidad *</label>
-                            <input type="number" class="form-control modal-encargo-control text-white" id="cantidad" name="cantidad" value="1" min="1" required oninput="calcularTotal()">
+                        <div class="col-12 col-md-6">
+                            <label for="estatus_compra" class="form-label modal-encargo-label d-block">Estado de Pago (Toda la Compra)</label>
+                            <div class="d-flex align-items-center gap-3 pt-2">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="estatus_compra" id="status_pendiente" value="0" checked>
+                                    <label class="form-check-label text-danger fw-bold" for="status_pendiente">Pendiente (Debe)</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="estatus_compra" id="status_pagado" value="1">
+                                    <label class="form-check-label text-success fw-bold" for="status_pagado">Pagado (Caja)</label>
+                                </div>
+                            </div>
                         </div>
+                    </div>
 
-                        <!-- Precio Unitario -->
-                        <div class="col-6">
-                            <label for="precio_unit" class="form-label modal-encargo-label">Precio Unitario ($) *</label>
-                            <input type="number" step="0.01" min="0" class="form-control modal-encargo-control text-white" id="precio_unit" name="precio_unit" value="0.00" required oninput="calcularTotal()">
-                        </div>
+                    <div style="border-top: 1px dashed rgba(255,255,255,0.15); margin: 20px 0;"></div>
 
-                        <!-- Total Calculado -->
-                        <div class="col-12">
-                            <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
-                                <span class="small text-white-50 fw-bold">TOTAL ESTIMADO:</span>
-                                <span class="fs-4 fw-bold text-success" id="lbl-total-calculado">$0.00</span>
+                    <!-- Sección: Agregar Producto -->
+                    <div class="bg-dark p-3 rounded border border-secondary border-opacity-25 mb-4">
+                        <h6 class="fw-bold mb-3 text-success"><i class="fas fa-plus-circle me-1"></i> Agregar Producto a la Compra</h6>
+                        
+                        <div class="mb-3">
+                            <div class="btn-group w-100" role="group">
+                                <input type="radio" class="btn-check" name="tipo_compra_temp" id="tipo_inventario" value="inventario" checked onclick="toggleTipoForm('inventario')">
+                                <label class="btn btn-outline-success fw-bold" for="tipo_inventario"><i class="bi bi-box-seam me-1"></i> Del Inventario</label>
+                                
+                                <input type="radio" class="btn-check" name="tipo_compra_temp" id="tipo_libre" value="libre" onclick="toggleTipoForm('libre')">
+                                <label class="btn btn-outline-success fw-bold" for="tipo_libre"><i class="bi bi-pen me-1"></i> Formato Libre</label>
                             </div>
                         </div>
 
-                        <!-- Estado de la compra -->
-                        <div class="col-12">
-                            <label for="estatus_compra" class="form-label modal-encargo-label d-block">Estado de Pago</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="estatus_compra" id="status_pendiente" value="0" checked>
-                                <label class="form-check-label text-danger fw-bold" for="status_pendiente">Pendiente (Debe)</label>
+                        <!-- Campos de Producto del Inventario -->
+                        <div id="seccion-inventario" class="mb-3">
+                            <div class="position-relative mb-3">
+                                <label for="producto_search" class="form-label modal-encargo-label">Buscar en Inventario</label>
+                                <input type="hidden" id="modal_id_inventario" value="0">
+                                <input type="text" class="form-control modal-encargo-control text-white w-100" id="producto_search" placeholder="Escribe SKU o Nombre..." autocomplete="off">
+                                <div class="autocomplete-dropdown shadow-lg" id="dropdown_productos"></div>
                             </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="estatus_compra" id="status_pagado" value="1">
-                                <label class="form-check-label text-success fw-bold" for="status_pagado">Pagado (Caja)</label>
+                            
+                            <div class="form-check form-switch mb-3">
+                                <input class="form-check-input" type="checkbox" role="switch" id="descontar_stock" value="1" checked>
+                                <label class="form-check-label modal-encargo-label text-white-50" for="descontar_stock" style="margin-left: 0.5rem;">Descontar unidades del inventario actual</label>
                             </div>
                         </div>
+
+                        <!-- Campos Formato Libre -->
+                        <div class="mb-3" id="seccion-desc-libre" style="display: none;">
+                            <label for="desc_producto" class="form-label modal-encargo-label">Descripción del Producto</label>
+                            <input type="text" class="form-control modal-encargo-control text-white" id="desc_producto" placeholder="Ej: Bolsa de regalo grande decorada">
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6 col-md-4">
+                                <label for="cantidad" class="form-label modal-encargo-label">Cantidad</label>
+                                <input type="number" class="form-control modal-encargo-control text-white" id="cantidad" value="1" min="1">
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <label for="precio_unit" class="form-label modal-encargo-label">Precio Unitario ($)</label>
+                                <input type="number" step="0.01" min="0" class="form-control modal-encargo-control text-white" id="precio_unit" value="0.00">
+                            </div>
+                            <div class="col-12 col-md-4 d-flex align-items-end">
+                                <button type="button" class="btn btn-success w-100 py-2.5 rounded fw-bold text-white hover-shadow" id="btn-agregar-producto-lista">
+                                    <i class="fas fa-plus me-1"></i> Agregar a Lista
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sección: Tabla de Productos Agregados -->
+                    <h6 class="fw-bold mb-2"><i class="fas fa-list me-1 text-warning"></i> Productos agregados a esta compra</h6>
+                    <div class="table-responsive rounded border border-secondary border-opacity-25 mb-3">
+                        <table class="table table-hover align-middle mb-0" style="background-color: rgba(0,0,0,0.15);">
+                            <thead class="text-white-50 small" style="background-color: rgba(255,255,255,0.02);">
+                                <tr>
+                                    <th class="ps-3 py-2">Producto / Detalle</th>
+                                    <th class="py-2 text-center" style="width: 100px;">Cant.</th>
+                                    <th class="py-2 text-end" style="width: 120px;">Precio U.</th>
+                                    <th class="py-2 text-end" style="width: 120px;">Subtotal</th>
+                                    <th class="py-2 text-center" style="width: 80px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody-productos-lista" class="text-white">
+                                <!-- Se llena dinámicamente con JavaScript -->
+                                <tr id="tr-lista-vacia">
+                                    <td colspan="5" class="text-center py-4 text-white-50 small">
+                                        No has añadido productos a esta compra todavía.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Gran Total Calculado -->
+                    <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
+                        <span class="small text-white-50 fw-bold">TOTAL ESTIMADO COMPRA:</span>
+                        <span class="fs-4 fw-bold text-success" id="lbl-total-calculado">$0.00</span>
                     </div>
                 </div>
                 
                 <div class="modal-footer modal-encargo-footer d-flex gap-2" style="border-top: 1px solid rgba(255,255,255,0.1);">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold text-white hover-shadow">
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold text-white hover-shadow" id="btn-registrar-compra-submit" disabled>
                         <i class="fas fa-save me-1"></i> Registrar Compra
                     </button>
                 </div>
@@ -342,6 +372,31 @@
     </div>
 </div>
 
+<!-- MODAL: TICKET DIGITAL -->
+<div class="modal fade" id="modalTicketDigital" tabindex="-1" aria-labelledby="modalTicketDigitalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-encargo-content text-white" style="border-radius: 20px; background-color: #121824; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="modal-body p-4 text-center">
+                <h4 class="fw-bold mb-3 text-white" id="modalTicketDigitalLabel">Ticket Digital</h4>
+                
+                <div class="p-4 rounded-3 mb-4 text-start" style="background-color: #1a2238; border: 1px solid rgba(255,255,255,0.05); font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; line-height: 1.6;">
+                    <div id="ticket-content" style="white-space: pre-wrap; color: #ffffff;"></div>
+                </div>
+                
+                <button type="button" class="btn w-100 py-3 rounded-pill fw-bold text-dark d-flex align-items-center justify-content-center gap-2 mb-3" 
+                        id="btn-copiar-whatsapp"
+                        style="background: linear-gradient(135deg, #2ce3f6 0%, #0072ff 100%); border: none; font-size: 1.1rem; transition: transform 0.2s, box-shadow 0.2s; color: #121824 !important;">
+                    <i class="fas fa-copy"></i> WhatsApp
+                </button>
+                
+                <button type="button" class="btn btn-link text-white-50 text-decoration-none fw-semibold" data-bs-dismiss="modal" id="btn-cerrar-ticket">
+                    Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.body.classList.add('admin-body');
 
@@ -356,32 +411,86 @@
         }
     }
 
+    let listaProductos = [];
+
     // Cambiar tipo de formulario en el modal de nueva compra
     function toggleTipoForm(tipo) {
         if (tipo === 'inventario') {
             document.getElementById('seccion-inventario').style.display = 'block';
             document.getElementById('seccion-desc-libre').style.display = 'none';
             document.getElementById('modal_id_inventario').value = '0';
-            document.getElementById('producto_search').required = true;
-            document.getElementById('desc_producto').required = false;
+            document.getElementById('producto_search').value = '';
         } else {
             document.getElementById('seccion-inventario').style.display = 'none';
             document.getElementById('seccion-desc-libre').style.display = 'block';
             document.getElementById('modal_id_inventario').value = '0';
             document.getElementById('producto_search').value = '';
-            document.getElementById('producto_search').required = false;
-            document.getElementById('desc_producto').required = true;
-            document.getElementById('precio_unit').value = '0.00';
-            calcularTotal();
+            document.getElementById('desc_producto').value = '';
         }
+        document.getElementById('cantidad').value = '1';
+        document.getElementById('precio_unit').value = '0.00';
     }
 
-    // Calcular el total estimado en nueva compra
+    // Renderizar la lista de productos agregados en el modal
+    function renderListaProductos() {
+        const tbody = document.getElementById('tbody-productos-lista');
+        const btnSubmit = document.getElementById('btn-registrar-compra-submit');
+        
+        if (!tbody) return;
+        
+        tbody.innerHTML = '';
+        
+        if (listaProductos.length === 0) {
+            tbody.innerHTML = `
+                <tr id="tr-lista-vacia">
+                    <td colspan="5" class="text-center py-4 text-white-50 small">
+                        No has añadido productos a esta compra todavía.
+                    </td>
+                </tr>
+            `;
+            if (btnSubmit) btnSubmit.disabled = true;
+            document.getElementById('lbl-total-calculado').innerText = '$0.00';
+            return;
+        }
+        
+        if (btnSubmit) btnSubmit.disabled = false;
+        
+        let granTotal = 0.00;
+        
+        listaProductos.forEach((prod, index) => {
+            const subtotal = prod.cantidad * prod.precio_unit;
+            granTotal += subtotal;
+            
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="ps-3 py-2">
+                    <div class="fw-semibold" style="font-size: 0.9rem;">${prod.desc_producto}</div>
+                    ${prod.id_inventario > 0 ? `<small class="text-success" style="font-size: 0.75rem;"><i class="bi bi-box-seam me-1"></i>Inventario${prod.descontar_stock ? ' (Descuenta Stock)' : ''}</small>` : '<small class="text-white-50" style="font-size: 0.75rem;"><i class="bi bi-pen me-1"></i>Formato Libre</small>'}
+                </td>
+                <td class="py-2 text-center fw-semibold">${prod.cantidad}</td>
+                <td class="py-2 text-end text-white-50">$${prod.precio_unit.toFixed(2)}</td>
+                <td class="py-2 text-end fw-bold text-success">$${subtotal.toFixed(2)}</td>
+                <td class="py-2 text-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm border-0 p-1" onclick="eliminarProductoLista(${index})">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        document.getElementById('lbl-total-calculado').innerText = '$' + granTotal.toFixed(2);
+    }
+
+    // Eliminar producto de la lista temporal
+    function eliminarProductoLista(index) {
+        listaProductos.splice(index, 1);
+        renderListaProductos();
+    }
+
+    // Mantener la función dummy para compatibilidad con el evento autocomplete
     function calcularTotal() {
-        const cant = parseInt(document.getElementById('cantidad').value) || 0;
-        const price = parseFloat(document.getElementById('precio_unit').value) || 0;
-        const total = cant * price;
-        document.getElementById('lbl-total-calculado').innerText = '$' + total.toFixed(2);
+        // No-op
     }
 
     // Calcular el total estimado en edición
@@ -452,8 +561,9 @@
     function abrirModalNuevaCompra(idCliente) {
         document.getElementById('modal_id_cliente').value = idCliente;
         document.getElementById('formNuevaCompra').reset();
+        listaProductos = [];
+        renderListaProductos();
         toggleTipoForm('inventario');
-        calcularTotal();
         const modal = new bootstrap.Modal(document.getElementById('modalNuevaCompra'));
         modal.show();
     }
@@ -618,6 +728,197 @@
             });
         }
         inicializarToasts();
+
+        // Formatear el ticket para mostrarlo con colores en la vista del modal
+        function formatTicketForDisplay(text) {
+            // Reemplazar asteriscos por span con color verde/azul
+            let html = text.replace(/\*(.*?)\*/g, '<span style="color: #55efc4; font-weight: bold;">$1</span>');
+            // Reemplazar montos por span con color cyan brillante
+            html = html.replace(/(\$\d+(?:\.\d{2})?)/g, '<span style="color: #00cec9; font-weight: bold;">$1</span>');
+            return html;
+        }
+
+        // Variable local para guardar el saldo pendiente devuelto por ajax
+        let nuevoSaldoPendiente = null;
+
+        // Manejar el clic en el botón de agregar producto a la lista temporal
+        const btnAgregarLista = document.getElementById('btn-agregar-producto-lista');
+        if (btnAgregarLista) {
+            btnAgregarLista.addEventListener('click', function() {
+                const isInventario = document.getElementById('tipo_inventario').checked;
+                const cantidad = parseInt(document.getElementById('cantidad').value) || 0;
+                const precioUnit = parseFloat(document.getElementById('precio_unit').value) || 0;
+                
+                if (cantidad <= 0) {
+                    alert('La cantidad debe ser mayor a 0.');
+                    return;
+                }
+                if (precioUnit < 0) {
+                    alert('El precio unitario no puede ser negativo.');
+                    return;
+                }
+                
+                let idInventario = 0;
+                let descProducto = '';
+                let descontarStock = false;
+                
+                if (isInventario) {
+                    idInventario = parseInt(document.getElementById('modal_id_inventario').value) || 0;
+                    const searchVal = document.getElementById('producto_search').value.trim();
+                    
+                    if (idInventario <= 0 || !searchVal) {
+                        alert('Por favor, busca y selecciona un producto del inventario.');
+                        return;
+                    }
+                    
+                    // Extraer descripción limpia (quitar el prefijo del SKU si lo hay)
+                    const hyphenIdx = searchVal.indexOf(' - ');
+                    if (hyphenIdx !== -1) {
+                        descProducto = searchVal.substring(hyphenIdx + 3).trim();
+                    } else {
+                        descProducto = searchVal;
+                    }
+                    descontarStock = document.getElementById('descontar_stock').checked;
+                } else {
+                    descProducto = document.getElementById('desc_producto').value.trim();
+                    if (!descProducto) {
+                        alert('Por favor, escribe una descripción para el producto libre.');
+                        return;
+                    }
+                }
+                
+                // Agregar producto al array temporal
+                listaProductos.push({
+                    tipo_compra: isInventario ? 'inventario' : 'libre',
+                    id_inventario: idInventario,
+                    desc_producto: descProducto,
+                    cantidad: cantidad,
+                    precio_unit: precioUnit,
+                    descontar_stock: descontarStock
+                });
+                
+                // Renderizar la tabla de productos
+                renderListaProductos();
+                
+                // Limpiar inputs de producto
+                document.getElementById('producto_search').value = '';
+                document.getElementById('modal_id_inventario').value = '0';
+                document.getElementById('desc_producto').value = '';
+                document.getElementById('cantidad').value = '1';
+                document.getElementById('precio_unit').value = '0.00';
+            });
+        }
+
+        // Manejar el submit del formulario de registro de compra por AJAX
+        const formNuevaCompra = document.getElementById('formNuevaCompra');
+        if (formNuevaCompra) {
+            formNuevaCompra.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (listaProductos.length === 0) {
+                    alert('Por favor, agrega al menos un producto a la lista antes de registrar.');
+                    return;
+                }
+                
+                const idCliente = document.getElementById('modal_id_cliente').value;
+                const fechaCompra = document.getElementById('fecha_compra').value;
+                const estatusCompra = document.querySelector('input[name="estatus_compra"]:checked').value;
+                
+                const payload = {
+                    id_cliente: idCliente,
+                    fecha_compra: fechaCompra,
+                    estatus_compra: estatusCompra,
+                    productos: listaProductos
+                };
+                
+                fetch(this.action, {
+                    method: 'POST',
+                    body: JSON.stringify(payload),
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        // Ocultar modal de nueva compra
+                        const modalNueva = bootstrap.Modal.getInstance(document.getElementById('modalNuevaCompra'));
+                        if (modalNueva) modalNueva.hide();
+                        
+                        // Guardar saldo de retorno
+                        nuevoSaldoPendiente = data.totalPendiente;
+                        
+                        // Cargar y formatear texto en el modal del ticket
+                        document.getElementById('ticket-content').innerHTML = formatTicketForDisplay(data.ticket);
+                        
+                        // Guardar datos en el botón de WhatsApp
+                        const btnCopiar = document.getElementById('btn-copiar-whatsapp');
+                        btnCopiar.setAttribute('data-ticket', data.ticket);
+                        btnCopiar.setAttribute('data-cel', data.cel || '');
+                        
+                        // Abrir modal de ticket digital
+                        const modalTicket = new bootstrap.Modal(document.getElementById('modalTicketDigital'));
+                        modalTicket.show();
+                    } else {
+                        alert(data.message || 'Ocurrió un error al registrar la compra.');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    alert('Error de conexión al registrar la compra.');
+                });
+            });
+        }
+
+        // Manejar el clic en el botón de WhatsApp para copiar la información
+        const btnCopiar = document.getElementById('btn-copiar-whatsapp');
+        if (btnCopiar) {
+            btnCopiar.addEventListener('click', function() {
+                const text = this.getAttribute('data-ticket');
+                
+                // Copiar al portapapeles
+                navigator.clipboard.writeText(text).then(() => {
+                    // Feedback visual
+                    const originalHTML = btnCopiar.innerHTML;
+                    btnCopiar.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+                    setTimeout(() => {
+                        btnCopiar.innerHTML = originalHTML;
+                    }, 2000);
+                }).catch(err => {
+                    console.error('Error al copiar:', err);
+                    alert('No se pudo copiar el texto automáticamente. Por favor, selecciónalo manualmente.');
+                });
+            });
+        }
+
+        // Actualizar la vista al cerrar el modal del ticket
+        const modalTicketEl = document.getElementById('modalTicketDigital');
+        if (modalTicketEl) {
+            modalTicketEl.addEventListener('hidden.bs.modal', function() {
+                const idCliente = document.getElementById('modal_id_cliente').value;
+                if (idCliente) {
+                    // Actualizar badge de la barra lateral
+                    if (nuevoSaldoPendiente !== null) {
+                        const sidebarBadge = document.getElementById('sidebar-debt-' + idCliente);
+                        if (sidebarBadge) {
+                            sidebarBadge.innerText = '$' + nuevoSaldoPendiente;
+                            if (parseFloat(nuevoSaldoPendiente.replace(/,/g, '')) > 0) {
+                                sidebarBadge.className = 'badge bg-danger rounded-pill fw-bold';
+                            } else {
+                                sidebarBadge.className = 'badge bg-secondary rounded-pill';
+                            }
+                        }
+                    }
+                    
+                    // Disparar recarga de la tabla del cliente vía click/htmx
+                    const clientItem = document.getElementById('client-item-' + idCliente);
+                    if (clientItem) {
+                        clientItem.click();
+                    }
+                }
+            });
+        }
     });
 
     // Función para abrir el modal de editar cliente

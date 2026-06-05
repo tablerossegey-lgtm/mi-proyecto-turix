@@ -18,6 +18,7 @@ $routes->get('catalogo/detalle/(:num)', 'Catalogo::detalle/$1');
 $routes->get('login', 'AuthController::index');
 $routes->post('login', 'AuthController::login');
 $routes->get('logout', 'AuthController::logout');
+$routes->get('autologin', 'AuthController::autologin');
 
 // Rutas de Administración de Galerías (Protegidas por Filtro)
 $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
@@ -46,4 +47,9 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->post('cuentas/toggle/(:num)', 'CuentasClientes::toggleEstado/$1');
     $routes->post('cuentas/editar-cliente/(:num)', 'CuentasClientes::editarCliente/$1');
     $routes->get('cuentas/buscar-productos', 'CuentasClientes::buscarProductosJson');
+
+    // Rutas de Caja Chica
+    $routes->get('caja', 'CajaChica::index');
+    $routes->post('caja/crear', 'CajaChica::crear');
+    $routes->post('caja/eliminar/(:num)', 'CajaChica::eliminar/$1');
 });

@@ -295,7 +295,8 @@ class AdminProductos extends BaseController
 
     public function editar($id)
     {
-        $producto = $this->productoModel->find($id);
+        // Optimización: Obtener el producto junto con el nombre de su categoría en una sola consulta
+        $producto = $this->productoModel->obtenerPorIdConCategoria((int)$id);
 
         if (!$producto) {
             return redirect()->to(base_url('admin/productos'))->with('error', 'Producto no encontrado.');
@@ -316,23 +317,29 @@ class AdminProductos extends BaseController
             return redirect()->back()->withInput()->with('error', 'Por favor complete todos los campos obligatorios.');
         }
 
-        // Validar SKU único
-        $existing = $this->productoModel->where('codigo_sku', $sku)->where('id !=', $id)->first();
-        if ($existing) {
-            return redirect()->back()->withInput()->with('error', 'El SKU ingresado ya se encuentra registrado por otro producto.');
+        // Optimización: Validar SKU único únicamente si el SKU fue modificado
+        if ($sku !== $producto['codigo_sku']) {
+            $existing = $this->productoModel->where('codigo_sku', $sku)->where('id !=', $id)->first();
+            if ($existing) {
+                return redirect()->back()->withInput()->with('error', 'El SKU ingresado ya se encuentra registrado por otro producto.');
+            }
         }
 
-        // Obtener nombres de categoría antigua para mover/borrar fotos
-        $oldCategoria = $this->categoriaModel->find($oldIdCategoria);
-        $oldCategoriaFolder = isset($oldCategoria['nombre']) ? str_replace(' ', '', ucwords(strtolower($oldCategoria['nombre']))) : '';
+        // Optimización: Reutilizar el nombre de la categoría antigua obtenido del JOIN inicial
+        $oldCategoriaFolder = isset($producto['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) : '';
         $oldSubfolder = '';
         if (strtolower($oldCategoriaFolder) === 'festividades') {
             $oldSubfolder = $this->obtenerSubfolderFestividades($producto['descripcion']);
         }
 
-        // Obtener nombres de categoría nueva
-        $newCategoria = $this->categoriaModel->find($idCategoria);
-        $newCategoriaFolder = isset($newCategoria['nombre']) ? str_replace(' ', '', ucwords(strtolower($newCategoria['nombre']))) : '';
+        // Optimización: Si la categoría no ha cambiado, reutilizamos el nombre de la carpeta
+        if ($idCategoria == $oldIdCategoria) {
+            $newCategoriaFolder = $oldCategoriaFolder;
+        } else {
+            $newCategoria = $this->categoriaModel->find($idCategoria);
+            $newCategoriaFolder = isset($newCategoria['nombre']) ? str_replace(' ', '', ucwords(strtolower($newCategoria['nombre']))) : '';
+        }
+
         $newSubfolder = '';
         if (strtolower($newCategoriaFolder) === 'festividades') {
             $newSubfolder = $this->obtenerSubfolderFestividades($descripcion);

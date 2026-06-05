@@ -102,6 +102,132 @@ class CuentasClientes extends BaseController
 
     public function crear()
     {
+        if ($this->request->isAJAX()) {
+            $json = $this->request->getJSON(true);
+            $idCliente = (int)($json['id_cliente'] ?? 0);
+            $fechaCompra = $json['fecha_compra'] ?: date('Y-m-d');
+            $estatusCompra = $json['estatus_compra'] ?: '0';
+            $productosData = $json['productos'] ?? [];
+
+            if (empty($idCliente) || empty($productosData)) {
+                return $this->response->setJSON(['success' => false, 'message' => 'Por favor, completa los campos correctamente y agrega al menos un producto.']);
+            }
+
+            // Iniciar una transacción de base de datos para asegurar consistencia
+            $db = \Config\Database::connect();
+            $db->transStart();
+
+            $totalCompraAcumulado = 0.00;
+            $itemsTicket = [];
+
+            foreach ($productosData as $prod) {
+                $tipoCompra = $prod['tipo_compra'] ?? 'inventario';
+                $idInventario = (int)($prod['id_inventario'] ?? 0);
+                $cantidad = (int)($prod['cantidad'] ?? 0);
+                $precioUnit = (float)($prod['precio_unit'] ?? 0.00);
+                $descontarStock = isset($prod['descontar_stock']) ? (bool)$prod['descontar_stock'] : true;
+                $descProducto = $prod['desc_producto'] ?? '';
+
+                if ($cantidad <= 0 || $precioUnit < 0) {
+                    $db->transRollback();
+                    return $this->response->setJSON(['success' => false, 'message' => 'Valores de cantidad o precio incorrectos en uno de los productos.']);
+                }
+
+                if ($tipoCompra === 'inventario') {
+                    $producto = $this->productoModel->find($idInventario);
+                    if (!$producto) {
+                        $db->transRollback();
+                        return $this->response->setJSON(['success' => false, 'message' => 'Uno de los productos de inventario no es válido.']);
+                    }
+                    $descProducto = $producto['descripcion'];
+
+                    if ($descontarStock) {
+                        $nuevoStock = $producto['stock'] - $cantidad;
+                        $this->productoModel->update($idInventario, ['stock' => max(0, $nuevoStock)]);
+                    }
+                } else {
+                    if (empty($descProducto)) {
+                        $db->transRollback();
+                        return $this->response->setJSON(['success' => false, 'message' => 'Falta la descripción para uno de los productos libres.']);
+                    }
+                }
+
+                $totalProduc = $cantidad * $precioUnit;
+                $totalCompraAcumulado += $totalProduc;
+
+                $nuevaCompra = [
+                    'idCliente'     => $idCliente,
+                    'fechaCompra'   => $fechaCompra,
+                    'cantidad'      => $cantidad,
+                    'descProducto'  => $descProducto,
+                    'precioUnit'    => $precioUnit,
+                    'totalProduc'   => $totalProduc,
+                    'estatusCompra' => $estatusCompra,
+                    'idInventario'  => $idInventario
+                ];
+
+                $this->cuentaClienteModel->insert($nuevaCompra);
+
+                // Guardar la línea para el ticket
+                $itemsTicket[] = "- {$cantidad} {$descProducto}: $" . number_format($totalProduc, 2);
+            }
+
+            // Si es pagado, registrar un único abono por el total acumulado
+            if ($estatusCompra == '1') {
+                $this->registrarPagoCaja($idCliente, $totalCompraAcumulado);
+            }
+
+            $db->transComplete();
+
+            if ($db->transStatus() === false) {
+                return $this->response->setJSON(['success' => false, 'message' => 'No se pudo registrar la compra debido a un error de base de datos.']);
+            }
+
+            // Obtener detalles del cliente para el saldo y celular
+            $cliente = $this->clienteModel->find($idCliente);
+
+            // Calcular balances del cliente para el Ticket
+            $compras = $this->cuentaClienteModel->where('idCliente', $idCliente)->findAll();
+            $abonos = $db->table('t_abono_cliente')->where('idCliente', $idCliente)->get()->getResultArray();
+
+            $totalComprasHistoricas = 0;
+            foreach ($compras as $c) {
+                $totalComprasHistoricas += $c['totalProduc'];
+            }
+
+            $totalAbonosHistoricos = 0;
+            foreach ($abonos as $a) {
+                $totalAbonosHistoricos += $a['abono'];
+            }
+
+            $saldoPendienteActual = $totalComprasHistoricas - $totalAbonosHistoricos;
+
+            if ($estatusCompra == '0') {
+                $saldoAnterior = $saldoPendienteActual - $totalCompraAcumulado;
+                $nuevoTotal = $saldoPendienteActual;
+            } else {
+                $saldoAnterior = $saldoPendienteActual;
+                $nuevoTotal = $saldoPendienteActual;
+            }
+
+            // Formatear Ticket Digital
+            $fechaTicket = date('d/m/y', strtotime($fechaCompra));
+            $ticketText = "*Compra del día ({$fechaTicket})*\n";
+            $ticketText .= implode("\n", $itemsTicket) . "\n\n";
+            $ticketText .= "*Subtotal:* $" . number_format($totalCompraAcumulado, 2) . "\n";
+            $ticketText .= "*Saldo Anterior:* $" . number_format($saldoAnterior, 2) . "\n";
+            $ticketText .= "*Nuevo Total:* $" . number_format($nuevoTotal, 2);
+
+            return $this->response->setJSON([
+                'success' => true,
+                'ticket'  => $ticketText,
+                'cel'     => $cliente['cel'] ?? '',
+                'totalPendiente' => number_format($saldoPendienteActual, 2),
+                'message' => 'Compra registrada con éxito.'
+            ]);
+        }
+
+        // Fallback para solicitudes no AJAX (comportamiento de un solo producto tradicional)
         $idCliente = $this->request->getPost('id_cliente');
         $tipoCompra = $this->request->getPost('tipo_compra'); // 'inventario' o 'libre'
         $fechaCompra = $this->request->getPost('fecha_compra') ?: date('Y-m-d');
