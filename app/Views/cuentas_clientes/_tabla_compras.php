@@ -51,11 +51,16 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                 <?php endif; ?>
             </span>
         </div>
-        <div class="d-flex flex-wrap gap-2">
+        <div class="d-flex flex-wrap gap-2 align-items-center">
             <?php if (!empty($telefonoLimpio)): ?>
                 <a href="<?= $waUrl ?>" target="_blank" class="btn btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-2">
                     <i class="fab fa-whatsapp"></i> Enviar Cuenta
                 </a>
+            <?php endif; ?>
+            <?php if ($totalPendiente > 0): ?>
+                <button type="button" class="btn btn-warning text-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-2" onclick="abrirModalRegistrarAbono(<?= $cliente['idCliente'] ?>, <?= $totalPendiente ?>)">
+                    <i class="fas fa-hand-holding-usd text-dark"></i> Registrar Pago
+                </button>
             <?php endif; ?>
             <button type="button" class="btn btn-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-2" onclick="abrirModalNuevaCompra(<?= $cliente['idCliente'] ?>)">
                 <i class="fas fa-cart-plus"></i> Registrar Compra
@@ -164,18 +169,13 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                                         <i class="fas fa-edit"></i>
                                     </button>
                                     
-                                    <!-- Eliminar -->
-                                    <form action="<?= base_url('admin/cuentas/eliminar/' . $c['idCompra']) ?>" 
-                                          method="POST" 
-                                          class="d-inline"
-                                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar este registro de compra? Si es de inventario, se devolverá el stock.');">
-                                        <?= csrf_field() ?>
-                                        <button type="submit" 
-                                                class="btn btn-danger btn-sm d-flex align-items-center justify-content-center rounded-3 p-2" 
-                                                title="Eliminar registro">
-                                            <i class="fas fa-trash-alt text-white"></i>
-                                        </button>
-                                    </form>
+                                     <!-- Eliminar -->
+                                     <button type="button" 
+                                             class="btn btn-danger btn-sm d-flex align-items-center justify-content-center rounded-3 p-2" 
+                                             title="Eliminar registro"
+                                             onclick="confirmarEliminarCompra('<?= base_url('admin/cuentas/eliminar/' . $c['idCompra']) ?>')">
+                                         <i class="fas fa-trash-alt text-white"></i>
+                                     </button>
                                 </div>
                             </td>
                         </tr>

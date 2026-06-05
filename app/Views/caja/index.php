@@ -123,17 +123,12 @@
                                     <?= $m['tipo'] === 'Ingreso' ? '+' : '-' ?>$<?= number_format($m['monto'], 2) ?>
                                 </td>
                                 <td class="py-3 text-end pe-4">
-                                    <form action="<?= base_url('admin/caja/eliminar/' . $m['idMovimiento']) ?>" 
-                                          method="POST" 
-                                          class="d-inline"
-                                          onsubmit="return confirm('¿Estás seguro de que deseas eliminar este movimiento de caja?');">
-                                        <?= csrf_field() ?>
-                                        <button type="submit" 
-                                                class="btn btn-danger btn-sm d-flex align-items-center justify-content-center rounded-3 p-2 ms-auto" 
-                                                title="Eliminar movimiento">
-                                            <i class="fas fa-trash-alt text-white"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm d-flex align-items-center justify-content-center rounded-3 p-2 ms-auto"
+                                            title="Eliminar movimiento"
+                                            onclick="confirmarEliminarMovimiento('<?= base_url('admin/caja/eliminar/' . $m['idMovimiento']) ?>')">
+                                        <i class="fas fa-trash-alt text-white"></i>
+                                    </button>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -150,6 +145,30 @@
                     <?php endif; ?>
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: CONFIRMAR ELIMINACIÓN DE MOVIMIENTO -->
+<div class="modal fade" id="modalConfirmarEliminarMovimiento" tabindex="-1" aria-labelledby="modalConfElimMovLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-encargo-content text-white" style="border-radius: 20px; background-color: #121824; border: 1px solid rgba(255,255,255,0.15);">
+            <div class="modal-header modal-encargo-header py-3 px-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="modalConfElimMovLabel">
+                    <i class="fas fa-exclamation-triangle text-danger"></i> ¿Eliminar movimiento?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="mb-0 text-white-50" style="font-size: 0.95rem;">¿Estás seguro de que deseas eliminar este movimiento de caja? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formConfirmarEliminarMovimiento" action="" method="POST" class="d-inline">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Eliminar</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -242,5 +261,14 @@
             });
         }
     });
+
+    function confirmarEliminarMovimiento(url) {
+        const form = document.getElementById('formConfirmarEliminarMovimiento');
+        if (form) {
+            form.action = url;
+        }
+        const modal = new bootstrap.Modal(document.getElementById('modalConfirmarEliminarMovimiento'));
+        modal.show();
+    }
 </script>
 <?= $this->endSection() ?>

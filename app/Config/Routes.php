@@ -42,6 +42,7 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->get('cuentas', 'CuentasClientes::index');
     $routes->get('cuentas/compras/(:num)', 'CuentasClientes::obtenerCompras/$1');
     $routes->post('cuentas/crear', 'CuentasClientes::crear');
+    $routes->post('cuentas/abonar', 'CuentasClientes::registrarAbono');
     $routes->post('cuentas/editar/(:num)', 'CuentasClientes::editar/$1');
     $routes->post('cuentas/eliminar/(:num)', 'CuentasClientes::eliminar/$1');
     $routes->post('cuentas/toggle/(:num)', 'CuentasClientes::toggleEstado/$1');

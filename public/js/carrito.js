@@ -286,3 +286,102 @@ function enviarPedidoWhatsApp() {
         modalInstance.hide();
     }
 }
+
+// Copiar la información del producto formateada para WhatsApp
+function copiarInfoProducto(producto, btn) {
+    console.log("copiarInfoProducto llamado para:", producto.descripcion);
+    const stockStr = (parseInt(producto.stock) === 1) ? '1 pza' : `${producto.stock} pzas`;
+    const texto = `Producto: ${producto.descripcion}\nCategoría: ${producto.categoria}\nPrecio: $${producto.precio}\nExistencia: ${stockStr}`;
+
+    // Intentar usar API Clipboard, si falla o no existe, usar execCommand (fallback)
+    function escribirClipboard(txt) {
+        if (navigator.clipboard && window.isSecureContext) {
+            return navigator.clipboard.writeText(txt);
+        } else {
+            return new Promise((resolve, reject) => {
+                try {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = txt;
+                    textArea.style.position = "fixed";
+                    textArea.style.top = "0";
+                    textArea.style.left = "0";
+                    textArea.style.opacity = "0";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    if (successful) {
+                        resolve();
+                    } else {
+                        reject(new Error('Fallback copy command returned false'));
+                    }
+                } catch (err) {
+                    reject(err);
+                }
+            });
+        }
+    }
+
+    escribirClipboard(texto).then(() => {
+        console.log("Copiado exitoso para:", producto.descripcion);
+        // Guardar el contenido original del botón
+        const originalHTML = btn.innerHTML;
+        const originalStyleColor = btn.style.color;
+        const originalStyleBg = btn.style.backgroundColor;
+        const originalStyleBorder = btn.style.borderColor;
+
+        // Feedback visual premium (verde temporal)
+        btn.innerHTML = '<i class="bi bi-check-lg"></i> Copiado';
+        btn.style.setProperty('color', '#ffffff', 'important');
+        btn.style.setProperty('background-color', '#10b981', 'important');
+        btn.style.setProperty('border-color', '#10b981', 'important');
+
+        // Mostrar un pequeño toast elegante
+        let toastContainer = document.getElementById('toast-cart-container');
+        if (!toastContainer) {
+            toastContainer = document.createElement('div');
+            toastContainer.id = 'toast-cart-container';
+            toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+            toastContainer.style.zIndex = '1090';
+            document.body.appendChild(toastContainer);
+        }
+
+        const toastId = 'toast-copy-' + Date.now();
+        const toastHTML = `
+            <div id="${toastId}" class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="2000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                        <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                        <div>
+                            <strong>¡Copiado para WhatsApp!</strong><br>
+                            <span class="small text-white-50">${producto.descripcion.substring(0, 30)}...</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+        toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+        const toastEl = document.getElementById(toastId);
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+
+        toastEl.addEventListener('hidden.bs.toast', () => {
+            toastEl.remove();
+        });
+
+        // Restaurar botón después de 1.5s
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.style.color = originalStyleColor;
+            btn.style.backgroundColor = originalStyleBg;
+            btn.style.borderColor = originalStyleBorder;
+        }, 1500);
+    }).catch(err => {
+        console.error('Error al copiar al portapapeles: ', err);
+        alert('No se pudo copiar el texto al portapapeles. Intenta nuevamente.');
+    });
+}
+

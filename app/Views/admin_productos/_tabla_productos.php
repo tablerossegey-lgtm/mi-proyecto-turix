@@ -52,6 +52,17 @@
                         <i class="fas fa-cart-plus"></i> Encargar
                     </a>
                     <button type="button" 
+                            class="btn btn-outline-success btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm btn-copiar-producto-admin" 
+                            title="Copiar info para WhatsApp"
+                            onclick="copiarInfoProducto(<?= htmlspecialchars(json_encode([
+                                'descripcion' => $p['descripcion'],
+                                'categoria' => $p['nombre_categoria'] ?: 'Sin Categoría',
+                                'precio' => number_format($p['precio'], 2),
+                                'stock' => $p['stock']
+                            ]), ENT_QUOTES, 'UTF-8') ?>, this)">
+                        <i class="bi bi-clipboard"></i> Copiar
+                    </button>
+                    <button type="button" 
                             class="btn btn-warning btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-warning text-dark" 
                             title="Editar datos de producto"
                             onclick="abrirEditarProducto(<?= htmlspecialchars(json_encode($p), ENT_QUOTES, 'UTF-8') ?>)">

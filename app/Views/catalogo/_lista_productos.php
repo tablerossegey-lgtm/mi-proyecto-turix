@@ -80,7 +80,7 @@ if ($categoriaId) {
                     }
                     ?>
                     <button type="button" class="btn btn-turix-filter rounded-pill px-4 py-2" data-filter="<?= $subCss ?>">
-                        <?= $emoji ?>          <?= esc($sub) ?>
+                        <?= $emoji ?>         <?= esc($sub) ?>
                     </button>
                 <?php endforeach; ?>
             </div>

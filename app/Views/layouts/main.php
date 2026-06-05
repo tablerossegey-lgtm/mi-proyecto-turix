@@ -177,7 +177,7 @@
     </button>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= base_url('js/carrito.js?v=1.3') ?>"></script>
+    <script src="<?= base_url('js/carrito.js?v=1.4') ?>"></script>
     <script>
         // Limpiar el contenido del modal al cerrarse para evitar que se muestre información del producto anterior
         document.getElementById('modalDetalle').addEventListener('hidden.bs.modal', function () {

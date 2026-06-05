@@ -450,6 +450,69 @@ class CuentasClientes extends BaseController
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Datos del cliente actualizados con éxito.');
     }
 
+    public function registrarAbono()
+    {
+        $idCliente = (int)$this->request->getPost('id_cliente');
+        $monto = (float)$this->request->getPost('monto');
+        $fecha = $this->request->getPost('fecha_abono') ?: date('Y-m-d');
+
+        if (empty($idCliente) || $monto <= 0) {
+            return redirect()->back()->with('error', 'Por favor, ingresa un monto de abono válido.');
+        }
+
+        $cliente = $this->clienteModel->find($idCliente);
+        if (!$cliente) {
+            return redirect()->back()->with('error', 'Cliente no encontrado.');
+        }
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+
+        // 1. Registrar el abono en t_abono_cliente
+        $db->table('t_abono_cliente')->insert([
+            'idCliente'  => $idCliente,
+            'fechaAbono' => $fecha,
+            'abono'      => $monto,
+            'idCompra'   => 0
+        ]);
+
+        // 2. Registrar el ingreso en t_caja_chica
+        $db->table('t_caja_chica')->insert([
+            'fecha'       => $fecha,
+            'descripcion' => 'Abono de cliente: ' . $cliente['nombre'],
+            'monto'       => $monto,
+            'tipo'        => 'Ingreso'
+        ]);
+
+        // 3. Obtener compras pendientes ordenadas por fecha (de la más vieja a la más nueva)
+        $comprasPendientes = $this->cuentaClienteModel
+            ->where('idCliente', $idCliente)
+            ->where('estatusCompra', '0')
+            ->orderBy('fechaCompra', 'ASC')
+            ->orderBy('idCompra', 'ASC')
+            ->findAll();
+
+        // Aplicar el abono a los adeudos pendientes, marcando como pagados los que se cubran
+        $saldoAbono = $monto;
+        foreach ($comprasPendientes as $compra) {
+            if ($saldoAbono >= $compra['totalProduc']) {
+                $this->cuentaClienteModel->update($compra['idCompra'], ['estatusCompra' => '1']);
+                $saldoAbono -= $compra['totalProduc'];
+            } else {
+                // Si el abono no cubre por completo la compra, no la marcamos como pagada
+                break;
+            }
+        }
+
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Ocurrió un error al registrar el abono.');
+        }
+
+        return redirect()->to(base_url('admin/cuentas'))->with('success', 'Abono registrado con éxito por $' . number_format($monto, 2));
+    }
+
     private function registrarPagoCaja($idCliente, $monto)
     {
         $db = \Config\Database::connect();
