@@ -91,7 +91,7 @@
                         <label for="fotoPrincipalInput" class="btn btn-cambiar-principal w-100 fw-bold py-2 rounded-3 d-flex align-items-center justify-content-center gap-2">
                             <i class="fas fa-camera fs-6"></i> Cambiar Imagen Principal
                         </label>
-                        <input type="file" name="foto_principal" id="fotoPrincipalInput" class="d-none" accept="image/jpeg, image/png, image/gif" onchange="this.form.submit();">
+                        <input type="file" name="foto_principal" id="fotoPrincipalInput" class="d-none" accept="image/jpeg, image/png, image/gif" onchange="if(typeof this.form.requestSubmit === 'function') { this.form.requestSubmit(); } else { this.form.submit(); }">
                     </form>
                 </div>
 
@@ -141,7 +141,7 @@
             <!-- Sección de Carga -->
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 admin-card">
                 <h5 class="fw-bold mb-3 admin-title"><i class="fas fa-cloud-upload-alt me-1 text-warning"></i> Cargar Imágenes Nuevas</h5>
-                <form action="<?= base_url('admin/productos/subir-imagen/' . $p['id']) ?>" method="POST" enctype="multipart/form-data" hx-boost="true">
+                <form id="formSubirImagenes" action="<?= base_url('admin/productos/subir-imagen/' . $p['id']) ?>" method="POST" enctype="multipart/form-data" hx-boost="true">
                     <div class="drag-zone p-4 rounded-4 text-center d-flex flex-column align-items-center justify-content-center border-dashed admin-drag-zone">
                         <input type="file" name="imagenes[]" id="fileInput" multiple accept="image/jpeg, image/png" class="d-none">
                         <div class="mb-3 icon-container">
@@ -183,17 +183,12 @@
 
                                     <!-- Botón de Borrar (Floating Icon) -->
                                     <div class="position-absolute top-0 end-0 p-2">
-                                        <form action="<?= base_url('admin/productos/eliminar-imagen/' . $img['id']) ?>" 
-                                              method="POST" 
-                                              class="m-0"
-                                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta imagen de la galería? Esta acción no se puede deshacer.');"
-                                              hx-boost="true">
-                                            <button type="submit" 
-                                                    class="btn btn-danger btn-sm rounded-circle d-flex align-items-center justify-content-center shadow admin-gallery-delete-btn" 
-                                                    title="Eliminar esta foto">
-                                                <i class="fas fa-trash-alt fs-6"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" 
+                                                class="btn btn-danger btn-sm rounded-circle d-flex align-items-center justify-content-center shadow admin-gallery-delete-btn" 
+                                                title="Eliminar esta foto"
+                                                onclick="confirmarEliminarImagen('<?= base_url('admin/productos/eliminar-imagen/' . $img['id']) ?>')">
+                                            <i class="fas fa-trash-alt fs-6"></i>
+                                        </button>
                                     </div>
                                      <div class="p-2 text-center bg-white border-top" style="color: #475569 !important;">
                                          <form action="<?= base_url('admin/productos/actualizar-orden/' . $img['id']) ?>" method="POST" class="m-0 d-flex align-items-center justify-content-center gap-2" hx-boost="true">
@@ -206,7 +201,7 @@
                                                     style="width: 55px; height: 26px; border: 1px solid #cbd5e1; border-radius: 4px; background-color: #f8fafc;" 
                                                     min="1" 
                                                     required 
-                                                    onchange="this.form.submit();">
+                                                    onchange="if(typeof this.form.requestSubmit === 'function') { this.form.requestSubmit(); } else { this.form.submit(); }">
                                          </form>
                                      </div>
                                 </div>
@@ -227,42 +222,150 @@
     </div>
 </div>
 
+<!-- Modal de Confirmación de Eliminación -->
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 text-white" style="background-color: #1a252f; border-radius: 16px;">
+            <div class="modal-header border-bottom border-secondary border-opacity-25 py-3 px-4">
+                <h5 class="modal-title fw-bold text-white" id="confirmDeleteModalLabel">
+                    <i class="fas fa-exclamation-triangle text-danger me-2"></i> Confirmar Eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-0 text-white-50">¿Estás seguro de que deseas eliminar esta imagen de la galería? Esta acción no se puede deshacer.</p>
+            </div>
+            <div class="modal-footer border-top border-secondary border-opacity-25 d-flex gap-2">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formConfirmarEliminarImagen" action="" hx-post="" hx-target="body" method="POST" class="d-inline">
+                    <?= csrf_field() ?>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        <i class="fas fa-trash-alt me-1"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
+(function() {
     document.body.classList.add('admin-body');
 
-    // Inicializar y mostrar toasts de notificaciones del servidor
-    document.addEventListener('DOMContentLoaded', function() {
-        const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
-        toasts.forEach(toastEl => {
-            const toast = new bootstrap.Toast(toastEl);
-            toast.show();
-            toastEl.addEventListener('hidden.bs.toast', () => {
-                toastEl.remove();
-            });
-        });
-    });
+    // Registrar la función globalmente para el onclick
+    window.confirmarEliminarImagen = function(url) {
+        const form = document.getElementById('formConfirmarEliminarImagen');
+        if (form) {
+            form.action = url;
+            form.setAttribute('action', url);
+            form.setAttribute('hx-post', url);
+            if (typeof htmx !== 'undefined') {
+                htmx.process(form);
+            }
+        }
+        const modalEl = document.getElementById('confirmDeleteModal');
+        if (modalEl && typeof bootstrap !== 'undefined') {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        } else {
+            // Fallback en caso de que bootstrap no esté cargado
+            if (confirm('¿Estás seguro de que deseas eliminar esta imagen de la galería? Esta acción no se puede deshacer.')) {
+                if (form) {
+                    form.action = url;
+                    form.setAttribute('action', url);
+                    form.submit();
+                }
+            }
+        }
+    };
 
+    // Mostrar spinner en el botón de eliminar al confirmar
+    const formConfirmarEliminarImagen = document.getElementById('formConfirmarEliminarImagen');
+    if (formConfirmarEliminarImagen) {
+        formConfirmarEliminarImagen.addEventListener('submit', function() {
+            const btnSubmit = formConfirmarEliminarImagen.querySelector('button[type="submit"]');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Eliminando...';
+            }
+
+            // Ocultar el modal para que Bootstrap limpie su estado
+            const modalEl = document.getElementById('confirmDeleteModal');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getInstance(modalEl);
+                if (modal) {
+                    modal.hide();
+                }
+            }
+
+            // Forzar limpieza del body para evitar scroll bloqueado si HTMX hace el swap rápido
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(el => el.remove());
+        });
+    }
+
+    // Mostrar spinner en el botón de guardar imágenes al enviar
+    const formSubirImagenes = document.getElementById('formSubirImagenes');
+    if (formSubirImagenes) {
+        formSubirImagenes.addEventListener('submit', function() {
+            const btnSubmit = document.getElementById('uploadBtn');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
+            }
+        });
+    }
+
+    // Mostrar spinner al cambiar la imagen principal
+    const formFotoPrincipal = document.getElementById('form-foto-principal');
+    if (formFotoPrincipal) {
+        formFotoPrincipal.addEventListener('submit', function() {
+            const labelSubmit = formFotoPrincipal.querySelector('label[for="fotoPrincipalInput"]');
+            if (labelSubmit) {
+                labelSubmit.style.pointerEvents = 'none';
+                labelSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Cambiando...';
+            }
+        });
+    }
+
+    // Configuración de la zona de arrastre (dragZone) local
     const dragZone = document.querySelector('.drag-zone');
     const fileInput = document.querySelector('#fileInput');
     const fileList = document.querySelector('#fileList');
     const uploadBtn = document.querySelector('#uploadBtn');
 
-    // Al hacer clic en la zona, activar el input de archivo
-    dragZone.addEventListener('click', () => {
-        fileInput.click();
-    });
+    if (dragZone && fileInput) {
+        dragZone.addEventListener('click', () => {
+            fileInput.click();
+        });
 
-    // Detectar archivos seleccionados
-    fileInput.addEventListener('change', (e) => {
-        const files = e.target.files;
-        if (files.length > 0) {
-            fileList.innerHTML = `<i class="fas fa-file-image me-1"></i> ${files.length} archivo(s) seleccionado(s):<br>` + 
-                                  Array.from(files).map(f => `<span class="text-secondary">• ${f.name}</span>`).join('<br>');
-            uploadBtn.removeAttribute('disabled');
-        } else {
-            fileList.innerHTML = '';
-            uploadBtn.setAttribute('disabled', 'true');
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files.length > 0) {
+                fileList.innerHTML = `<i class="fas fa-file-image me-1"></i> ${files.length} archivo(s) seleccionado(s):<br>` + 
+                                      Array.from(files).map(f => `<span class="text-secondary">• ${f.name}</span>`).join('<br>');
+                uploadBtn.removeAttribute('disabled');
+            } else {
+                fileList.innerHTML = '';
+                uploadBtn.setAttribute('disabled', 'true');
+            }
+        });
+    }
+
+    // Inicializar y mostrar toasts de notificaciones del servidor
+    const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
+    toasts.forEach(toastEl => {
+        if (typeof bootstrap !== 'undefined') {
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+            toastEl.addEventListener('hidden.bs.toast', () => {
+                toastEl.remove();
+            });
         }
     });
+})();
 </script>
 <?= $this->endSection() ?>

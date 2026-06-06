@@ -231,6 +231,7 @@
 </div>
 
 <script>
+(function() {
     document.body.classList.add('admin-body');
 
     document.addEventListener("DOMContentLoaded", function() {
@@ -238,13 +239,15 @@
         function inicializarToasts() {
             const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
             toasts.forEach(toastEl => {
-                const toast = new bootstrap.Toast(toastEl);
-                toast.show();
-                
-                // Eliminar el elemento al ocultarse para no llenar el DOM
-                toastEl.addEventListener('hidden.bs.toast', () => {
-                    toastEl.remove();
-                });
+                if (typeof bootstrap !== 'undefined') {
+                    const toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+                    
+                    // Eliminar el elemento al ocultarse para no llenar el DOM
+                    toastEl.addEventListener('hidden.bs.toast', () => {
+                        toastEl.remove();
+                    });
+                }
             });
         }
         inicializarToasts();
@@ -262,13 +265,25 @@
         }
     });
 
-    function confirmarEliminarMovimiento(url) {
+    // Registrar la función globalmente para el onclick
+    window.confirmarEliminarMovimiento = function(url) {
         const form = document.getElementById('formConfirmarEliminarMovimiento');
         if (form) {
             form.action = url;
         }
-        const modal = new bootstrap.Modal(document.getElementById('modalConfirmarEliminarMovimiento'));
-        modal.show();
-    }
+        const modalEl = document.getElementById('modalConfirmarEliminarMovimiento');
+        if (modalEl && typeof bootstrap !== 'undefined') {
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+        } else {
+            // Fallback
+            if (confirm('¿Estás seguro de que deseas eliminar este movimiento de caja? Esta acción no se puede deshacer.')) {
+                if (form) {
+                    form.submit();
+                }
+            }
+        }
+    };
+})();
 </script>
 <?= $this->endSection() ?>

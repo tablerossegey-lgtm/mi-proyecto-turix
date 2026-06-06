@@ -185,31 +185,38 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= base_url('js/carrito.js?v=1.4') ?>"></script>
     <script>
-        // Limpiar el contenido del modal al cerrarse para evitar que se muestre información del producto anterior
-        document.getElementById('modalDetalle').addEventListener('hidden.bs.modal', function () {
-            document.getElementById('contenido-modal').innerHTML = `
-                <div class="p-5 text-center text-white">
-                    <div class="spinner-border text-warning" role="status"></div>
-                    <p class="mt-2">Cargando información del producto...</p>
-                </div>
-            `;
-        });
-
-        // Lógica del botón Scroll-To-Top
-        const btnScrollTop = document.getElementById('btnScrollTop');
-        window.addEventListener('scroll', () => {
-            if (window.scrollY > 300) {
-                btnScrollTop.classList.add('show');
-            } else {
-                btnScrollTop.classList.remove('show');
+        (function() {
+            const modalDetalle = document.getElementById('modalDetalle');
+            if (modalDetalle) {
+                // Limpiar el contenido del modal al cerrarse para evitar que se muestre información del producto anterior
+                modalDetalle.addEventListener('hidden.bs.modal', function () {
+                    document.getElementById('contenido-modal').innerHTML = `
+                        <div class="p-5 text-center text-white">
+                            <div class="spinner-border text-warning" role="status"></div>
+                            <p class="mt-2">Cargando información del producto...</p>
+                        </div>
+                    `;
+                });
             }
-        });
-        btnScrollTop.addEventListener('click', () => {
-            window.scrollTo({
-                top: 0,
-                behavior: 'smooth'
-            });
-        });
+
+            // Lógica del botón Scroll-To-Top
+            const btnScrollTop = document.getElementById('btnScrollTop');
+            if (btnScrollTop) {
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 300) {
+                        btnScrollTop.classList.add('show');
+                    } else {
+                        btnScrollTop.classList.remove('show');
+                    }
+                });
+                btnScrollTop.addEventListener('click', () => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                });
+            }
+        })();
     </script>
 </body>
 

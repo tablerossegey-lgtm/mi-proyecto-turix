@@ -45,11 +45,21 @@ class ProductoModel extends Model
     public function buscarProductos(string $termino, ?int $categoriaId = null)
     {
         $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria')
-                        ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
-                        ->groupStart()
-                            ->like('t_inventario.descripcion', $termino)
+                        ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left');
+
+        if (!empty($termino)) {
+            $palabras = array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($termino))));
+            if (!empty($palabras)) {
+                $builder->groupStart()
+                            ->groupStart();
+                                foreach ($palabras as $palabra) {
+                                    $builder->like('t_inventario.descripcion', $palabra);
+                                }
+                $builder->groupEnd()
                             ->orLike('t_inventario.codigo_sku', $termino)
                         ->groupEnd();
+            }
+        }
 
         if ($categoriaId) {
             $builder->where('t_inventario.id_categoria', $categoriaId);
@@ -83,10 +93,17 @@ class ProductoModel extends Model
             ->orderBy('t_inventario.id', 'DESC');
 
         if (!empty($termino)) {
-            $builder->groupStart()
-                    ->like('t_inventario.descripcion', $termino)
-                    ->orLike('t_inventario.codigo_sku', $termino)
-                    ->groupEnd();
+            $palabras = array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($termino))));
+            if (!empty($palabras)) {
+                $builder->groupStart()
+                            ->groupStart();
+                                foreach ($palabras as $palabra) {
+                                    $builder->like('t_inventario.descripcion', $palabra);
+                                }
+                $builder->groupEnd()
+                            ->orLike('t_inventario.codigo_sku', $termino)
+                        ->groupEnd();
+            }
         }
 
         return $builder->findAll();
