@@ -951,6 +951,15 @@ footer .text-muted {
     transform: translateX(3px);
 }
 
+.custom-admin-dropdown .admin-item-semillas {
+    color: #fd7e14 !important; /* orange seeds */
+}
+.custom-admin-dropdown .admin-item-semillas:hover {
+    background: rgba(253, 126, 20, 0.1) !important;
+    border-left-color: #fd7e14;
+    transform: translateX(3px);
+}
+
 .custom-admin-dropdown .admin-item-logout {
     color: #dc3545 !important; /* red danger */
 }

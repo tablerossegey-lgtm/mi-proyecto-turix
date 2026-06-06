@@ -327,6 +327,16 @@ class CuentasClientes extends BaseController
             'estatusCompra' => $estatusCompra
         ]);
 
+        $db = \Config\Database::connect();
+        $db->table('t_ventas_semillas')
+            ->where('id_cuenta_cliente', $idCompra)
+            ->update([
+                'fecha'        => $fechaCompra,
+                'cantidad'     => $cantidadNueva,
+                'precio_venta' => $precioUnitNuevo,
+                'estatus_pago' => $estatusCompra == '1' ? 'Pagado' : 'Pendiente'
+            ]);
+
         // Si cambió de Pendiente a Pagado, registrar pago
         if ($compra['estatusCompra'] == '0' && $estatusCompra == '1') {
             $this->registrarPagoCaja($compra['idCliente'], $totalProduc);
@@ -354,6 +364,11 @@ class CuentasClientes extends BaseController
 
         $this->cuentaClienteModel->delete($idCompra);
 
+        $db = \Config\Database::connect();
+        $db->table('t_ventas_semillas')
+            ->where('id_cuenta_cliente', $idCompra)
+            ->delete();
+
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Registro de compra eliminado.');
     }
 
@@ -366,6 +381,11 @@ class CuentasClientes extends BaseController
 
         $nuevoEstado = $compra['estatusCompra'] == '0' ? '1' : '0';
         $this->cuentaClienteModel->update($idCompra, ['estatusCompra' => $nuevoEstado]);
+
+        $db = \Config\Database::connect();
+        $db->table('t_ventas_semillas')
+            ->where('id_cuenta_cliente', $idCompra)
+            ->update(['estatus_pago' => $nuevoEstado == '1' ? 'Pagado' : 'Pendiente']);
 
         if ($nuevoEstado == '1') {
             $this->registrarPagoCaja($compra['idCliente'], $compra['totalProduc']);
@@ -497,6 +517,11 @@ class CuentasClientes extends BaseController
         foreach ($comprasPendientes as $compra) {
             if ($saldoAbono >= $compra['totalProduc']) {
                 $this->cuentaClienteModel->update($compra['idCompra'], ['estatusCompra' => '1']);
+                
+                $db->table('t_ventas_semillas')
+                   ->where('id_cuenta_cliente', $compra['idCompra'])
+                   ->update(['estatus_pago' => 'Pagado']);
+                   
                 $saldoAbono -= $compra['totalProduc'];
             } else {
                 // Si el abono no cubre por completo la compra, no la marcamos como pagada

@@ -53,4 +53,10 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->get('caja', 'CajaChica::index');
     $routes->post('caja/crear', 'CajaChica::crear');
     $routes->post('caja/eliminar/(:num)', 'CajaChica::eliminar/$1');
+
+    // Rutas de Ventas de Semillas y Repelente
+    $routes->get('semillas', 'VentasSemillas::index');
+    $routes->post('semillas/crear', 'VentasSemillas::crear');
+    $routes->post('semillas/entregar', 'VentasSemillas::entregarBea');
+    $routes->post('semillas/eliminar/(:num)', 'VentasSemillas::eliminar/$1');
 });

@@ -89,6 +89,12 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-semillas"
+                                        href="<?= base_url('admin/semillas') ?>">
+                                        <i class="bi bi-tree"></i> Venta Snacks
+                                    </a>
+                                </li>
+                                <li>
                                     <hr class="dropdown-divider border-secondary opacity-25 my-2">
                                 </li>
                                 <li>

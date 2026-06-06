@@ -689,3 +689,48 @@
     background-color: #dc3545;
     border-color: #dc3545;
 }
+
+/* ==========================================================================
+   ESTILOS ADICIONALES ESPECÍFICOS PARA EL MÓDULO DE SEMILLAS Y REPELENTES
+   ========================================================================== */
+.tab-nav-link {
+    color: rgba(255, 255, 255, 0.6) !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    background: transparent !important;
+    padding: 0.75rem 1.25rem !important;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+.tab-nav-link:hover {
+    color: #ffc107 !important;
+    border-bottom-color: rgba(255, 193, 7, 0.4) !important;
+}
+.tab-nav-link.active {
+    color: #ffc107 !important;
+    border-bottom-color: #ffc107 !important;
+    background: rgba(255, 193, 7, 0.05) !important;
+}
+.badge-status-paid {
+    background-color: rgba(40, 167, 69, 0.15) !important;
+    color: #28a745 !important;
+    border: 1px solid rgba(40, 167, 69, 0.3) !important;
+}
+.badge-status-pending {
+    background-color: rgba(220, 53, 69, 0.15) !important;
+    color: #dc3545 !important;
+    border: 1px solid rgba(220, 53, 69, 0.3) !important;
+}
+.badge-status-delivered {
+    background-color: rgba(23, 162, 184, 0.15) !important;
+    color: #17a2b8 !important;
+    border: 1px solid rgba(23, 162, 184, 0.3) !important;
+}
+.badge-status-not-delivered {
+    background-color: rgba(255, 193, 7, 0.15) !important;
+    color: #ffc107 !important;
+    border: 1px solid rgba(255, 193, 7, 0.3) !important;
+}
+.text-profit {
+    color: #0dcaf0 !important;
+}
