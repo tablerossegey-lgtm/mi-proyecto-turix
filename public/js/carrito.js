@@ -293,34 +293,44 @@ function copiarInfoProducto(producto, btn) {
     const stockStr = (parseInt(producto.stock) === 1) ? '1 pza' : `${producto.stock} pzas`;
     const texto = `Producto: ${producto.descripcion}\nCategoría: ${producto.categoria}\nPrecio: $${producto.precio}\nExistencia: ${stockStr}`;
 
-    // Intentar usar API Clipboard, si falla o no existe, usar execCommand (fallback)
+    // Copiar al portapapeles: primero sincrónico (textarea), luego async API
     function escribirClipboard(txt) {
+        // 1. Intentar enfoque sincrónico con textarea (siempre funciona dentro del evento click,
+        //    incluso en http://localhost sin necesidad de permisos de clipboard)
+        try {
+            const textArea = document.createElement("textarea");
+            textArea.value = txt;
+            textArea.setAttribute('readonly', '');
+            textArea.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            // En iOS necesitamos setSelectionRange
+            if (navigator.userAgent.match(/ipad|ipod|iphone/i)) {
+                textArea.contentEditable = true;
+                textArea.readOnly = false;
+                const range = document.createRange();
+                range.selectNodeContents(textArea);
+                const sel = window.getSelection();
+                sel.removeAllRanges();
+                sel.addRange(range);
+                textArea.setSelectionRange(0, 999999);
+            }
+            const successful = document.execCommand('copy');
+            document.body.removeChild(textArea);
+            if (successful) {
+                return Promise.resolve();
+            }
+        } catch (err) {
+            // Si el enfoque sincrónico falla, continuar con la API async
+        }
+
+        // 2. Fallback: API Clipboard async (HTTPS o secure context)
         if (navigator.clipboard && window.isSecureContext) {
             return navigator.clipboard.writeText(txt);
-        } else {
-            return new Promise((resolve, reject) => {
-                try {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = txt;
-                    textArea.style.position = "fixed";
-                    textArea.style.top = "0";
-                    textArea.style.left = "0";
-                    textArea.style.opacity = "0";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    const successful = document.execCommand('copy');
-                    document.body.removeChild(textArea);
-                    if (successful) {
-                        resolve();
-                    } else {
-                        reject(new Error('Fallback copy command returned false'));
-                    }
-                } catch (err) {
-                    reject(err);
-                }
-            });
         }
+
+        return Promise.reject(new Error('Clipboard no disponible en este navegador'));
     }
 
     escribirClipboard(texto).then(() => {

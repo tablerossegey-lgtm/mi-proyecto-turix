@@ -437,17 +437,21 @@
         </div>
     </div>
 
+<?= $this->endSection() ?>
+
+<?= $this->section('scripts') ?>
 <script>
+(function() {
     document.body.classList.add('admin-body');
 
-    function toggleLimpiarBtn(val) {
+    window.toggleLimpiarBtn = function(val) {
         const btn = document.getElementById('btn-limpiar-busqueda');
         if (btn) {
             btn.style.display = val.trim() !== '' ? 'flex' : 'none';
         }
-    }
+    };
 
-    function sugerirSKU(isEdit = false) {
+    window.sugerirSKU = function(isEdit = false) {
         const prefix = isEdit ? 'edit_' : '';
         const nombreInput = document.getElementById(prefix + 'descripcion');
         const skuInput = document.getElementById(prefix + 'codigo_sku');
@@ -533,10 +537,13 @@
             skuInput.style.borderColor = '#ffc107';
             skuInput.style.boxShadow = '0 0 8px rgba(255, 193, 7, 0.25)';
         }, 1000);
-    }
+    };
 
-    function abrirEditarProducto(producto) {
-        const modal = new bootstrap.Modal(document.getElementById('modalEditarProducto'));
+    window.abrirEditarProducto = function(producto) {
+        if (typeof bootstrap === 'undefined') return;
+        const modalEl = document.getElementById('modalEditarProducto');
+        if (!modalEl) return;
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         
         // Configurar acción del formulario dinámicamente con la URL de edición
         document.getElementById('formEditarProducto').action = "<?= base_url('admin/productos/editar/') ?>" + producto.id;
@@ -565,36 +572,50 @@
         document.getElementById('edit_foto_principal').value = '';
 
         modal.show();
-    }
+    };
 
     // Deshabilitar botón de guardar y mostrar spinner al enviar el formulario para evitar doble submit
-    document.addEventListener("DOMContentLoaded", function() {
-        const formNuevo = document.getElementById('formNuevoProducto');
-        if (formNuevo) {
-            formNuevo.addEventListener('submit', function() {
-                const btnSubmit = formNuevo.querySelector('button[type="submit"]');
-                if (btnSubmit) {
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
-                }
-            });
-        }
+    const formNuevo = document.getElementById('formNuevoProducto');
+    if (formNuevo) {
+        formNuevo.addEventListener('submit', function() {
+            const btnSubmit = formNuevo.querySelector('button[type="submit"]');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
+            }
 
-        const formEditar = document.getElementById('formEditarProducto');
-        if (formEditar) {
-            formEditar.addEventListener('submit', function() {
-                const btnSubmit = formEditar.querySelector('button[type="submit"]');
-                if (btnSubmit) {
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
-                }
-            });
-        }
+            // Ocultar modal para que Bootstrap limpie su estado
+            const modalEl = document.getElementById('modalNuevoProducto');
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.hide();
+            }
 
-        // Inicializar y mostrar toasts de notificaciones del servidor (con soporte para HTMX y auto-limpieza)
-        function inicializarToasts() {
-            const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
-            toasts.forEach(toastEl => {
+            // Forzar limpieza del body para evitar scroll bloqueado si HTMX hace el swap rápido
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(el => el.remove());
+        });
+    }
+
+    const formEditar = document.getElementById('formEditarProducto');
+    if (formEditar) {
+        formEditar.addEventListener('submit', function() {
+            const btnSubmit = formEditar.querySelector('button[type="submit"]');
+            if (btnSubmit) {
+                btnSubmit.disabled = true;
+                btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
+            }
+        });
+    }
+
+    // Inicializar y mostrar toasts de notificaciones del servidor (con soporte para HTMX y auto-limpieza)
+    function inicializarToasts() {
+        const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
+        toasts.forEach(toastEl => {
+            if (typeof bootstrap !== 'undefined') {
                 const toast = new bootstrap.Toast(toastEl);
                 toast.show();
                 
@@ -602,22 +623,24 @@
                 toastEl.addEventListener('hidden.bs.toast', () => {
                     toastEl.remove();
                 });
-            });
-        }
+            }
+        });
+    }
 
-        inicializarToasts();
-        
-        // Escuchar el evento de HTMX tras un swap de contenido para mostrar toasts en peticiones dinámicas
-        document.body.addEventListener('htmx:afterSettle', inicializarToasts);
+    inicializarToasts();
+    
+    // Escuchar el evento de HTMX tras un swap de contenido para mostrar toasts en peticiones dinámicas
+    document.body.addEventListener('htmx:afterSettle', inicializarToasts);
 
-        // ----------------- BUSCADOR DE CATEGORÍAS (NUEVO PRODUCTO) -----------------
-        const btnDropdownNuevo = document.getElementById('btnDropdownCategoriaNuevo');
-        const inputSearchNuevo = document.getElementById('inputSearchCategoriaNuevo');
-        const hiddenInputNuevo = document.getElementById('id_categoria');
-        const optionBtnsNuevo = document.querySelectorAll('.category-option-btn-nuevo');
-        const dropdownSearchNuevo = document.getElementById('dropdownSearchCategoriaNuevo');
+    // ----------------- BUSCADOR DE CATEGORÍAS (NUEVO PRODUCTO) -----------------
+    const btnDropdownNuevo = document.getElementById('btnDropdownCategoriaNuevo');
+    const inputSearchNuevo = document.getElementById('inputSearchCategoriaNuevo');
+    const hiddenInputNuevo = document.getElementById('id_categoria');
+    const optionBtnsNuevo = document.querySelectorAll('.category-option-btn-nuevo');
+    const dropdownSearchNuevo = document.getElementById('dropdownSearchCategoriaNuevo');
+    
+    if (btnDropdownNuevo && inputSearchNuevo && dropdownSearchNuevo) {
         const noResultsNuevo = dropdownSearchNuevo.querySelector('.no-results-msg');
-
         const btnClearNuevo = document.getElementById('btnClearCategoriaNuevo');
 
         // Filtrado en tiempo real
@@ -627,9 +650,9 @@
             
             // Mostrar/ocultar botón limpiar
             if (this.value.length > 0) {
-                btnClearNuevo.classList.remove('d-none');
+                if (btnClearNuevo) btnClearNuevo.classList.remove('d-none');
             } else {
-                btnClearNuevo.classList.add('d-none');
+                if (btnClearNuevo) btnClearNuevo.classList.add('d-none');
             }
 
             optionBtnsNuevo.forEach(btn => {
@@ -642,20 +665,22 @@
                 }
             });
             if (found) {
-                noResultsNuevo.classList.add('d-none');
+                if (noResultsNuevo) noResultsNuevo.classList.add('d-none');
             } else {
-                noResultsNuevo.classList.remove('d-none');
+                if (noResultsNuevo) noResultsNuevo.classList.remove('d-none');
             }
         });
 
         // Evento de click para limpiar búsqueda
-        btnClearNuevo.addEventListener('click', function(e) {
-            e.stopPropagation(); // Evitar cerrar dropdown
-            inputSearchNuevo.value = '';
-            this.classList.add('d-none');
-            inputSearchNuevo.dispatchEvent(new Event('input'));
-            inputSearchNuevo.focus();
-        });
+        if (btnClearNuevo) {
+            btnClearNuevo.addEventListener('click', function(e) {
+                e.stopPropagation(); // Evitar cerrar dropdown
+                inputSearchNuevo.value = '';
+                this.classList.add('d-none');
+                inputSearchNuevo.dispatchEvent(new Event('input'));
+                inputSearchNuevo.focus();
+            });
+        }
 
         // Evento de selección
         optionBtnsNuevo.forEach(btn => {
@@ -673,24 +698,28 @@
 
         // Resetear al abrir/cerrar modal
         const modalNuevoEl = document.getElementById('modalNuevoProducto');
-        modalNuevoEl.addEventListener('show.bs.modal', function () {
-            inputSearchNuevo.value = '';
-            btnClearNuevo.classList.add('d-none');
-            optionBtnsNuevo.forEach(btn => btn.classList.remove('d-none'));
-            noResultsNuevo.classList.add('d-none');
-            hiddenInputNuevo.value = '';
-            btnDropdownNuevo.querySelector('span').innerText = 'Seleccione una categoría';
-        });
+        if (modalNuevoEl) {
+            modalNuevoEl.addEventListener('show.bs.modal', function () {
+                inputSearchNuevo.value = '';
+                if (btnClearNuevo) btnClearNuevo.classList.add('d-none');
+                optionBtnsNuevo.forEach(btn => btn.classList.remove('d-none'));
+                if (noResultsNuevo) noResultsNuevo.classList.add('d-none');
+                hiddenInputNuevo.value = '';
+                btnDropdownNuevo.querySelector('span').innerText = 'Seleccione una categoría';
+            });
+        }
+    }
 
 
-        // ----------------- BUSCADOR DE CATEGORÍAS (EDITAR PRODUCTO) -----------------
-        const btnDropdownEdit = document.getElementById('btnDropdownCategoriaEdit');
-        const inputSearchEdit = document.getElementById('inputSearchCategoriaEdit');
-        const hiddenInputEdit = document.getElementById('edit_id_categoria');
-        const optionBtnsEdit = document.querySelectorAll('.category-option-btn-edit');
-        const dropdownSearchEdit = document.getElementById('dropdownSearchCategoriaEdit');
+    // ----------------- BUSCADOR DE CATEGORÍAS (EDITAR PRODUCTO) -----------------
+    const btnDropdownEdit = document.getElementById('btnDropdownCategoriaEdit');
+    const inputSearchEdit = document.getElementById('inputSearchCategoriaEdit');
+    const hiddenInputEdit = document.getElementById('edit_id_categoria');
+    const optionBtnsEdit = document.querySelectorAll('.category-option-btn-edit');
+    const dropdownSearchEdit = document.getElementById('dropdownSearchCategoriaEdit');
+    
+    if (btnDropdownEdit && inputSearchEdit && dropdownSearchEdit) {
         const noResultsEdit = dropdownSearchEdit.querySelector('.no-results-msg');
-
         const btnClearEdit = document.getElementById('btnClearCategoriaEdit');
 
         // Filtrado en tiempo real
@@ -700,9 +729,9 @@
             
             // Mostrar/ocultar botón limpiar
             if (this.value.length > 0) {
-                btnClearEdit.classList.remove('d-none');
+                if (btnClearEdit) btnClearEdit.classList.remove('d-none');
             } else {
-                btnClearEdit.classList.add('d-none');
+                if (btnClearEdit) btnClearEdit.classList.add('d-none');
             }
 
             optionBtnsEdit.forEach(btn => {
@@ -715,20 +744,22 @@
                 }
             });
             if (found) {
-                noResultsEdit.classList.add('d-none');
+                if (noResultsEdit) noResultsEdit.classList.add('d-none');
             } else {
-                noResultsEdit.classList.remove('d-none');
+                if (noResultsEdit) noResultsEdit.classList.remove('d-none');
             }
         });
 
         // Evento de click para limpiar búsqueda
-        btnClearEdit.addEventListener('click', function(e) {
-            e.stopPropagation(); // Evitar cerrar dropdown
-            inputSearchEdit.value = '';
-            this.classList.add('d-none');
-            inputSearchEdit.dispatchEvent(new Event('input'));
-            inputSearchEdit.focus();
-        });
+        if (btnClearEdit) {
+            btnClearEdit.addEventListener('click', function(e) {
+                e.stopPropagation(); // Evitar cerrar dropdown
+                inputSearchEdit.value = '';
+                this.classList.add('d-none');
+                inputSearchEdit.dispatchEvent(new Event('input'));
+                inputSearchEdit.focus();
+            });
+        }
 
         // Evento de selección
         optionBtnsEdit.forEach(btn => {
@@ -746,12 +777,15 @@
 
         // Resetear al abrir/cerrar modal
         const modalEditarEl = document.getElementById('modalEditarProducto');
-        modalEditarEl.addEventListener('show.bs.modal', function () {
-            inputSearchEdit.value = '';
-            btnClearEdit.classList.add('d-none');
-            optionBtnsEdit.forEach(btn => btn.classList.remove('d-none'));
-            noResultsEdit.classList.add('d-none');
-        });
-    });
+        if (modalEditarEl) {
+            modalEditarEl.addEventListener('show.bs.modal', function () {
+                inputSearchEdit.value = '';
+                if (btnClearEdit) btnClearEdit.classList.add('d-none');
+                optionBtnsEdit.forEach(btn => btn.classList.remove('d-none'));
+                if (noResultsEdit) noResultsEdit.classList.add('d-none');
+            });
+        }
+    }
+})();
 </script>
 <?= $this->endSection() ?>

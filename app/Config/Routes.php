@@ -59,4 +59,10 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->post('semillas/crear', 'VentasSemillas::crear');
     $routes->post('semillas/entregar', 'VentasSemillas::entregarBea');
     $routes->post('semillas/eliminar/(:num)', 'VentasSemillas::eliminar/$1');
+
+    // Rutas de Compras a Proveedores
+    $routes->get('compras', 'ComprasProveedores::index');
+    $routes->post('compras/crear', 'ComprasProveedores::crear');
+    $routes->get('compras/detalle/(:num)', 'ComprasProveedores::detalle/$1');
+    $routes->post('compras/eliminar/(:num)', 'ComprasProveedores::eliminar/$1');
 });
