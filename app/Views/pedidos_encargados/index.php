@@ -17,7 +17,7 @@
             <button type="button" class="btn btn-info rounded-pill px-4 fw-bold text-dark d-inline-flex align-items-center gap-2 hover-shadow" data-bs-toggle="modal" data-bs-target="#modalNuevoEncargo">
                 <i class="fas fa-cart-plus text-dark"></i> Registrar Encargo
             </button>
-            <a href="<?= base_url('admin/productos') ?>" class="btn btn-outline-dark rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
+            <a href="<?= base_url('admin/productos') ?>" hx-boost="true" class="btn btn-outline-dark rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
                 <i class="fas fa-arrow-left"></i> Volver a Productos
             </a>
         </div>

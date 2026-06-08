@@ -504,7 +504,20 @@
     transition: all 0.25s ease-in-out !important;
 }
 .modal-encargo-control::placeholder {
-    color: rgba(255, 255, 255, 0.45) !important;
+    color: rgba(255, 255, 255, 0.65) !important;
+    opacity: 1 !important;
+}
+.modal-encargo-control::-webkit-input-placeholder {
+    color: rgba(255, 255, 255, 0.65) !important;
+    opacity: 1 !important;
+}
+.modal-encargo-control::-moz-placeholder {
+    color: rgba(255, 255, 255, 0.65) !important;
+    opacity: 1 !important;
+}
+.modal-encargo-control:-ms-input-placeholder {
+    color: rgba(255, 255, 255, 0.65) !important;
+    opacity: 1 !important;
 }
 .modal-encargo-control:focus,
 .modal-encargo-select:focus {

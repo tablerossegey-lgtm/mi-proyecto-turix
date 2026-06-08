@@ -17,7 +17,7 @@
             <button type="button" class="btn btn-warning rounded-pill px-4 fw-bold hover-warning text-dark d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalNuevoProducto">
                 <i class="fas fa-plus text-dark"></i> Nuevo Producto
             </button>
-            <a href="<?= base_url() ?>" class="btn btn-outline-dark rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
+            <a href="<?= base_url() ?>" hx-boost="true" class="btn btn-outline-dark rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
                 <i class="fas fa-arrow-left"></i> Volver al Catálogo
             </a>
         </div>
@@ -290,7 +290,7 @@
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <form id="formEditarProducto" action="" method="POST" enctype="multipart/form-data">
+                <form id="formEditarProducto" action="" method="POST" enctype="multipart/form-data" hx-boost="true">
                     <div class="modal-body p-4">
                         <div class="row g-3">
                             <!-- SKU -->
@@ -545,8 +545,14 @@
         if (!modalEl) return;
         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         
-        // Configurar acción del formulario dinámicamente con la URL de edición
-        document.getElementById('formEditarProducto').action = "<?= base_url('admin/productos/editar/') ?>" + producto.id;
+        // Configurar acción del formulario dinámicamente con la URL de edición y procesar con HTMX
+        const formEditarObj = document.getElementById('formEditarProducto');
+        const actionUrl = "<?= base_url('admin/productos/editar/') ?>" + producto.id;
+        formEditarObj.action = actionUrl;
+        formEditarObj.setAttribute('action', actionUrl);
+        if (typeof htmx !== 'undefined') {
+            htmx.process(formEditarObj);
+        }
         
         // Rellenar campos del formulario
         document.getElementById('edit_codigo_sku').value = producto.codigo_sku;
@@ -583,20 +589,6 @@
                 btnSubmit.disabled = true;
                 btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
             }
-
-            // Ocultar modal para que Bootstrap limpie su estado
-            const modalEl = document.getElementById('modalNuevoProducto');
-            if (modalEl && typeof bootstrap !== 'undefined') {
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modal.hide();
-            }
-
-            // Forzar limpieza del body para evitar scroll bloqueado si HTMX hace el swap rápido
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach(el => el.remove());
         });
     }
 
@@ -610,6 +602,26 @@
             }
         });
     }
+
+    // Escuchar antes de que ocurra el swap de HTMX para ocultar los modales y limpiar el body
+    document.body.addEventListener('htmx:beforeSwap', function(evt) {
+        if (evt.detail.elt.id === 'formNuevoProducto' || evt.detail.elt.id === 'formEditarProducto') {
+            // Ocultar modal correspondiente
+            const modalId = evt.detail.elt.id === 'formNuevoProducto' ? 'modalNuevoProducto' : 'modalEditarProducto';
+            const modalEl = document.getElementById(modalId);
+            if (modalEl && typeof bootstrap !== 'undefined') {
+                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.hide();
+            }
+            
+            // Forzar limpieza inmediata del body y backdrops para evitar scroll bloqueado
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(el => el.remove());
+        }
+    });
 
     // Inicializar y mostrar toasts de notificaciones del servidor (con soporte para HTMX y auto-limpieza)
     function inicializarToasts() {

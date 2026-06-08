@@ -10,7 +10,7 @@
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
             <div class="mb-1">
-                <a href="<?= base_url('admin/productos') ?>" class="text-warning fw-bold text-decoration-none small">
+                <a href="<?= base_url('admin/productos') ?>" hx-boost="true" class="text-warning fw-bold text-decoration-none small">
                     <i class="fas fa-chevron-left me-1"></i> Volver a Productos
                 </a>
             </div>

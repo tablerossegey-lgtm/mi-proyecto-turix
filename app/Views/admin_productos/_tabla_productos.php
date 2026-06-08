@@ -38,6 +38,7 @@
             <td class="py-3 text-center">
                 <?php if ($p['total_encargos_pendientes'] > 0): ?>
                     <a href="<?= base_url('admin/encargos?estado=Pendiente&producto_id=' . $p['id']) ?>" 
+                       hx-boost="true"
                        class="badge bg-info text-dark fw-bold rounded-pill px-3 py-1.5 shadow-sm text-decoration-none hover-shadow">
                         <i class="fas fa-clipboard-list me-1"></i> <?= $p['total_encargos_pendientes'] ?> pzas
                     </a>
@@ -48,6 +49,7 @@
             <td class="py-3 text-end pe-4">
                 <div class="d-inline-flex gap-2">
                     <a href="<?= base_url('admin/encargos?nuevo_encargo_producto_id=' . $p['id']) ?>" 
+                       hx-boost="true"
                        class="btn btn-outline-info btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-info-btn">
                         <i class="fas fa-cart-plus"></i> Encargar
                     </a>
@@ -79,6 +81,7 @@
                         <i class="fas fa-edit text-dark"></i> Editar
                     </button>
                     <a href="<?= base_url('admin/productos/galeria/' . $p['id']) ?>" 
+                       hx-boost="true"
                        class="btn btn-outline-light btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm">
                         <i class="fas fa-photo-video"></i> Galerías
                     </a>
