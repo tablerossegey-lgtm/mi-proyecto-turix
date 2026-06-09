@@ -64,7 +64,7 @@
             });
 
             // Limpiar estados de Bootstrap (dropdowns, collapses y modales) antes del swap de HTMX
-            document.addEventListener('htmx:beforeSwap', function() {
+            document.addEventListener('htmx:beforeSwap', function(e) {
                 if (typeof bootstrap !== 'undefined') {
                     // 1. Cerrar dropdowns abiertos
                     const openDropdowns = document.querySelectorAll('.dropdown-toggle.show');
@@ -84,25 +84,31 @@
                         }
                     });
 
-                    // 3. Cerrar cualquier modal de Bootstrap abierto en la página
+                    // 3. Cerrar cualquier modal de Bootstrap abierto en la página (excepto si el swap ocurre dentro de él)
                     const openModals = document.querySelectorAll('.modal.show');
                     openModals.forEach(modalEl => {
+                        if (e.detail && e.detail.target && modalEl.contains(e.detail.target)) {
+                            return;
+                        }
                         const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
                         modal.hide();
                     });
 
-                    // 4. Forzar limpieza inmediata de clases y estilos del body/backdrops
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                    document.body.style.paddingRight = '';
-                    
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    backdrops.forEach(el => el.remove());
+                    // 4. Forzar limpieza inmediata de clases y estilos del body/backdrops (solo si el swap no ocurre dentro de un modal que debe seguir abierto)
+                    const targetInsideModal = Array.from(openModals).some(modalEl => e.detail && e.detail.target && modalEl.contains(e.detail.target));
+                    if (!targetInsideModal) {
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                        
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(el => el.remove());
+                    }
                 }
             });
 
             // Sincronizar clases de body y contador tras transiciones de HTMX
-            document.addEventListener('htmx:afterSwap', function() {
+            document.addEventListener('htmx:afterSwap', function(e) {
                 if (typeof actualizarContadorCart === 'function') {
                     actualizarContadorCart();
                 }
@@ -115,14 +121,17 @@
 
                 // Forzar limpieza diferida de clases y estilos de modales/backdrops para evitar scroll bloqueado por callbacks asíncronos de Bootstrap
                 setTimeout(() => {
-                    document.body.classList.remove('modal-open');
-                    document.body.style.overflow = '';
-                    document.body.style.paddingRight = '';
-                    document.documentElement.style.overflow = '';
-                    document.documentElement.style.paddingRight = '';
-                    
-                    const backdrops = document.querySelectorAll('.modal-backdrop');
-                    backdrops.forEach(el => el.remove());
+                    const openModals = document.querySelectorAll('.modal.show');
+                    if (openModals.length === 0) {
+                        document.body.classList.remove('modal-open');
+                        document.body.style.overflow = '';
+                        document.body.style.paddingRight = '';
+                        document.documentElement.style.overflow = '';
+                        document.documentElement.style.paddingRight = '';
+                        
+                        const backdrops = document.querySelectorAll('.modal-backdrop');
+                        backdrops.forEach(el => el.remove());
+                    }
                 }, 100);
 
                 // Inicializar y mostrar toasts tras transiciones de HTMX
