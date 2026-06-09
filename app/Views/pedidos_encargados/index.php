@@ -314,7 +314,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formNuevoEncargo" action="<?= base_url('admin/encargos/crear') ?>" method="POST">
+            <form id="formNuevoEncargo" action="<?= base_url('admin/encargos/crear') ?>" method="POST" hx-boost="true">
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <!-- Producto -->
@@ -870,24 +870,7 @@
             });
         }
 
-        // Escuchar antes de que ocurra el swap de HTMX para ocultar los modales y limpiar el body
-        document.body.addEventListener('htmx:beforeSwap', function(evt) {
-            if (evt.detail.elt.id === 'formEditarEncargo' || evt.detail.elt.id === 'formConfirmarEliminarEncargo') {
-                const modalId = evt.detail.elt.id === 'formEditarEncargo' ? 'modalEditarEncargo' : 'modalConfirmarEliminarEncargo';
-                const modalEl = document.getElementById(modalId);
-                if (modalEl && typeof bootstrap !== 'undefined') {
-                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                    modal.hide();
-                }
-                
-                // Forzar limpieza inmediata del body y backdrops para evitar scroll bloqueado
-                document.body.classList.remove('modal-open');
-                document.body.style.overflow = '';
-                document.body.style.paddingRight = '';
-                const backdrops = document.querySelectorAll('.modal-backdrop');
-                backdrops.forEach(el => el.remove());
-            }
-        });
+
 
         // Inicializar y mostrar toasts de notificaciones del servidor
         function inicializarToasts() {

@@ -600,25 +600,7 @@
         });
     }
 
-    // Escuchar antes de que ocurra el swap de HTMX para ocultar los modales y limpiar el body
-    document.body.addEventListener('htmx:beforeSwap', function(evt) {
-        if (evt.detail.elt.id === 'formNuevoProducto' || evt.detail.elt.id === 'formEditarProducto') {
-            // Ocultar modal correspondiente
-            const modalId = evt.detail.elt.id === 'formNuevoProducto' ? 'modalNuevoProducto' : 'modalEditarProducto';
-            const modalEl = document.getElementById(modalId);
-            if (modalEl && typeof bootstrap !== 'undefined') {
-                const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-                modal.hide();
-            }
-            
-            // Forzar limpieza inmediata del body y backdrops para evitar scroll bloqueado
-            document.body.classList.remove('modal-open');
-            document.body.style.overflow = '';
-            document.body.style.paddingRight = '';
-            const backdrops = document.querySelectorAll('.modal-backdrop');
-            backdrops.forEach(el => el.remove());
-        }
-    });
+
 
     // Inicializar y mostrar toasts de notificaciones del servidor (con soporte para HTMX y auto-limpieza)
     function inicializarToasts() {

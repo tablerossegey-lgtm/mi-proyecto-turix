@@ -54,9 +54,10 @@
                 }
             });
 
-            // Limpiar estados de Bootstrap (dropdowns y collapses) antes del swap de HTMX
+            // Limpiar estados de Bootstrap (dropdowns, collapses y modales) antes del swap de HTMX
             document.addEventListener('htmx:beforeSwap', function() {
                 if (typeof bootstrap !== 'undefined') {
+                    // 1. Cerrar dropdowns abiertos
                     const openDropdowns = document.querySelectorAll('.dropdown-toggle.show');
                     openDropdowns.forEach(btn => {
                         const dropdown = bootstrap.Dropdown.getInstance(btn);
@@ -65,6 +66,7 @@
                         }
                     });
 
+                    // 2. Cerrar menús colapsados abiertos
                     const openCollapses = document.querySelectorAll('.navbar-collapse.show');
                     openCollapses.forEach(collapseEl => {
                         const collapse = bootstrap.Collapse.getInstance(collapseEl);
@@ -72,6 +74,21 @@
                             collapse.hide();
                         }
                     });
+
+                    // 3. Cerrar cualquier modal de Bootstrap abierto en la página
+                    const openModals = document.querySelectorAll('.modal.show');
+                    openModals.forEach(modalEl => {
+                        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                        modal.hide();
+                    });
+
+                    // 4. Forzar limpieza inmediata de clases y estilos del body/backdrops
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(el => el.remove());
                 }
             });
 
@@ -86,6 +103,18 @@
                 } else {
                     document.body.classList.remove('admin-body');
                 }
+
+                // Forzar limpieza diferida de clases y estilos de modales/backdrops para evitar scroll bloqueado por callbacks asíncronos de Bootstrap
+                setTimeout(() => {
+                    document.body.classList.remove('modal-open');
+                    document.body.style.overflow = '';
+                    document.body.style.paddingRight = '';
+                    document.documentElement.style.overflow = '';
+                    document.documentElement.style.paddingRight = '';
+                    
+                    const backdrops = document.querySelectorAll('.modal-backdrop');
+                    backdrops.forEach(el => el.remove());
+                }, 100);
 
                 // Inicializar y mostrar toasts tras transiciones de HTMX
                 if (typeof bootstrap !== 'undefined') {
