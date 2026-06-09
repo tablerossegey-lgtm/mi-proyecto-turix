@@ -59,7 +59,7 @@
 
                     <!-- Botón Ingresar -->
                     <div class="d-grid mt-5">
-                        <button type="submit" class="btn btn-login-premium">
+                        <button type="submit" class="btn btn-login-premium" id="btnLogin">
                             <i class="bi bi-box-arrow-in-right me-2"></i> Iniciar Sesión
                         </button>
                     </div>
@@ -97,6 +97,18 @@
             });
             togglePassword.addEventListener('mouseleave', () => {
                 togglePassword.style.color = 'rgba(255, 255, 255, 0.5)';
+            });
+        }
+
+        // Animación de Spinner al enviar el formulario
+        const loginForm = document.querySelector('form');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function() {
+                const btnLogin = document.getElementById('btnLogin');
+                if (btnLogin) {
+                    btnLogin.disabled = true;
+                    btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Iniciando Sesión...';
+                }
             });
         }
     });

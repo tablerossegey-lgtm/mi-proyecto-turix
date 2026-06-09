@@ -269,17 +269,12 @@
                                             <i class="fas fa-edit"></i>
                                         </button>
                                         
-                                        <form action="<?= base_url('admin/encargos/eliminar/' . $e['id']) ?>" 
-                                              method="POST" 
-                                              class="d-inline" 
-                                              onsubmit="return confirm('¿Estás seguro de que deseas eliminar este encargo? Esta acción no se puede deshacer.');"
-                                              hx-boost="true">
-                                            <button type="submit" 
-                                                    class="btn btn-danger btn-sm d-flex align-items-center justify-content-center rounded-3 p-2" 
-                                                    title="Eliminar encargo">
-                                                <i class="fas fa-trash-alt text-white"></i>
-                                            </button>
-                                        </form>
+                                        <button type="button" 
+                                                class="btn btn-danger btn-sm d-flex align-items-center justify-content-center rounded-3 p-2" 
+                                                title="Eliminar encargo"
+                                                onclick="abrirEliminarEncargo(<?= $e['id'] ?>)">
+                                            <i class="fas fa-trash-alt text-white"></i>
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
@@ -448,7 +443,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formEditarEncargo" action="" method="POST">
+            <form id="formEditarEncargo" action="" method="POST" hx-boost="true">
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <!-- Producto -->
@@ -569,6 +564,29 @@
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar Encargo -->
+<div class="modal fade" id="modalConfirmarEliminarEncargo" tabindex="-1" aria-labelledby="modalConfElimEncargoLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-encargo-content text-white" style="background-color: #121824; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="modal-header modal-encargo-header py-3 px-4" style="border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
+                <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="modalConfElimEncargoLabel">
+                    <i class="fas fa-exclamation-triangle text-danger"></i> ¿Eliminar Registro de Encargo?
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="text-white-50" style="font-size: 0.95rem;">¿Estás seguro de que deseas eliminar este encargo? Esta acción no se puede deshacer y el registro será borrado permanentemente.</p>
+            </div>
+            <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <form id="formConfirmarEliminarEncargo" action="" method="POST" class="d-inline" hx-boost="true">
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Confirmar y Eliminar</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -739,7 +757,11 @@
         const modal = new bootstrap.Modal(document.getElementById('modalEditarEncargo'));
         
         // Configurar acción del formulario dinámicamente con la URL de edición
-        document.getElementById('formEditarEncargo').setAttribute('action', "<?= base_url('admin/encargos/editar/') ?>" + encargo.id);
+        const formEditarObj = document.getElementById('formEditarEncargo');
+        formEditarObj.setAttribute('action', "<?= base_url('admin/encargos/editar/') ?>" + encargo.id);
+        if (typeof htmx !== 'undefined') {
+            htmx.process(formEditarObj);
+        }
         
         // Rellenar campos del formulario
         document.getElementById('edit_estado').value = encargo.estado;
@@ -766,6 +788,21 @@
         } else {
             hiddenInput.value = '';
             searchInput.value = 'Producto eliminado';
+        }
+        
+        modal.show();
+    }
+
+    // Abre modal para confirmar eliminación de un encargo
+    function abrirEliminarEncargo(id) {
+        const modalEl = document.getElementById('modalConfirmarEliminarEncargo');
+        const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+        
+        const formObj = document.getElementById('formConfirmarEliminarEncargo');
+        const actionUrl = "<?= base_url('admin/encargos/eliminar/') ?>" + id;
+        formObj.setAttribute('action', actionUrl);
+        if (typeof htmx !== 'undefined') {
+            htmx.process(formObj);
         }
         
         modal.show();
@@ -821,6 +858,36 @@
                 }
             });
         }
+
+        const formEliminar = document.getElementById('formConfirmarEliminarEncargo');
+        if (formEliminar) {
+            formEliminar.addEventListener('submit', function() {
+                const btnSubmit = formEliminar.querySelector('button[type="submit"]');
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Eliminando...';
+                }
+            });
+        }
+
+        // Escuchar antes de que ocurra el swap de HTMX para ocultar los modales y limpiar el body
+        document.body.addEventListener('htmx:beforeSwap', function(evt) {
+            if (evt.detail.elt.id === 'formEditarEncargo' || evt.detail.elt.id === 'formConfirmarEliminarEncargo') {
+                const modalId = evt.detail.elt.id === 'formEditarEncargo' ? 'modalEditarEncargo' : 'modalConfirmarEliminarEncargo';
+                const modalEl = document.getElementById(modalId);
+                if (modalEl && typeof bootstrap !== 'undefined') {
+                    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+                    modal.hide();
+                }
+                
+                // Forzar limpieza inmediata del body y backdrops para evitar scroll bloqueado
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(el => el.remove());
+            }
+        });
 
         // Inicializar y mostrar toasts de notificaciones del servidor
         function inicializarToasts() {

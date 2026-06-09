@@ -13,6 +13,94 @@
     <?= $this->renderSection('styles') ?>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon_turix.ico') ?>">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="<?= base_url('js/carrito.js?v=1.4') ?>"></script>
+    <script>
+        (function() {
+            // Delegación de eventos para modalDetalle al ocultarse
+            document.addEventListener('hidden.bs.modal', function (e) {
+                if (e.target.id === 'modalDetalle') {
+                    const contenidoModal = document.getElementById('contenido-modal');
+                    if (contenidoModal) {
+                        contenidoModal.innerHTML = `
+                            <div class="p-5 text-center text-white">
+                                <div class="spinner-border text-warning" role="status"></div>
+                                <p class="mt-2">Cargando información del producto...</p>
+                            </div>
+                        `;
+                    }
+                }
+            });
+
+            // Lógica del botón Scroll-To-Top (delegada)
+            window.addEventListener('scroll', () => {
+                const btnScrollTop = document.getElementById('btnScrollTop');
+                if (btnScrollTop) {
+                    if (window.scrollY > 300) {
+                        btnScrollTop.classList.add('show');
+                    } else {
+                        btnScrollTop.classList.remove('show');
+                    }
+                }
+            });
+
+            document.addEventListener('click', function (e) {
+                const btn = e.target.closest('#btnScrollTop');
+                if (btn) {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+
+            // Limpiar estados de Bootstrap (dropdowns y collapses) antes del swap de HTMX
+            document.addEventListener('htmx:beforeSwap', function() {
+                if (typeof bootstrap !== 'undefined') {
+                    const openDropdowns = document.querySelectorAll('.dropdown-toggle.show');
+                    openDropdowns.forEach(btn => {
+                        const dropdown = bootstrap.Dropdown.getInstance(btn);
+                        if (dropdown) {
+                            dropdown.hide();
+                        }
+                    });
+
+                    const openCollapses = document.querySelectorAll('.navbar-collapse.show');
+                    openCollapses.forEach(collapseEl => {
+                        const collapse = bootstrap.Collapse.getInstance(collapseEl);
+                        if (collapse) {
+                            collapse.hide();
+                        }
+                    });
+                }
+            });
+
+            // Sincronizar clases de body y contador tras transiciones de HTMX
+            document.addEventListener('htmx:afterSwap', function() {
+                if (typeof actualizarContadorCart === 'function') {
+                    actualizarContadorCart();
+                }
+
+                if (document.querySelector('.styles-admin-theme')) {
+                    document.body.classList.add('admin-body');
+                } else {
+                    document.body.classList.remove('admin-body');
+                }
+
+                // Inicializar y mostrar toasts tras transiciones de HTMX
+                if (typeof bootstrap !== 'undefined') {
+                    const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
+                    toasts.forEach(toastEl => {
+                        const toast = new bootstrap.Toast(toastEl);
+                        toast.show();
+                        toastEl.addEventListener('hidden.bs.toast', () => {
+                            toastEl.remove();
+                        });
+                    });
+                }
+            });
+        })();
+    </script>
 </head>
 
 <body style="min-height: 100vh; display: flex; flex-direction: column;">
@@ -198,56 +286,7 @@
         <i class="bi bi-arrow-up"></i>
     </button>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= base_url('js/carrito.js?v=1.4') ?>"></script>
     <?= $this->renderSection('scripts') ?>
-    <script>
-        (function() {
-            const modalDetalle = document.getElementById('modalDetalle');
-            if (modalDetalle) {
-                // Limpiar el contenido del modal al cerrarse para evitar que se muestre información del producto anterior
-                modalDetalle.addEventListener('hidden.bs.modal', function () {
-                    document.getElementById('contenido-modal').innerHTML = `
-                        <div class="p-5 text-center text-white">
-                            <div class="spinner-border text-warning" role="status"></div>
-                            <p class="mt-2">Cargando información del producto...</p>
-                        </div>
-                    `;
-                });
-            }
-
-            // Lógica del botón Scroll-To-Top
-            const btnScrollTop = document.getElementById('btnScrollTop');
-            if (btnScrollTop) {
-                window.addEventListener('scroll', () => {
-                    if (window.scrollY > 300) {
-                        btnScrollTop.classList.add('show');
-                    } else {
-                        btnScrollTop.classList.remove('show');
-                    }
-                });
-                btnScrollTop.addEventListener('click', () => {
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
-                });
-            }
-
-            // Sincronizar clases de body y contador tras transiciones de HTMX
-            document.body.addEventListener('htmx:afterSwap', function() {
-                if (typeof actualizarContadorCart === 'function') {
-                    actualizarContadorCart();
-                }
-
-                if (document.querySelector('.styles-admin-theme')) {
-                    document.body.classList.add('admin-body');
-                } else {
-                    document.body.classList.remove('admin-body');
-                }
-            });
-        })();
-    </script>
 </body>
 
 </html>

@@ -26,7 +26,8 @@
     border: 1px solid rgba(255, 255, 255, 0.08) !important;
     border-radius: 1rem !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
-    overflow: hidden !important; /* Prevents nested container backgrounds from overlapping and squaring rounded corners */
+    overflow: hidden !important;
+    /* Prevents nested container backgrounds from overlapping and squaring rounded corners */
 }
 
 .admin-card .card-body {
@@ -48,12 +49,12 @@
     transition: all 0.3s ease !important;
 }
 
-.admin-search-group > :first-child {
+.admin-search-group> :first-child {
     border-top-left-radius: 50px !important;
     border-bottom-left-radius: 50px !important;
 }
 
-.admin-search-group > :last-child {
+.admin-search-group> :last-child {
     border-top-right-radius: 50px !important;
     border-bottom-right-radius: 50px !important;
 }
@@ -92,7 +93,8 @@
 
 .admin-search-btn {
     border: none !important;
-    border-radius: 0; /* Let parent classes or specific pseudo-classes handle the rounded corners on the ends */
+    border-radius: 0;
+    /* Let parent classes or specific pseudo-classes handle the rounded corners on the ends */
     padding-left: 1.75rem !important;
     padding-right: 1.75rem !important;
     transition: all 0.2s ease-in-out !important;
@@ -112,8 +114,8 @@
     border-collapse: collapse !important;
 }
 
-.admin-table tr, 
-.admin-table td, 
+.admin-table tr,
+.admin-table td,
 .admin-table th {
     background-color: transparent !important;
     color: #ffffff !important;
@@ -135,7 +137,8 @@
 }
 
 .admin-table tbody tr:nth-of-type(odd) {
-    background-color: rgba(255, 255, 255, 0.015) !important; /* Soft, premium alternating light gray/white tint */
+    background-color: rgba(255, 255, 255, 0.015) !important;
+    /* Soft, premium alternating light gray/white tint */
 }
 
 .admin-table tbody tr:nth-of-type(even) {
@@ -143,7 +146,8 @@
 }
 
 .admin-table tbody tr:hover {
-    background-color: rgba(255, 255, 255, 0.035) !important; /* Soft premium white glow on hover */
+    background-color: rgba(255, 255, 255, 0.035) !important;
+    /* Soft premium white glow on hover */
 }
 
 /* Imágenes e items en listas */
@@ -327,16 +331,14 @@
 }
 
 .admin-stat-value.text-danger {
-    color: #ef4444 !important; /* Soft premium red */
+    color: #ef4444 !important;
+    /* Soft premium red */
 }
 
 .admin-stat-value.text-success {
-    color: #10b981 !important; /* Soft premium green */
+    color: #10b981 !important;
+    /* Soft premium green */
 }
-
-/* ==========================================================================
-   ESTILOS MIGRADOS DESDE LAS VISTAS DE ADMINISTRACIÓN
-   ========================================================================== */
 
 /* Estilos de Galería (galeria.php) */
 .btn-cambiar-principal {
@@ -347,6 +349,7 @@
     cursor: pointer;
     transition: all 0.3s ease;
 }
+
 .btn-cambiar-principal:hover {
     background-color: #ffc107 !important;
     color: #1e293b !important;
@@ -433,12 +436,14 @@
     color: #0dcaf0 !important;
     transition: all 0.25s ease-in-out !important;
 }
+
 .hover-info-btn:hover {
     background-color: #0dcaf0 !important;
     color: #111317 !important;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3) !important;
 }
+
 .hover-shadow:hover {
     filter: brightness(1.15);
     box-shadow: 0 4px 10px rgba(13, 202, 240, 0.25) !important;
@@ -448,9 +453,11 @@
 .admin-stat-card-anticipos {
     border-left: 3px solid #28a745 !important;
 }
+
 .admin-stat-card-anticipos .admin-stat-label i {
     color: #28a745;
 }
+
 .admin-stat-card-anticipos .admin-stat-value {
     color: #28a745;
 }
@@ -460,16 +467,19 @@
     color: #ffc107 !important;
     border: 1px solid rgba(255, 193, 7, 0.3) !important;
 }
+
 .estado-badge-conseguido {
     background-color: rgba(40, 167, 69, 0.15) !important;
     color: #28a745 !important;
     border: 1px solid rgba(40, 167, 69, 0.3) !important;
 }
+
 .estado-badge-entregado {
     background-color: rgba(23, 162, 184, 0.15) !important;
     color: #17a2b8 !important;
     border: 1px solid rgba(23, 162, 184, 0.3) !important;
 }
+
 .estado-badge-cancelado {
     background-color: rgba(108, 117, 125, 0.15) !important;
     color: #6c757d !important;
@@ -482,17 +492,21 @@
     border-radius: 1.25rem !important;
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3) !important;
 }
+
 .modal-encargo-header {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
+
 .modal-encargo-footer {
     border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
 }
+
 .modal-encargo-label {
     color: #e2e8f0 !important;
     font-weight: 600;
     margin-bottom: 0.5rem;
 }
+
 .modal-encargo-control,
 .modal-encargo-select {
     background-color: #2a2e3d !important;
@@ -503,22 +517,27 @@
     font-size: 0.9rem !important;
     transition: all 0.25s ease-in-out !important;
 }
+
 .modal-encargo-control::placeholder {
     color: rgba(255, 255, 255, 0.65) !important;
     opacity: 1 !important;
 }
+
 .modal-encargo-control::-webkit-input-placeholder {
     color: rgba(255, 255, 255, 0.65) !important;
     opacity: 1 !important;
 }
+
 .modal-encargo-control::-moz-placeholder {
     color: rgba(255, 255, 255, 0.65) !important;
     opacity: 1 !important;
 }
+
 .modal-encargo-control:-ms-input-placeholder {
     color: rgba(255, 255, 255, 0.65) !important;
     opacity: 1 !important;
 }
+
 .modal-encargo-control:focus,
 .modal-encargo-select:focus {
     border-color: #0dcaf0 !important;
@@ -533,6 +552,7 @@
     border: none !important;
     transition: all 0.2s ease-in-out !important;
 }
+
 .btn-whatsapp-link:hover {
     background-color: #20ba5a !important;
     transform: scale(1.05);
@@ -550,6 +570,7 @@
     color: #ffffff;
     text-align: left;
 }
+
 .producto-item-option:hover,
 .edit-producto-item-option:hover,
 .cliente-item-option:hover,
@@ -583,7 +604,7 @@
     color: #1e293b !important;
 }
 
-.dropdown-search-select .dropdown-item.active, 
+.dropdown-search-select .dropdown-item.active,
 .dropdown-search-select .dropdown-item:active {
     background-color: #ffc107 !important;
     color: #1e293b !important;
@@ -614,14 +635,17 @@
 .dropdown-search-select .options-list::-webkit-scrollbar {
     width: 6px;
 }
+
 .dropdown-search-select .options-list::-webkit-scrollbar-track {
     background: rgba(255, 255, 255, 0.03);
     border-radius: 10px;
 }
+
 .dropdown-search-select .options-list::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 10px;
 }
+
 .dropdown-search-select .options-list::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.3);
 }
@@ -630,6 +654,7 @@
 .dropdown-search-select .btn-clear-search {
     transition: color 0.2s ease-in-out !important;
 }
+
 .dropdown-search-select .btn-clear-search:hover {
     color: #ffc107 !important;
 }
@@ -639,20 +664,24 @@
     max-height: 650px;
     overflow-y: auto;
 }
+
 .client-item {
     cursor: pointer;
     transition: all 0.2s ease;
     border-left: 4px solid transparent;
     background: rgba(255, 255, 255, 0.02);
 }
+
 .client-item:hover {
     background: rgba(255, 255, 255, 0.05);
     border-left-color: var(--turix-yellow);
 }
+
 .client-item.active {
     background: rgba(255, 140, 0, 0.08);
     border-left-color: var(--turix-accent);
 }
+
 .autocomplete-dropdown {
     position: absolute;
     width: 100%;
@@ -664,6 +693,7 @@
     border-radius: 0.5rem;
     display: none;
 }
+
 .autocomplete-item {
     background: transparent;
     color: #ffffff;
@@ -674,16 +704,20 @@
     font-size: 0.85rem;
     transition: background 0.2s ease;
 }
+
 .autocomplete-item:hover {
     background: rgba(255, 255, 255, 0.08);
     color: var(--turix-yellow);
 }
+
 .htmx-indicator {
     display: none;
 }
+
 .htmx-request .htmx-indicator {
     display: inline-block;
 }
+
 .htmx-request.htmx-indicator {
     display: inline-block;
 }
@@ -694,10 +728,12 @@
     height: 1.5em;
     cursor: pointer;
 }
+
 .form-switch-premium .form-check-input:checked {
     background-color: #198754;
     border-color: #198754;
 }
+
 .form-switch-premium .form-check-input:not(:checked) {
     background-color: #dc3545;
     border-color: #dc3545;
@@ -715,35 +751,42 @@
     font-weight: 600;
     transition: all 0.2s ease-in-out;
 }
+
 .tab-nav-link:hover {
     color: #ffc107 !important;
     border-bottom-color: rgba(255, 193, 7, 0.4) !important;
 }
+
 .tab-nav-link.active {
     color: #ffc107 !important;
     border-bottom-color: #ffc107 !important;
     background: rgba(255, 193, 7, 0.05) !important;
 }
+
 .badge-status-paid {
     background-color: rgba(40, 167, 69, 0.15) !important;
     color: #28a745 !important;
     border: 1px solid rgba(40, 167, 69, 0.3) !important;
 }
+
 .badge-status-pending {
     background-color: rgba(220, 53, 69, 0.15) !important;
     color: #dc3545 !important;
     border: 1px solid rgba(220, 53, 69, 0.3) !important;
 }
+
 .badge-status-delivered {
     background-color: rgba(23, 162, 184, 0.15) !important;
     color: #17a2b8 !important;
     border: 1px solid rgba(23, 162, 184, 0.3) !important;
 }
+
 .badge-status-not-delivered {
     background-color: rgba(255, 193, 7, 0.15) !important;
     color: #ffc107 !important;
     border: 1px solid rgba(255, 193, 7, 0.3) !important;
 }
+
 .text-profit {
     color: #0dcaf0 !important;
 }
