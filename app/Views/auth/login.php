@@ -31,7 +31,7 @@
                     </div>
                 <?php endif; ?>
 
-                <form action="<?= base_url('login') ?>" method="POST">
+                <form action="<?= base_url('login') ?>" method="POST" hx-boost="true">
                     <?= csrf_field() ?>
 
                     <!-- Campo de Usuario -->

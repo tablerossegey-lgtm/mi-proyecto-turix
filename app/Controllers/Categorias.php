@@ -13,7 +13,7 @@ class Categorias extends BaseController
         $model = new CategoriaModel();
         $data['categorias'] = $model->obtenerCategoriasConProductos();
 
-        if ($this->request->getHeaderLine('HX-Request')) {
+        if ($this->request->getHeaderLine('HX-Request') && !$this->request->getHeaderLine('HX-Boosted')) {
             return view('categorias/_lista_categorias', $data);
         }
 

@@ -17,7 +17,7 @@
 
 <body style="min-height: 100vh; display: flex; flex-direction: column;">
 
-    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm">
+    <nav class="navbar navbar-expand-lg navbar-dark shadow-sm" hx-boost="true">
         <div class="container">
             <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="<?= base_url() ?>">
                 <img src="<?= base_url('images/logoTurix.png') ?>" alt="Logo TurixShop" class="logo-navbar">
@@ -34,12 +34,14 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-lg-2">
                     <li class="nav-item">
                         <a class="nav-link <?= (url_is('') || url_is('/')) ? 'active fw-bold text-warning' : 'text-white-50' ?>"
+                            id="nav-link-inicio"
                             href="<?= base_url() ?>">
                             <i class="bi bi-house me-1"></i> Inicio
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link <?= (url_is('catalogo') || strpos(current_url(), 'catalogo') !== false) ? 'active fw-bold text-warning' : 'text-white-50' ?>"
+                            id="nav-link-catalogo"
                             href="<?= base_url('catalogo') ?>">
                             <i class="bi bi-bag me-1"></i> Catálogo
                         </a>
@@ -66,36 +68,42 @@
                                 aria-labelledby="adminDropdown">
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-gallery"
+                                        id="admin-item-gallery"
                                         href="<?= base_url('admin/productos') ?>">
                                         <i class="bi bi-images"></i> Panel Galería
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-orders"
+                                        id="admin-item-orders"
                                         href="<?= base_url('admin/encargos') ?>">
                                         <i class="bi bi-card-list"></i> Pedidos Encargados
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-accounts"
+                                        id="admin-item-accounts"
                                         href="<?= base_url('admin/cuentas') ?>">
                                         <i class="bi bi-wallet2"></i> Cuentas Clientes
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-caja"
+                                        id="admin-item-caja"
                                         href="<?= base_url('admin/caja') ?>">
                                         <i class="bi bi-cash-coin"></i> Consultar mi Caja
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-semillas"
+                                        id="admin-item-semillas"
                                         href="<?= base_url('admin/semillas') ?>">
                                         <i class="bi bi-tree"></i> Venta Snacks
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-compras"
+                                        id="admin-item-compras"
                                         href="<?= base_url('admin/compras') ?>">
                                         <i class="bi bi-cart-check"></i> Compras Proveedores
                                     </a>
@@ -105,7 +113,9 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-logout"
-                                        href="<?= base_url('logout') ?>">
+                                        id="admin-item-logout"
+                                        href="<?= base_url('logout') ?>"
+                                        hx-boost="false">
                                         <i class="bi bi-box-arrow-right"></i> Salir
                                     </a>
                                 </li>
@@ -223,6 +233,19 @@
                     });
                 });
             }
+
+            // Sincronizar clases de body y contador tras transiciones de HTMX
+            document.body.addEventListener('htmx:afterSwap', function() {
+                if (typeof actualizarContadorCart === 'function') {
+                    actualizarContadorCart();
+                }
+
+                if (document.querySelector('.styles-admin-theme')) {
+                    document.body.classList.add('admin-body');
+                } else {
+                    document.body.classList.remove('admin-body');
+                }
+            });
         })();
     </script>
 </body>

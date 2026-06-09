@@ -24,7 +24,7 @@ class Catalogo extends BaseController
             'titulo' => 'Catálogo de Productos'
         ];
 
-        if ($this->request->getHeaderLine('HX-Request')) {
+        if ($this->request->getHeaderLine('HX-Request') && !$this->request->getHeaderLine('HX-Boosted')) {
             return view('catalogo/_lista_productos', $data);
         }
 
@@ -48,7 +48,7 @@ class Catalogo extends BaseController
         ];
 
         // Retornamos una vista parcial para usar con HTMX o la vista completa con layout si se recarga la página
-        if ($this->request->getHeaderLine('HX-Request')) {
+        if ($this->request->getHeaderLine('HX-Request') && !$this->request->getHeaderLine('HX-Boosted')) {
             return view('catalogo/_lista_productos', $data);
         }
 
