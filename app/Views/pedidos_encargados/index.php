@@ -314,7 +314,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formNuevoEncargo" action="<?= base_url('admin/encargos/crear') ?>" method="POST" hx-boost="true">
+            <form id="formNuevoEncargo" action="<?= base_url('admin/encargos/crear') ?>" method="POST" hx-boost="true" onsubmit="mostrarSpinner(this, 'Guardando...')">
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <!-- Producto -->
@@ -443,7 +443,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formEditarEncargo" action="" method="POST" hx-boost="true">
+            <form id="formEditarEncargo" action="" method="POST" hx-boost="true" onsubmit="mostrarSpinner(this, 'Guardando...')">
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <!-- Producto -->
@@ -583,7 +583,7 @@
             </div>
             <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
                 <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <form id="formConfirmarEliminarEncargo" action="" method="POST" class="d-inline" hx-boost="true">
+                <form id="formConfirmarEliminarEncargo" action="" method="POST" class="d-inline" hx-boost="true" onsubmit="mostrarSpinner(this, 'Eliminando...')">
                     <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Confirmar y Eliminar</button>
                 </form>
             </div>
@@ -835,43 +835,7 @@
     });
     <?php endif; ?>
 
-    // Deshabilitar botón de guardar y mostrar spinner al enviar formularios para evitar doble submit
     document.addEventListener("DOMContentLoaded", function() {
-        const formNuevo = document.getElementById('formNuevoEncargo');
-        if (formNuevo) {
-            formNuevo.addEventListener('submit', function() {
-                const btnSubmit = formNuevo.querySelector('button[type="submit"]');
-                if (btnSubmit) {
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
-                }
-            });
-        }
-
-        const formEditar = document.getElementById('formEditarEncargo');
-        if (formEditar) {
-            formEditar.addEventListener('submit', function() {
-                const btnSubmit = formEditar.querySelector('button[type="submit"]');
-                if (btnSubmit) {
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
-                }
-            });
-        }
-
-        const formEliminar = document.getElementById('formConfirmarEliminarEncargo');
-        if (formEliminar) {
-            formEliminar.addEventListener('submit', function() {
-                const btnSubmit = formEliminar.querySelector('button[type="submit"]');
-                if (btnSubmit) {
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Eliminando...';
-                }
-            });
-        }
-
-
-
         // Inicializar y mostrar toasts de notificaciones del servidor
         function inicializarToasts() {
             const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');

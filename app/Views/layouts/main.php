@@ -16,6 +16,15 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="<?= base_url('js/carrito.js?v=1.4') ?>"></script>
     <script>
+        // Función global para mostrar spinner en botones de submit
+        function mostrarSpinner(form, text = 'Guardando...') {
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> ${text}`;
+            }
+        }
+
         (function() {
             // Delegación de eventos para modalDetalle al ocultarse
             document.addEventListener('hidden.bs.modal', function (e) {
