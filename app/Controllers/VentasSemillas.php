@@ -6,18 +6,21 @@ use App\Controllers\BaseController;
 use App\Models\ClienteModel;
 use App\Models\CuentaClienteModel;
 use App\Models\VentaSemillaModel;
+use App\Models\ProductoModel;
 
 class VentasSemillas extends BaseController
 {
     protected $clienteModel;
     protected $cuentaClienteModel;
     protected $ventaModel;
+    protected $productoModel;
 
     public function __construct()
     {
         $this->clienteModel = new ClienteModel();
         $this->cuentaClienteModel = new CuentaClienteModel();
         $this->ventaModel = new VentaSemillaModel();
+        $this->productoModel = new ProductoModel();
     }
 
     public function index()
@@ -29,28 +32,28 @@ class VentasSemillas extends BaseController
 
         $productosPredefinidos = [
             [
-                'nombre'       => 'Pepitas',
+                'nombre'       => 'Bolsa de Pepitas',
                 'precio_venta' => 15.00,
                 'precio_bea'   => 14.00,
                 'ganancia'     => 1.00,
                 'inventario'   => 'En inventario'
             ],
             [
-                'nombre'       => 'Frutos secos',
+                'nombre'       => 'Bolsa de Mix frutos secos',
                 'precio_venta' => 20.00,
                 'precio_bea'   => 19.00,
                 'ganancia'     => 1.00,
                 'inventario'   => 'En inventario'
             ],
             [
-                'nombre'       => 'Palomitas', // Palomitas chicas
+                'nombre'       => 'Bolsa de Palomitas',
                 'precio_venta' => 10.00,
                 'precio_bea'   => 10.00,
                 'ganancia'     => 0.00,
                 'inventario'   => 'En inventario'
             ],
             [
-                'nombre'       => 'Palomitas Grandes', // Palomitas Jumbo/Grandes
+                'nombre'       => 'Bolsa de Palomitas Jumbo',
                 'precio_venta' => 20.00,
                 'precio_bea'   => 20.00,
                 'ganancia'     => 0.00,
@@ -101,8 +104,21 @@ class VentasSemillas extends BaseController
             }
         }
 
+        // Buscar si existe el producto en el inventario para descontar stock
+        $productoInventario = $this->productoModel->where('descripcion', $producto)->first();
+        $idInventario = 0;
+        if ($productoInventario) {
+            $idInventario = (int)$productoInventario['id'];
+        }
+
         $db = \Config\Database::connect();
         $db->transStart();
+
+        // Descontar stock del inventario si el producto existe
+        if ($idInventario > 0) {
+            $nuevoStock = $productoInventario['stock'] - $cantidad;
+            $this->productoModel->update($idInventario, ['stock' => max(0, $nuevoStock)]);
+        }
 
         if ($metodo_pago === 'cuenta') {
             if ($id_cliente <= 0) {
@@ -119,7 +135,7 @@ class VentasSemillas extends BaseController
                 'precioUnit'    => $precio_venta,
                 'totalProduc'   => $precio_venta * $cantidad,
                 'estatusCompra' => '0', // 0 = Pendiente
-                'idInventario'  => 0
+                'idInventario'  => $idInventario
             ];
             
             $this->cuentaClienteModel->insert($nuevaCompra);
@@ -170,7 +186,16 @@ class VentasSemillas extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === false) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(500)->setBody('Error al registrar la venta en la base de datos.');
+            }
             return redirect()->back()->withInput()->with('error', 'Error al registrar la venta en la base de datos.');
+        }
+
+        session()->setFlashdata('success', 'Venta registrada con éxito.');
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->index();
         }
 
         return redirect()->to(base_url('admin/semillas'))->with('success', 'Venta registrada con éxito.');
@@ -185,6 +210,9 @@ class VentasSemillas extends BaseController
         $totalBea = (float)($query->getRow()->total ?? 0.00);
 
         if ($totalBea <= 0) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('No hay dinero pendiente de entrega para ventas cobradas.');
+            }
             return redirect()->back()->with('error', 'No hay dinero pendiente de entrega para ventas cobradas.');
         }
 
@@ -207,7 +235,16 @@ class VentasSemillas extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === false) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(500)->setBody('Error al procesar la liquidación con Bea.');
+            }
             return redirect()->back()->with('error', 'Error al procesar la liquidación con Bea.');
+        }
+
+        session()->setFlashdata('success', 'Liquidación procesada correctamente. Se retiraron $' . number_format($totalBea, 2) . ' de la Caja Chica.');
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->index();
         }
 
         return redirect()->to(base_url('admin/semillas'))->with('success', 'Liquidación procesada correctamente. Se retiraron $' . number_format($totalBea, 2) . ' de la Caja Chica.');
@@ -217,6 +254,9 @@ class VentasSemillas extends BaseController
     {
         $venta = $this->ventaModel->find($id);
         if (!$venta) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(404)->setBody('Venta no encontrada.');
+            }
             return redirect()->back()->with('error', 'Venta no encontrada.');
         }
 
@@ -235,7 +275,16 @@ class VentasSemillas extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === false) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(500)->setBody('Error al eliminar el registro de venta.');
+            }
             return redirect()->back()->with('error', 'Error al eliminar el registro de venta.');
+        }
+
+        session()->setFlashdata('success', 'Venta eliminada correctamente.');
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->index();
         }
 
         return redirect()->to(base_url('admin/semillas'))->with('success', 'Venta eliminada correctamente.');

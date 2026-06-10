@@ -51,51 +51,10 @@ class CuentasClientes extends BaseController
 
     public function obtenerCompras($idCliente)
     {
-        $cliente = $this->clienteModel->find($idCliente);
-        if (!$cliente) {
+        $data = $this->obtenerDatosCliente((int)$idCliente);
+        if (!$data) {
             return $this->response->setStatusCode(404)->setBody('Cliente no encontrado');
         }
-
-        $compras = $this->cuentaClienteModel->obtenerComprasPorCliente($idCliente);
-
-        // Obtener abonos
-        $db = \Config\Database::connect();
-        $abonos = $db->table('t_abono_cliente')
-            ->where('idCliente', $idCliente)
-            ->orderBy('fechaAbono', 'DESC')
-            ->orderBy('idAbono', 'DESC')
-            ->get()
-            ->getResultArray();
-
-        // Calcular balances históricos matemáticos
-        $totalComprasHistorico = 0;
-        $totalComprasActivas = 0;
-        foreach ($compras as $c) {
-            $totalComprasHistorico += $c['totalProduc'];
-            if ($c['estatusCompra'] == '0') {
-                $totalComprasActivas += $c['totalProduc'];
-            }
-        }
-
-        $totalPagadoHistorico = 0;
-        foreach ($abonos as $a) {
-            $totalPagadoHistorico += $a['abono'];
-        }
-
-        $totalPendiente = $totalComprasHistorico - $totalPagadoHistorico;
-        
-        // Lo abonado hacia las compras pendientes actuales
-        $abonadoActivo = $totalComprasActivas - $totalPendiente;
-
-        $data = [
-            'cliente' => $cliente,
-            'compras' => $compras,
-            'abonos'  => $abonos,
-            'totalPendiente' => $totalPendiente,
-            'totalPagadoActivo' => $abonadoActivo,
-            'totalComprasActivas' => $totalComprasActivas,
-            'totalPagadoHistorico' => $totalPagadoHistorico
-        ];
 
         return view('cuentas_clientes/_tabla_compras', $data);
     }
@@ -342,6 +301,11 @@ class CuentasClientes extends BaseController
             $this->registrarPagoCaja($compra['idCliente'], $totalProduc);
         }
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $data = $this->obtenerDatosCliente((int)$compra['idCliente']);
+            return view('cuentas_clientes/_tabla_compras', $data);
+        }
+
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Compra modificada con éxito.');
     }
 
@@ -351,6 +315,8 @@ class CuentasClientes extends BaseController
         if (!$compra) {
             return redirect()->back()->with('error', 'Compra no encontrada.');
         }
+
+        $idCliente = (int)$compra['idCliente'];
 
         // Si es de inventario y se asume que descontó stock, lo devolvemos
         $idInventario = (int)$compra['idInventario'];
@@ -368,6 +334,11 @@ class CuentasClientes extends BaseController
         $db->table('t_ventas_semillas')
             ->where('id_cuenta_cliente', $idCompra)
             ->delete();
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $data = $this->obtenerDatosCliente($idCliente);
+            return view('cuentas_clientes/_tabla_compras', $data);
+        }
 
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Registro de compra eliminado.');
     }
@@ -467,6 +438,11 @@ class CuentasClientes extends BaseController
             'tipoCliente' => $tipoCliente
         ]);
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $data = $this->obtenerDatosCliente((int)$idCliente);
+            return view('cuentas_clientes/_tabla_compras', $data);
+        }
+
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Datos del cliente actualizados con éxito.');
     }
 
@@ -532,7 +508,15 @@ class CuentasClientes extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === false) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(500)->setBody('Ocurrió un error al registrar el abono.');
+            }
             return redirect()->back()->with('error', 'Ocurrió un error al registrar el abono.');
+        }
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $data = $this->obtenerDatosCliente($idCliente);
+            return view('cuentas_clientes/_tabla_compras', $data);
         }
 
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Abono registrado con éxito por $' . number_format($monto, 2));
@@ -559,5 +543,57 @@ class CuentasClientes extends BaseController
             'monto'       => $monto,
             'tipo'        => 'Ingreso'
         ]);
+    }
+
+    /**
+     * Obtiene y calcula todos los datos financieros y de compras de un cliente.
+     */
+    private function obtenerDatosCliente(int $idCliente): ?array
+    {
+        $cliente = $this->clienteModel->find($idCliente);
+        if (!$cliente) {
+            return null;
+        }
+
+        $compras = $this->cuentaClienteModel->obtenerComprasPorCliente($idCliente);
+
+        // Obtener abonos
+        $db = \Config\Database::connect();
+        $abonos = $db->table('t_abono_cliente')
+            ->where('idCliente', $idCliente)
+            ->orderBy('fechaAbono', 'DESC')
+            ->orderBy('idAbono', 'DESC')
+            ->get()
+            ->getResultArray();
+
+        // Calcular balances históricos matemáticos
+        $totalComprasHistorico = 0;
+        $totalComprasActivas = 0;
+        foreach ($compras as $c) {
+            $totalComprasHistorico += $c['totalProduc'];
+            if ($c['estatusCompra'] == '0') {
+                $totalComprasActivas += $c['totalProduc'];
+            }
+        }
+
+        $totalPagadoHistorico = 0;
+        foreach ($abonos as $a) {
+            $totalPagadoHistorico += $a['abono'];
+        }
+
+        $totalPendiente = $totalComprasHistorico - $totalPagadoHistorico;
+        
+        // Lo abonado hacia las compras pendientes actuales
+        $abonadoActivo = $totalComprasActivas - $totalPendiente;
+
+        return [
+            'cliente' => $cliente,
+            'compras' => $compras,
+            'abonos'  => $abonos,
+            'totalPendiente' => $totalPendiente,
+            'totalPagadoActivo' => $abonadoActivo,
+            'totalComprasActivas' => $totalComprasActivas,
+            'totalPagadoHistorico' => $totalPagadoHistorico
+        ];
     }
 }

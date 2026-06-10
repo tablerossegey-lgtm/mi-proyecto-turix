@@ -2,40 +2,51 @@
 
 <?= $this->section('content') ?>
 <link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
-<div class="container py-4">
-    <!-- Encabezado -->
-    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
-        <div>
-            <h2 class="fw-bold mb-1 admin-title">Ventas de Semillas y Repelentes</h2>
-            <p class="text-muted mb-0">Registra ventas, consulta comisiones y administra las liquidaciones con Bea.</p>
-            <div class="admin-subtitle-line" style="background-color: #ffc107;"></div>
-        </div>
-        <div class="d-flex gap-2">
-            <button class="btn btn-warning rounded-pill px-4 fw-bold text-dark hover-shadow d-inline-flex align-items-center gap-2"
-                data-bs-toggle="modal" data-bs-target="#modalNuevaVenta">
-                <i class="bi bi-plus-circle"></i> Registrar Venta
-            </button>
-            <a href="<?= base_url('admin/cuentas') ?>"
-                class="btn btn-outline-light rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
-                <i class="bi bi-wallet2"></i> Cuentas Clientes
-            </a>
-        </div>
-    </div>
+<style>
+    .htmx-indicator {
+        display: none !important;
+    }
+    .htmx-request .htmx-indicator {
+        display: inline-block !important;
+    }
+    .htmx-request.htmx-indicator {
+        display: inline-block !important;
+    }
+</style>
 
-    <!-- Alertas de Flashdata -->
+<!-- Notificaciones flotantes tipo Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1090;"></div>
+
+<div id="semillas-container" class="container py-4">
+    <!-- Scripts inline de Flashdata para lanzar Toasts tras cargas HTMX -->
     <?php if (session()->getFlashdata('success')): ?>
-        <div class="alert alert-success alert-dismissible fade show border-0 bg-dark text-success shadow mb-4" role="alert" style="border-left: 4px solid #28a745 !important;">
-            <i class="bi bi-check-circle-fill me-2"></i> <?= session()->getFlashdata('success') ?>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
+        <script>
+            (function() {
+                const msg = "<?= esc(session()->getFlashdata('success'), 'js') ?>";
+                setTimeout(() => {
+                    if (window.mostrarToastExito) {
+                        window.mostrarToastExito(msg);
+                    }
+                }, 50);
+            })();
+        </script>
+    <?php endif; ?>
+    <?php if (session()->getFlashdata('error')): ?>
+        <script>
+            (function() {
+                const msg = "<?= esc(session()->getFlashdata('error'), 'js') ?>";
+                setTimeout(() => {
+                    if (window.mostrarToastError) {
+                        window.mostrarToastError(msg);
+                    } else {
+                        alert(msg);
+                    }
+                }, 50);
+            })();
+        </script>
     <?php endif; ?>
 
-    <?php if (session()->getFlashdata('error')): ?>
-        <div class="alert alert-danger alert-dismissible fade show border-0 bg-dark text-danger shadow mb-4" role="alert" style="border-left: 4px solid #dc3545 !important;">
-            <i class="bi bi-exclamation-triangle-fill me-2"></i> <?= session()->getFlashdata('error') ?>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
-        </div>
-    <?php endif; ?>
+    <!-- Encabezado -->
 
     <!-- Tarjetas de Estadísticas (KPIs) -->
     <div class="row g-3 mb-4">
@@ -267,7 +278,12 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formNuevaVenta" action="<?= base_url('admin/semillas/crear') ?>" method="POST" onsubmit="return validarVentaForm();">
+            <form id="formNuevaVenta" action="<?= base_url('admin/semillas/crear') ?>" method="POST" onsubmit="return validarVentaForm();"
+                hx-post="<?= base_url('admin/semillas/crear') ?>"
+                hx-target="#semillas-container"
+                hx-select="#semillas-container"
+                hx-swap="outerHTML"
+                hx-indicator="#btn-crear-spinner">
                 <?= csrf_field() ?>
                 
                 <div class="modal-body p-4">
@@ -376,7 +392,8 @@
 
                 <div class="modal-footer modal-encargo-footer d-flex gap-2">
                     <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark hover-shadow">
+                    <button type="submit" class="btn btn-warning rounded-pill px-4 fw-bold text-dark hover-shadow d-inline-flex align-items-center gap-2">
+                        <span class="spinner-border spinner-border-sm htmx-indicator" role="status" aria-hidden="true" id="btn-crear-spinner"></span>
                         <i class="bi bi-save"></i> Registrar Venta
                     </button>
                 </div>
@@ -405,9 +422,17 @@
             </div>
             <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
                 <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <form action="<?= base_url('admin/semillas/entregar') ?>" method="POST" class="d-inline">
+                <form id="formLiquidarBea" action="<?= base_url('admin/semillas/entregar') ?>" method="POST" class="d-inline"
+                    hx-post="<?= base_url('admin/semillas/entregar') ?>"
+                    hx-target="#semillas-container"
+                    hx-select="#semillas-container"
+                    hx-swap="outerHTML"
+                    hx-indicator="#btn-confirmar-liquidar-spinner">
                     <?= csrf_field() ?>
-                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold">Confirmar Liquidación</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold d-inline-flex align-items-center gap-2">
+                        <span class="spinner-border spinner-border-sm htmx-indicator" role="status" aria-hidden="true" id="btn-confirmar-liquidar-spinner"></span>
+                        Confirmar Liquidación
+                    </button>
                 </form>
             </div>
         </div>
@@ -429,16 +454,25 @@
             </div>
             <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
                 <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <form id="formConfirmarEliminarVenta" action="" method="POST" class="d-inline">
+                <form id="formConfirmarEliminarVenta" action="" method="POST" class="d-inline"
+                    hx-target="#semillas-container"
+                    hx-select="#semillas-container"
+                    hx-swap="outerHTML"
+                    hx-indicator="#btn-confirmar-eliminar-spinner">
                     <?= csrf_field() ?>
-                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Eliminar</button>
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold d-inline-flex align-items-center gap-2">
+                        <span class="spinner-border spinner-border-sm htmx-indicator" role="status" aria-hidden="true" id="btn-confirmar-eliminar-spinner"></span>
+                        Eliminar
+                    </button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+</div> <!-- Cierre de semillas-container -->
 
 <script>
+(function() {
     // Pasar productos predefinidos a JS
     const productosPredefinidos = <?= json_encode($productosPredefinidos) ?>;
 
@@ -543,6 +577,10 @@
     function confirmarEliminarVenta(id, tieneCuentaCliente) {
         const form = document.getElementById('formConfirmarEliminarVenta');
         form.action = '<?= base_url("admin/semillas/eliminar") ?>/' + id;
+        form.setAttribute('hx-post', '<?= base_url("admin/semillas/eliminar") ?>/' + id);
+        if (typeof htmx !== 'undefined') {
+            htmx.process(form);
+        }
 
         const pMsg = document.getElementById('p_eliminar_mensaje');
         if (tieneCuentaCliente) {
@@ -559,47 +597,152 @@
     const searchInputVentas = document.getElementById('search-ventas');
     const btnClearSearchVentas = document.getElementById('btn-clear-search-ventas');
 
-    // Filtrar la tabla de ventas registradas localmente
-    searchInputVentas.addEventListener('input', function() {
-        const query = this.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-        const rows = document.querySelectorAll('#general tbody tr');
+    if (searchInputVentas) {
+        // Filtrar la tabla de ventas registradas localmente
+        searchInputVentas.addEventListener('input', function() {
+            const query = this.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            const rows = document.querySelectorAll('#general tbody tr');
 
-        // Mostrar u ocultar el botón "x" de borrar
-        if (query.length > 0) {
-            btnClearSearchVentas.style.display = 'block';
-        } else {
-            btnClearSearchVentas.style.display = 'none';
-        }
-
-        rows.forEach(row => {
-            // Ignorar la fila de "No hay registros" si existe
-            if (row.cells.length <= 1) return; 
-
-            const fecha = row.cells[0].textContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            const cliente = row.cells[1].textContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-            const producto = row.cells[2].textContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-
-            if (fecha.includes(query) || cliente.includes(query) || producto.includes(query)) {
-                row.style.display = '';
+            // Mostrar u ocultar el botón "x" de borrar
+            if (query.length > 0) {
+                btnClearSearchVentas.style.display = 'block';
             } else {
-                row.style.display = 'none';
+                btnClearSearchVentas.style.display = 'none';
             }
-        });
-    });
 
-    // Acción para limpiar la búsqueda
-    btnClearSearchVentas.addEventListener('click', function() {
-        searchInputVentas.value = '';
-        btnClearSearchVentas.style.display = 'none';
-        
-        // Simular evento input para restaurar todos los registros
-        searchInputVentas.dispatchEvent(new Event('input'));
-        searchInputVentas.focus();
-    });
+            rows.forEach(row => {
+                // Ignorar la fila de "No hay registros" si existe
+                if (row.cells.length <= 1) return; 
+
+                const fecha = row.cells[0].textContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                const cliente = row.cells[1].textContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+                const producto = row.cells[2].textContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+                if (fecha.includes(query) || cliente.includes(query) || producto.includes(query)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    }
+
+    if (btnClearSearchVentas) {
+        // Acción para limpiar la búsqueda
+        btnClearSearchVentas.addEventListener('click', function() {
+            searchInputVentas.value = '';
+            btnClearSearchVentas.style.display = 'none';
+            
+            // Simular evento input para restaurar todos los registros
+            searchInputVentas.dispatchEvent(new Event('input'));
+            searchInputVentas.focus();
+        });
+    }
+
+    // Funciones para mostrar toasts flotantes dinámicamente
+    function mostrarToastExito(message) {
+        const container = document.querySelector(".toast-container");
+        if (!container) return;
+
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3 show"
+                role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                       <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                       <div>${message}</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = toastHtml.trim();
+        const toastEl = tempDiv.firstChild;
+        container.appendChild(toastEl);
+
+        const toastInstance = new bootstrap.Toast(toastEl);
+        toastInstance.show();
+
+        toastEl.addEventListener("hidden.bs.toast", () => {
+            toastEl.remove();
+        });
+    }
+
+    function mostrarToastError(message) {
+        const container = document.querySelector(".toast-container");
+        if (!container) return;
+
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3 show"
+                role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                       <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                       <div>${message}</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = toastHtml.trim();
+        const toastEl = tempDiv.firstChild;
+        container.appendChild(toastEl);
+
+        const toastInstance = new bootstrap.Toast(toastEl);
+        toastInstance.show();
+
+        toastEl.addEventListener("hidden.bs.toast", () => {
+            toastEl.remove();
+        });
+    }
 
     // Inicializar cálculos al cargar la página
     document.addEventListener('DOMContentLoaded', function() {
         calcularGranTotalForm();
     });
+
+    // Manejar el cierre de modales y feedback al completar peticiones HTMX
+    document.addEventListener("htmx:afterOnLoad", function (evt) {
+        const targetId = evt.detail.elt.id;
+
+        if (evt.detail.xhr.status === 200) {
+            let modalId = null;
+
+            if (targetId === "formNuevaVenta") {
+                modalId = "modalNuevaVenta";
+            } else if (targetId === "formConfirmarEliminarVenta") {
+                modalId = "modalConfirmarEliminarVenta";
+            } else if (targetId === "formLiquidarBea") {
+                modalId = "modalLiquidarBea";
+            }
+
+            if (modalId) {
+                const modalEl = document.getElementById(modalId);
+                if (modalEl) {
+                     const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                     if (modalInstance) {
+                         modalInstance.hide();
+                     }
+                }
+            }
+        }
+    });
+
+    // Exportar funciones globales al objeto window para acceso desde atributos HTML
+    window.toggleClienteInput = toggleClienteInput;
+    window.toggleMetodoPago = toggleMetodoPago;
+    window.seleccionarProductoPredefinido = seleccionarProductoPredefinido;
+    window.calcularGranTotalForm = calcularGranTotalForm;
+    window.validarVentaForm = validarVentaForm;
+    window.confirmarEliminarVenta = confirmarEliminarVenta;
+    window.mostrarToastExito = mostrarToastExito;
+    window.mostrarToastError = mostrarToastError;
+})();
 </script>
 <?= $this->endSection() ?>

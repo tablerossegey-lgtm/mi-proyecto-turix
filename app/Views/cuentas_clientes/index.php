@@ -304,7 +304,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
-            <form id="formEditarCompra" action="" method="POST">
+            <form id="formEditarCompra" action="" method="POST" hx-target="#compras-cliente-container" hx-swap="innerHTML">
 
                 <div class="modal-body p-4">
                     <div class="mb-3">
@@ -403,7 +403,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
-            <form id="formEditarCliente" action="" method="POST">
+            <form id="formEditarCliente" action="" method="POST" hx-target="#compras-cliente-container" hx-swap="innerHTML">
                 <div class="modal-body p-4">
                     <div class="row g-3">
                         <!-- Nombre -->
@@ -498,7 +498,7 @@
             <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
                 <button type="button" class="btn btn-outline-light rounded-pill px-4"
                     data-bs-dismiss="modal">Cancelar</button>
-                <form id="formConfirmarEliminar" action="" method="POST" class="d-inline">
+                <form id="formConfirmarEliminar" action="" method="POST" class="d-inline" hx-target="#compras-cliente-container" hx-swap="innerHTML">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Eliminar</button>
                 </form>
@@ -521,7 +521,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
-            <form id="formRegistrarAbono" action="<?= base_url('admin/cuentas/abonar') ?>" method="POST">
+            <form id="formRegistrarAbono" action="<?= base_url('admin/cuentas/abonar') ?>" method="POST" hx-post="<?= base_url('admin/cuentas/abonar') ?>" hx-target="#compras-cliente-container" hx-swap="innerHTML">
                 <?= csrf_field() ?>
                 <input type="hidden" name="id_cliente" id="abono_id_cliente" value="">
 
@@ -558,6 +558,7 @@
 </div>
 
 <script>
+(function() {
     document.body.classList.add('admin-body');
 
     // Cambiar estilos de selección de cliente activo
@@ -730,7 +731,13 @@
 
     // Función para abrir el modal de edición de compras
     function abrirEditarCompra(compra) {
-        document.getElementById('formEditarCompra').action = '<?= base_url("admin/cuentas/editar") ?>/' + compra.idCompra;
+        const form = document.getElementById('formEditarCompra');
+        const url = '<?= base_url("admin/cuentas/editar") ?>/' + compra.idCompra;
+        form.action = url;
+        form.setAttribute('hx-post', url);
+        if (typeof htmx !== 'undefined') {
+            htmx.process(form);
+        }
 
         document.getElementById('edit-lbl-producto').innerText = (compra.codigo_sku ? '[' + compra.codigo_sku + '] ' : '') + compra.descProducto;
         document.getElementById('edit_fecha_compra').value = compra.fechaCompra || '';
@@ -980,6 +987,14 @@
                     return;
                 }
 
+                const btnSubmit = document.getElementById('btn-registrar-compra-submit');
+                let originalBtnHTML = "";
+                if (btnSubmit) {
+                    originalBtnHTML = btnSubmit.innerHTML;
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Registrando...';
+                }
+
                 const idCliente = document.getElementById('modal_id_cliente').value;
                 const fechaCompra = document.getElementById('fecha_compra').value;
                 const estatusCompra = document.querySelector('input[name="estatus_compra"]:checked').value;
@@ -1001,6 +1016,11 @@
                 })
                     .then(res => res.json())
                     .then(data => {
+                        if (btnSubmit) {
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerHTML = originalBtnHTML;
+                        }
+                        
                         if (data.success) {
                             // Ocultar modal de nueva compra
                             const modalNueva = bootstrap.Modal.getInstance(document.getElementById('modalNuevaCompra'));
@@ -1025,6 +1045,10 @@
                         }
                     })
                     .catch(err => {
+                        if (btnSubmit) {
+                            btnSubmit.disabled = false;
+                            btnSubmit.innerHTML = originalBtnHTML;
+                        }
                         console.error('Error:', err);
                         alert('Error de conexión al registrar la compra.');
                     });
@@ -1095,7 +1119,13 @@
 
     // Función para abrir el modal de editar cliente
     function abrirModalEditarCliente(cliente) {
-        document.getElementById('formEditarCliente').action = '<?= base_url("admin/cuentas/editar-cliente") ?>/' + cliente.idCliente;
+        const form = document.getElementById('formEditarCliente');
+        const url = '<?= base_url("admin/cuentas/editar-cliente") ?>/' + cliente.idCliente;
+        form.action = url;
+        form.setAttribute('hx-post', url);
+        if (typeof htmx !== 'undefined') {
+            htmx.process(form);
+        }
         document.getElementById('edit_cliente_nombre').value = cliente.nombre;
         document.getElementById('edit_cliente_cel').value = cliente.cel || '';
         document.getElementById('edit_cliente_tipo').value = cliente.tipoCliente || '';
@@ -1109,6 +1139,10 @@
         const form = document.getElementById('formConfirmarEliminar');
         if (form) {
             form.action = url;
+            form.setAttribute('hx-post', url);
+            if (typeof htmx !== 'undefined') {
+                htmx.process(form);
+            }
         }
         const modal = new bootstrap.Modal(document.getElementById('modalConfirmarEliminar'));
         modal.show();
@@ -1123,5 +1157,92 @@
         const modal = new bootstrap.Modal(document.getElementById('modalRegistrarAbono'));
         modal.show();
     }
+
+    // Manejar el cierre de modales y feedback al completar peticiones HTMX
+    document.addEventListener("htmx:afterOnLoad", function (evt) {
+        const targetId = evt.detail.elt.id;
+
+        if (evt.detail.xhr.status === 200) {
+            let modalId = null;
+            let successMessage = "";
+
+            if (targetId === "formEditarCompra") {
+                modalId = "modalEditarCompra";
+                successMessage = "Compra modificada con éxito.";
+            } else if (targetId === "formRegistrarAbono") {
+                modalId = "modalRegistrarAbono";
+                successMessage = "Abono registrado con éxito.";
+                document.getElementById("abono_monto").value = "";
+            } else if (targetId === "formConfirmarEliminar") {
+                modalId = "modalConfirmarEliminar";
+                successMessage = "Registro de compra eliminado.";
+            } else if (targetId === "formEditarCliente") {
+                modalId = "modalEditarCliente";
+                successMessage = "Datos del cliente actualizados.";
+            }
+
+            if (modalId) {
+                const modalEl = document.getElementById(modalId);
+                if (modalEl) {
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+                }
+            }
+
+            if (successMessage) {
+                mostrarToastExito(successMessage);
+            }
+        }
+    });
+
+    // Función para mostrar toasts flotantes dinámicamente
+    function mostrarToastExito(message) {
+        const container = document.querySelector(".toast-container");
+        if (!container) return;
+
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3 show"
+                role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                       <i class="fas fa-check-circle text-success fs-5"></i>
+                       <div>${message}</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = toastHtml.trim();
+        const toastEl = tempDiv.firstChild;
+        container.appendChild(toastEl);
+
+        const toastInstance = new bootstrap.Toast(toastEl);
+        toastInstance.show();
+
+        toastEl.addEventListener("hidden.bs.toast", () => {
+            toastEl.remove();
+        });
+    }
+
+    // Exportar funciones globales al objeto window para acceso desde atributos HTML
+    window.seleccionarCliente = seleccionarCliente;
+    window.toggleTipoForm = toggleTipoForm;
+    window.renderListaProductos = renderListaProductos;
+    window.eliminarProductoLista = eliminarProductoLista;
+    window.calcularTotal = calcularTotal;
+    window.calcularTotalEdit = calcularTotalEdit;
+    window.abrirModalNuevaCompra = abrirModalNuevaCompra;
+    window.abrirEditarCompra = abrirEditarCompra;
+    window.toggleEstatusCompra = toggleEstatusCompra;
+    window.abrirModalEditarCliente = abrirModalEditarCliente;
+    window.confirmarEliminarCompra = confirmarEliminarCompra;
+    window.abrirModalRegistrarAbono = abrirModalRegistrarAbono;
+    window.mostrarToastExito = mostrarToastExito;
+})();
 </script>
 <?= $this->endSection() ?>

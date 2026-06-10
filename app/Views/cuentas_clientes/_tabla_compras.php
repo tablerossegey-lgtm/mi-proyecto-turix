@@ -258,5 +258,30 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                 <?php endif; ?>
             </tbody>
         </table>
+</div>
+</div>
+
+<!-- OOB Swap para actualizar en caliente la barra lateral izquierda de clientes -->
+<div id="client-item-<?= $cliente['idCliente'] ?>" hx-swap-oob="true"
+    class="list-group-item client-item p-3 border-bottom border-secondary border-opacity-25 text-white d-flex justify-content-between align-items-center active"
+    hx-get="<?= base_url('admin/cuentas/compras/' . $cliente['idCliente']) ?>"
+    hx-target="#compras-cliente-container" hx-indicator="#loading-indicator"
+    onclick="seleccionarCliente(<?= $cliente['idCliente'] ?>)">
+    <div>
+        <div class="fw-bold text-truncate client-name" style="max-width: 180px;">
+            <?= esc($cliente['nombre']) ?></div>
+        <small class="text-white-50 client-phone"><i class="fas fa-phone-alt me-1 text-muted"
+                style="font-size: 0.75rem;"></i> <?= esc($cliente['cel'] ?: 'Sin teléfono') ?></small>
+    </div>
+    <div class="text-end">
+        <?php if ($totalPendiente > 0): ?>
+            <span class="badge bg-danger rounded-pill fw-bold" id="sidebar-debt-<?= $cliente['idCliente'] ?>">
+                $<?= number_format($totalPendiente, 2) ?>
+            </span>
+        <?php else: ?>
+            <span class="badge bg-secondary rounded-pill" id="sidebar-debt-<?= $cliente['idCliente'] ?>">
+                $0.00
+            </span>
+        <?php endif; ?>
     </div>
 </div>
