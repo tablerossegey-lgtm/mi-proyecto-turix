@@ -51,7 +51,8 @@
                             <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
                             <input type="password" class="form-control" id="password" name="password"
                                 placeholder="Ingresa tu contraseña" required autocomplete="current-password">
-                            <span class="input-group-text" id="togglePassword" style="cursor: pointer; padding-right: 1rem;" title="Mostrar/ocultar contraseña">
+                            <span class="input-group-text" id="togglePassword"
+                                style="cursor: pointer; padding-right: 1rem;" title="Mostrar/ocultar contraseña">
                                 <i class="bi bi-eye-fill" id="toggleIcon"></i>
                             </span>
                         </div>
@@ -70,7 +71,7 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         const togglePassword = document.getElementById('togglePassword');
         const password = document.getElementById('password');
         const toggleIcon = document.getElementById('toggleIcon');
@@ -80,7 +81,7 @@
                 // Alternar tipo
                 const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
                 password.setAttribute('type', type);
-                
+
                 // Alternar icono
                 if (type === 'password') {
                     toggleIcon.classList.remove('bi-eye-slash-fill');
@@ -103,7 +104,7 @@
         // Animación de Spinner al enviar el formulario
         const loginForm = document.querySelector('form');
         if (loginForm) {
-            loginForm.addEventListener('submit', function() {
+            loginForm.addEventListener('submit', function () {
                 const btnLogin = document.getElementById('btnLogin');
                 if (btnLogin) {
                     btnLogin.disabled = true;

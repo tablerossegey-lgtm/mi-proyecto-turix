@@ -206,7 +206,9 @@
                                                     <?= esc($e['codigo_sku']) ?>
                                                 </span>
                                             <?php else: ?>
-                                                <div class="text-danger fw-semibold small">Producto eliminado de inventario</div>
+                                                <span class="badge px-2.5 py-1 rounded-pill font-monospace" style="background-color: rgba(13, 202, 240, 0.12) !important; color: #0dcaf0 !important; border: 1px solid rgba(13, 202, 240, 0.25) !important; font-size: 0.75rem;">
+                                                    <i class="fas fa-info-circle me-1"></i>Encargo Especial (Sin Inventario)
+                                                </span>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -319,15 +321,14 @@
                     <div class="row g-3">
                         <!-- Producto -->
                         <div class="col-12">
-                            <label for="id_producto" class="form-label modal-encargo-label">Seleccionar Producto del Inventario *</label>
+                            <label for="id_producto" class="form-label modal-encargo-label">Seleccionar Producto del Inventario (Opcional)</label>
                             <div class="position-relative searchable-select-container" id="container-nuevo-producto">
-                                <input type="hidden" name="id_producto" id="id_producto_hidden" value="" required>
+                                <input type="hidden" name="id_producto" id="id_producto_hidden" value="">
                                 <input type="text" 
                                        class="form-control modal-encargo-control text-white w-100" 
                                        id="producto_search_input" 
                                        placeholder="Escribe para buscar por SKU o nombre de producto..." 
-                                       autocomplete="off"
-                                       required>
+                                       autocomplete="off">
                                 <div class="dropdown-menu w-100 p-2 shadow-lg" 
                                      id="producto_search_dropdown" 
                                      style="max-height: 250px; overflow-y: auto; background-color: #2a2e3d; border: 1px solid rgba(255,255,255,0.12); border-radius: 0.5rem; display: none; position: absolute; z-index: 1060; left: 0; right: 0;">
@@ -448,15 +449,14 @@
                     <div class="row g-3">
                         <!-- Producto -->
                         <div class="col-12 col-md-8">
-                            <label for="edit_id_producto" class="form-label modal-encargo-label">Producto *</label>
+                            <label for="edit_id_producto" class="form-label modal-encargo-label">Producto (Opcional)</label>
                             <div class="position-relative searchable-select-container" id="container-editar-producto">
-                                <input type="hidden" name="id_producto" id="edit_id_producto_hidden" value="" required>
+                                <input type="hidden" name="id_producto" id="edit_id_producto_hidden" value="">
                                 <input type="text" 
                                        class="form-control modal-encargo-control text-white w-100" 
                                        id="edit_producto_search_input" 
                                        placeholder="Escribe para buscar por SKU o nombre de producto..." 
-                                       autocomplete="off"
-                                       required>
+                                       autocomplete="off">
                                 <div class="dropdown-menu w-100 p-2 shadow-lg" 
                                      id="edit_producto_search_dropdown" 
                                      style="max-height: 250px; overflow-y: auto; background-color: #2a2e3d; border: 1px solid rgba(255,255,255,0.12); border-radius: 0.5rem; display: none; position: absolute; z-index: 1060; left: 0; right: 0;">
@@ -610,6 +610,9 @@
         // Filtrar productos al escribir
         input.addEventListener('input', function() {
             const query = input.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            if (query === '') {
+                hidden.value = '';
+            }
             let matches = 0;
 
             options.forEach(opt => {

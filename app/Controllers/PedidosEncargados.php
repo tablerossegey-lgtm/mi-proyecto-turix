@@ -59,7 +59,7 @@ class PedidosEncargados extends BaseController
 
     public function crear()
     {
-        $idProducto = $this->request->getPost('id_producto');
+        $idProducto = $this->request->getPost('id_producto') ?: null;
         $nombreCliente = trim((string)$this->request->getPost('nombre_cliente'));
         $contactoCliente = trim((string)$this->request->getPost('contacto_cliente'));
         $cantidad = $this->request->getPost('cantidad');
@@ -67,8 +67,12 @@ class PedidosEncargados extends BaseController
         $notas = $this->request->getPost('notas') ?: null;
         $estado = $this->request->getPost('estado') ?: 'Pendiente';
 
-        if (empty($nombreCliente) || empty($idProducto)) {
-            return redirect()->back()->withInput()->with('error', 'Por favor complete los campos obligatorios (Cliente y Producto).');
+        if (empty($nombreCliente)) {
+            return redirect()->back()->withInput()->with('error', 'Por favor ingrese el nombre del cliente.');
+        }
+
+        if (empty($idProducto) && empty($notas)) {
+            return redirect()->back()->withInput()->with('error', 'Debe seleccionar un producto del inventario o detallar el pedido en el campo de Notas.');
         }
 
         // Buscar o guardar en t_clientes
@@ -113,7 +117,7 @@ class PedidosEncargados extends BaseController
             return redirect()->to(base_url('admin/encargos'))->with('error', 'El encargo especificado no existe.');
         }
 
-        $idProducto = $this->request->getPost('id_producto');
+        $idProducto = $this->request->getPost('id_producto') ?: null;
         $nombreCliente = trim((string)$this->request->getPost('nombre_cliente'));
         $contactoCliente = trim((string)$this->request->getPost('contacto_cliente'));
         $cantidad = $this->request->getPost('cantidad');
@@ -121,8 +125,12 @@ class PedidosEncargados extends BaseController
         $notas = $this->request->getPost('notas') ?: null;
         $estado = $this->request->getPost('estado');
 
-        if (empty($nombreCliente) || empty($idProducto) || empty($estado)) {
+        if (empty($nombreCliente) || empty($estado)) {
             return redirect()->back()->with('error', 'Por favor complete todos los campos obligatorios.');
+        }
+
+        if (empty($idProducto) && empty($notas)) {
+            return redirect()->back()->with('error', 'Debe seleccionar un producto del inventario o detallar el pedido en el campo de Notas.');
         }
 
         // Buscar o guardar en t_clientes
