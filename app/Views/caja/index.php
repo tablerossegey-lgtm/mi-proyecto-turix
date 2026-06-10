@@ -161,7 +161,7 @@
             </div>
             <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
                 <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <form id="formConfirmarEliminarMovimiento" action="" method="POST" class="d-inline">
+                <form id="formConfirmarEliminarMovimiento" action="" method="POST" class="d-inline" onsubmit="mostrarSpinner(this, 'Eliminando...')">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Eliminar</button>
                 </form>
@@ -180,7 +180,7 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formNuevoMovimiento" action="<?= base_url('admin/caja/crear') ?>" method="POST">
+            <form id="formNuevoMovimiento" action="<?= base_url('admin/caja/crear') ?>" method="POST" onsubmit="mostrarSpinner(this, 'Registrando...')">
                 <?= csrf_field() ?>
                 <div class="modal-body p-4">
                     <div class="row g-3">
@@ -248,18 +248,6 @@
             });
         }
         inicializarToasts();
-
-        // Deshabilitar botón de guardar y mostrar spinner al registrar movimiento en caja
-        const formNuevoMovimiento = document.getElementById('formNuevoMovimiento');
-        if (formNuevoMovimiento) {
-            formNuevoMovimiento.addEventListener('submit', function() {
-                const btnSubmit = formNuevoMovimiento.querySelector('button[type="submit"]');
-                if (btnSubmit) {
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
-                }
-            });
-        }
     });
 
     // Registrar la función globalmente para el onclick
