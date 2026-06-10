@@ -208,7 +208,7 @@
                             </div>
 
                             <!-- Precio -->
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6 col-lg-3">
                                 <label for="precio" class="form-label text-white-50 small fw-semibold">Precio ($) *</label>
                                 <input type="number" 
                                        step="0.01" 
@@ -221,7 +221,7 @@
                             </div>
 
                             <!-- Precio Promoción -->
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6 col-lg-3">
                                 <label for="precio_promo" class="form-label text-white-50 small fw-semibold">Precio de Promoción ($)</label>
                                 <input type="number" 
                                        step="0.01" 
@@ -232,15 +232,29 @@
                                        placeholder="0.00">
                             </div>
 
-                            <!-- Stock -->
-                            <div class="col-12 col-md-4">
-                                <label for="stock" class="form-label text-white-50 small fw-semibold">Stock (Unidades) *</label>
+                            <!-- Stock Casa -->
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="stock_casa" class="form-label text-white-50 small fw-semibold">Stock Casa *</label>
                                 <input type="number" 
                                        min="0" 
                                        class="form-control text-white" 
-                                       id="stock" 
-                                       name="stock" 
+                                       id="stock_casa" 
+                                       name="stock_casa" 
                                        required 
+                                       value="0"
+                                       placeholder="0">
+                            </div>
+
+                            <!-- Stock Oficina -->
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="stock_oficina" class="form-label text-white-50 small fw-semibold">Stock Oficina *</label>
+                                <input type="number" 
+                                       min="0" 
+                                       class="form-control text-white" 
+                                       id="stock_oficina" 
+                                       name="stock_oficina" 
+                                       required 
+                                       value="0"
                                        placeholder="0">
                             </div>
 
@@ -365,7 +379,7 @@
                             </div>
 
                             <!-- Precio -->
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6 col-lg-3">
                                 <label for="edit_precio" class="form-label text-white-50 small fw-semibold">Precio ($) *</label>
                                 <input type="number" 
                                        step="0.01" 
@@ -378,7 +392,7 @@
                             </div>
 
                             <!-- Precio Promoción -->
-                            <div class="col-12 col-md-4">
+                            <div class="col-12 col-md-6 col-lg-3">
                                 <label for="edit_precio_promo" class="form-label text-white-50 small fw-semibold">Precio de Promoción ($)</label>
                                 <input type="number" 
                                        step="0.01" 
@@ -389,14 +403,26 @@
                                        placeholder="0.00">
                             </div>
 
-                            <!-- Stock -->
-                            <div class="col-12 col-md-4">
-                                <label for="edit_stock" class="form-label text-white-50 small fw-semibold">Stock (Unidades) *</label>
+                            <!-- Stock Casa -->
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="edit_stock_casa" class="form-label text-white-50 small fw-semibold">Stock Casa *</label>
                                 <input type="number" 
                                        min="0" 
                                        class="form-control text-white" 
-                                       id="edit_stock" 
-                                       name="stock" 
+                                       id="edit_stock_casa" 
+                                       name="stock_casa" 
+                                       required 
+                                       placeholder="0">
+                            </div>
+
+                            <!-- Stock Oficina -->
+                            <div class="col-12 col-md-6 col-lg-3">
+                                <label for="edit_stock_oficina" class="form-label text-white-50 small fw-semibold">Stock Oficina *</label>
+                                <input type="number" 
+                                       min="0" 
+                                       class="form-control text-white" 
+                                       id="edit_stock_oficina" 
+                                       name="stock_oficina" 
                                        required 
                                        placeholder="0">
                             </div>
@@ -556,7 +582,8 @@
         document.getElementById('edit_descripcion').value = producto.descripcion;
         document.getElementById('edit_precio').value = producto.precio;
         document.getElementById('edit_precio_promo').value = producto.precio_promo || '0.00';
-        document.getElementById('edit_stock').value = producto.stock;
+        document.getElementById('edit_stock_casa').value = producto.stock_casa !== undefined ? producto.stock_casa : 0;
+        document.getElementById('edit_stock_oficina').value = producto.stock_oficina !== undefined ? producto.stock_oficina : 0;
         document.getElementById('edit_masDetalle').value = producto.masDetalle || '';
         
         // Rellenar campo oculto y botón del selector de categoría

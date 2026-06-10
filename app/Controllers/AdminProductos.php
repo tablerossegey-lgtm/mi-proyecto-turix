@@ -232,13 +232,18 @@ class AdminProductos extends BaseController
         $idCategoria = $this->request->getPost('id_categoria');
         $precio = $this->request->getPost('precio');
         $precioPromo = $this->request->getPost('precio_promo') ?: 0.00;
-        $stock = $this->request->getPost('stock');
+        $stockCasaPost = $this->request->getPost('stock_casa');
+        $stockOficinaPost = $this->request->getPost('stock_oficina');
         $masDetalle = $this->request->getPost('masDetalle') ?: null;
 
         // Validaciones básicas
-        if (empty($sku) || empty($descripcion) || empty($idCategoria) || $precio === null || $stock === null) {
+        if (empty($sku) || empty($descripcion) || empty($idCategoria) || $precio === null || $stockCasaPost === null || $stockOficinaPost === null) {
             return redirect()->back()->withInput()->with('error', 'Por favor complete todos los campos obligatorios.');
         }
+
+        $stockCasa = (int)$stockCasaPost;
+        $stockOficina = (int)$stockOficinaPost;
+        $stock = $stockCasa + $stockOficina;
 
         // Validar SKU único
         $existing = $this->productoModel->where('codigo_sku', $sku)->first();
@@ -287,6 +292,12 @@ class AdminProductos extends BaseController
         ];
 
         if ($this->productoModel->insert($nuevoProducto)) {
+            $idNuevo = $this->productoModel->getInsertID();
+            if ($idNuevo) {
+                $inventarioUbicacionModel = new \App\Models\InventarioUbicacionModel();
+                $inventarioUbicacionModel->guardarStock($idNuevo, 1, $stockCasa);
+                $inventarioUbicacionModel->guardarStock($idNuevo, 2, $stockOficina);
+            }
             return redirect()->to(base_url('admin/productos'))->with('success', 'Producto registrado exitosamente.');
         }
 
@@ -307,15 +318,20 @@ class AdminProductos extends BaseController
         $idCategoria = $this->request->getPost('id_categoria');
         $precio = $this->request->getPost('precio');
         $precioPromo = $this->request->getPost('precio_promo') ?: 0.00;
-        $stock = $this->request->getPost('stock');
+        $stockCasaPost = $this->request->getPost('stock_casa');
+        $stockOficinaPost = $this->request->getPost('stock_oficina');
         $masDetalle = $this->request->getPost('masDetalle') ?: null;
 
         $oldIdCategoria = $producto['id_categoria'];
 
         // Validaciones básicas
-        if (empty($sku) || empty($descripcion) || empty($idCategoria) || $precio === null || $stock === null) {
+        if (empty($sku) || empty($descripcion) || empty($idCategoria) || $precio === null || $stockCasaPost === null || $stockOficinaPost === null) {
             return redirect()->back()->withInput()->with('error', 'Por favor complete todos los campos obligatorios.');
         }
+
+        $stockCasa = (int)$stockCasaPost;
+        $stockOficina = (int)$stockOficinaPost;
+        $stock = $stockCasa + $stockOficina;
 
         // Optimización: Validar SKU único únicamente si el SKU fue modificado
         if ($sku !== $producto['codigo_sku']) {
@@ -420,6 +436,11 @@ class AdminProductos extends BaseController
             'foto'         => $fotoName,
             'masDetalle'   => $masDetalle
         ];
+
+        // Actualizar tabla intermedia de ubicaciones primero
+        $inventarioUbicacionModel = new \App\Models\InventarioUbicacionModel();
+        $inventarioUbicacionModel->guardarStock((int)$id, 1, $stockCasa);
+        $inventarioUbicacionModel->guardarStock((int)$id, 2, $stockOficina);
 
         if ($this->productoModel->update($id, $datosActualizar)) {
             return redirect()->to(base_url('admin/productos'))->with('success', 'Producto actualizado exitosamente.');

@@ -19,7 +19,7 @@
             </td>
             <td class="py-3">
                 <div class="fw-semibold admin-product-title"><?= esc($p['descripcion']) ?></div>
-                <div class="text-white-50 small mt-1">ID: <?= $p['id'] ?> | Precio: <strong class="text-warning">$<?= number_format($p['precio'], 2) ?></strong></div>
+                <div class="text-white-50 small mt-1">ID: <?= $p['id'] ?> | Precio: <strong class="text-warning">$<?= number_format($p['precio'], 2) ?></strong> | Stock: <strong class="text-info"><?= $p['stock'] ?> pzs</strong> <span class="opacity-75">(Casa: <?= $p['stock_casa'] ?>, Oficina: <?= $p['stock_oficina'] ?>)</span></div>
             </td>
             <td class="py-3">
                 <span class="text-white-50 fw-medium"><?= esc($p['nombre_categoria'] ?: 'Sin Categoría') ?></span>
@@ -74,6 +74,8 @@
                                 'precio'      => $p['precio'],
                                 'precio_promo'=> $p['precio_promo'] ?? '0.00',
                                 'stock'       => $p['stock'],
+                                'stock_casa'  => $p['stock_casa'],
+                                'stock_oficina'=> $p['stock_oficina'],
                                 'id_categoria'=> $p['id_categoria'],
                                 'masDetalle'  => $p['masDetalle'] ?? '',
                             ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') ?>"
