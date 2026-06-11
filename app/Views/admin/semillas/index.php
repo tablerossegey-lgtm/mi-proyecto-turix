@@ -59,7 +59,7 @@
                 <i class="bi bi-plus-circle"></i> Registrar Venta
             </button>
             <a href="<?= base_url('admin/cuentas') ?>"
-                class="btn btn-outline-light rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
+                class="btn btn-dark rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2 text-white border border-secondary">
                 <i class="bi bi-wallet2"></i> Cuentas Clientes
             </a>
         </div>
@@ -320,14 +320,31 @@
                             <input type="text" class="form-control modal-encargo-control text-white" id="nombre_cliente_libre" name="nombre_cliente_libre" placeholder="Nombre del cliente (Opcional)">
                         </div>
 
-                        <!-- Dropdown para cliente registrado -->
+                        <!-- Autocomplete para cliente registrado (mismo estilo que Nuevo Encargo) -->
                         <div id="seccion_cliente_registrado" style="display: none;">
-                            <select class="form-select modal-encargo-select text-white w-100" id="id_cliente" name="id_cliente">
-                                <option value="0" selected>-- Selecciona un Cliente Fijo --</option>
-                                <?php foreach ($clientes as $c): ?>
-                                    <option value="<?= $c['idCliente'] ?>"><?= esc($c['nombre']) ?> <?= $c['cel'] ? '('.$c['cel'].')' : '' ?></option>
-                                <?php endforeach; ?>
-                            </select>
+                            <input type="hidden" name="id_cliente" id="id_cliente" value="0">
+                            <div class="position-relative searchable-select-container" id="container-venta-cliente">
+                                <input type="text"
+                                       class="form-control modal-encargo-control text-white w-100"
+                                       id="venta_cliente_search_input"
+                                       placeholder="Escribe para buscar por nombre o teléfono..."
+                                       autocomplete="off">
+                                <div class="dropdown-menu w-100 p-2 shadow-lg"
+                                     id="venta_cliente_search_dropdown"
+                                     style="max-height: 200px; overflow-y: auto; background-color: #2a2e3d; border: 1px solid rgba(255,255,255,0.12); border-radius: 0.5rem; display: none; position: absolute; z-index: 1060; left: 0; right: 0;">
+                                    <?php foreach ($clientes as $c): ?>
+                                        <button type="button"
+                                                class="dropdown-item text-white border-0 py-2 px-3 rounded-2 text-start venta-cliente-item-option"
+                                                style="background: transparent; font-size: 0.85rem;"
+                                                data-id="<?= $c['idCliente'] ?>"
+                                                data-nombre="<?= esc($c['nombre']) ?>"
+                                                data-cel="<?= esc($c['cel']) ?>">
+                                            <strong><?= esc($c['nombre']) ?></strong> <?= !empty($c['cel']) ? '('.esc($c['cel']).')' : '' ?>
+                                        </button>
+                                    <?php endforeach; ?>
+                                    <div class="text-white-50 p-2 text-center small venta-cliente-no-results" style="display: none;">No se encontraron clientes</div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -528,6 +545,7 @@
             document.getElementById('seccion_cliente_libre').style.display = 'block';
             document.getElementById('seccion_cliente_registrado').style.display = 'none';
             document.getElementById('id_cliente').value = '0';
+            document.getElementById('venta_cliente_search_input').value = '';
         } else {
             document.getElementById('seccion_cliente_libre').style.display = 'none';
             document.getElementById('seccion_cliente_registrado').style.display = 'block';
@@ -543,6 +561,63 @@
             toggleClienteInput('registrado');
         }
     }
+
+    // Inicializar el buscador de clientes en el modal de Venta
+    (function initVentaClienteAutocomplete() {
+        const input    = document.getElementById('venta_cliente_search_input');
+        const dropdown = document.getElementById('venta_cliente_search_dropdown');
+        const hidden   = document.getElementById('id_cliente');
+        const options  = dropdown ? dropdown.querySelectorAll('.venta-cliente-item-option') : [];
+        const noResults = dropdown ? dropdown.querySelector('.venta-cliente-no-results') : null;
+
+        if (!input || !dropdown) return;
+
+        // Mostrar dropdown al enfocar
+        input.addEventListener('focus', function () {
+            dropdown.style.display = 'block';
+            // Mostrar todos al abrir
+            options.forEach(opt => opt.style.display = 'block');
+            if (noResults) noResults.style.display = 'none';
+        });
+
+        // Filtrar al escribir (por nombre o teléfono)
+        input.addEventListener('input', function () {
+            hidden.value = '0';
+            const query = input.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+            let matches = 0;
+
+            options.forEach(opt => {
+                const nombre = opt.getAttribute('data-nombre').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                const cel    = opt.getAttribute('data-cel').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+                if (nombre.includes(query) || cel.includes(query)) {
+                    opt.style.display = 'block';
+                    matches++;
+                } else {
+                    opt.style.display = 'none';
+                }
+            });
+
+            if (noResults) noResults.style.display = matches === 0 ? 'block' : 'none';
+        });
+
+        // Seleccionar una opción
+        options.forEach(opt => {
+            opt.addEventListener('click', function () {
+                hidden.value  = opt.getAttribute('data-id');
+                input.value   = opt.getAttribute('data-nombre');
+                dropdown.style.display = 'none';
+            });
+        });
+
+        // Cerrar al hacer clic fuera
+        document.addEventListener('click', function (e) {
+            const container = input.closest('.searchable-select-container');
+            if (container && !container.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+    })();
 
     let itemsVenta = [];
 
@@ -718,7 +793,14 @@
         const idCliente = parseInt(document.getElementById('id_cliente').value) || 0;
 
         if (metodo === 'cuenta' && idCliente <= 0) {
-            alert('Debes seleccionar un cliente registrado para poder guardar a cuenta.');
+            alert('Debes seleccionar un cliente registrado del listado para poder guardar a cuenta.');
+            // Destacar el campo de búsqueda
+            const searchInput = document.getElementById('venta_cliente_search_input');
+            if (searchInput) {
+                searchInput.focus();
+                searchInput.classList.add('is-invalid');
+                setTimeout(() => searchInput.classList.remove('is-invalid'), 3000);
+            }
             return false;
         }
 
