@@ -340,7 +340,7 @@
 
 <!-- MODAL: REGISTRAR NUEVA COMPRA -->
 <div class="modal fade" id="modalNuevaCompra" tabindex="-1" aria-labelledby="modalNuevaCompraLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 95% !important; width: 1450px !important;">
         <form id="formNuevaCompra" action="<?= base_url('admin/compras/crear') ?>" method="POST" class="w-100"
             hx-boost="true">
             <?= csrf_field() ?>
@@ -421,14 +421,14 @@
                     <div class="table-responsive border border-secondary border-opacity-25 rounded-4 p-0 mb-3"
                         style="background: rgba(255,255,255,0.01);">
                         <table class="table table-hover align-middle mb-0 text-white" id="tabla-productos-compra"
-                            style="min-width: 1250px;">
+                            style="min-width: 1350px;">
                             <thead class="text-white-50 small"
                                 style="background: rgba(255, 255, 255, 0.03); border-bottom: 1px solid rgba(255,255,255,0.08);">
                                 <tr>
                                     <th class="text-center" style="width: 40px;">#</th>
                                     <th style="width: 260px;">Seleccionar del Inventario</th>
-                                    <th style="width: 120px;">SKU</th>
-                                    <th style="width: 180px;">Nombre Artículo</th>
+                                    <th style="width: 160px;">SKU</th>
+                                    <th style="width: 220px;">Nombre Artículo</th>
                                     <th class="text-center" style="width: 75px;">Cant.</th>
                                     <th class="text-end" style="width: 105px;">Costo Prov.</th>
                                     <th class="text-center" style="width: 75px;">Margen %</th>
@@ -499,7 +499,7 @@
             });
         }
 
-        document.addEventListener("DOMContentLoaded", function () {
+        function initComprasProveedores() {
             inicializarToasts();
 
             // ── Gestión del modal de nueva compra ────────────────────────────────
@@ -579,7 +579,13 @@
                     }
                 });
             }
-        });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener("DOMContentLoaded", initComprasProveedores);
+        } else {
+            initComprasProveedores();
+        }
 
         // Escuchar el evento de HTMX tras un swap de contenido para mostrar toasts en peticiones dinámicas
         document.body.addEventListener('htmx:afterSettle', inicializarToasts);

@@ -663,8 +663,9 @@
     }
 
     // Inicializar autocompletado del buscador de productos en el modal
-    document.addEventListener("DOMContentLoaded", function () {
+    function initProductoSearchAutocomplete() {
         const input = document.getElementById('producto_search');
+        if (!input) return;
         const dropdown = document.getElementById('dropdown_productos');
         const hidden = document.getElementById('modal_id_inventario');
         const priceInput = document.getElementById('precio_unit');
@@ -716,7 +717,13 @@
                 dropdown.style.display = 'none';
             }
         });
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener("DOMContentLoaded", initProductoSearchAutocomplete);
+    } else {
+        initProductoSearchAutocomplete();
+    }
 
     // Función para configurar y abrir el modal de registrar compra
     function abrirModalNuevaCompra(idCliente) {
@@ -831,7 +838,7 @@
     }
 
     // Buscador en vivo de clientes en la barra lateral
-    document.addEventListener("DOMContentLoaded", function () {
+    function initCuentasClientes() {
         const searchInput = document.getElementById('search-cliente');
         const clearBtn = document.getElementById('btn-clear-search');
         const clientItems = document.querySelectorAll('.client-item');
@@ -1115,7 +1122,13 @@
                 }
             });
         }
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener("DOMContentLoaded", initCuentasClientes);
+    } else {
+        initCuentasClientes();
+    }
 
     // Función para abrir el modal de editar cliente
     function abrirModalEditarCliente(cliente) {

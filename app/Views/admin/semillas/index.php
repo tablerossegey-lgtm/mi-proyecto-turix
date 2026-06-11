@@ -47,6 +47,23 @@
     <?php endif; ?>
 
     <!-- Encabezado -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+        <div>
+            <h2 class="fw-bold mb-1 admin-title">Ventas de Semillas y Repelentes</h2>
+            <p class="text-muted mb-0">Registra ventas, consulta comisiones y administra las liquidaciones con Bea.</p>
+            <div class="admin-subtitle-line" style="background-color: #ffc107;"></div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-warning rounded-pill px-4 fw-bold text-dark hover-shadow d-inline-flex align-items-center gap-2"
+                data-bs-toggle="modal" data-bs-target="#modalNuevaVenta">
+                <i class="bi bi-plus-circle"></i> Registrar Venta
+            </button>
+            <a href="<?= base_url('admin/cuentas') ?>"
+                class="btn btn-outline-light rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
+                <i class="bi bi-wallet2"></i> Cuentas Clientes
+            </a>
+        </div>
+    </div>
 
     <!-- Tarjetas de Estadísticas (KPIs) -->
     <div class="row g-3 mb-4">
@@ -703,9 +720,13 @@
     }
 
     // Inicializar cálculos al cargar la página
-    document.addEventListener('DOMContentLoaded', function() {
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function() {
+            calcularGranTotalForm();
+        });
+    } else {
         calcularGranTotalForm();
-    });
+    }
 
     // Manejar el cierre de modales y feedback al completar peticiones HTMX
     document.addEventListener("htmx:afterOnLoad", function (evt) {

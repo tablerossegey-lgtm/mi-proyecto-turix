@@ -231,7 +231,7 @@
 (function() {
     document.body.classList.add('admin-body');
 
-    document.addEventListener("DOMContentLoaded", function() {
+    function initCajaToasts() {
         // Inicializar y mostrar toasts
         function inicializarToasts() {
             const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
@@ -248,7 +248,13 @@
             });
         }
         inicializarToasts();
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener("DOMContentLoaded", initCajaToasts);
+    } else {
+        initCajaToasts();
+    }
 
     // Registrar la función globalmente para el onclick
     window.confirmarEliminarMovimiento = function(url) {

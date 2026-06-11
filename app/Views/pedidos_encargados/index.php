@@ -839,15 +839,17 @@
     $shouldOpenModal = service('request')->getVar('nuevo_encargo_producto_id');
     if ($autoOpenId): 
     ?>
-    document.addEventListener("DOMContentLoaded", function() {
+    function initAutoOpenEncargo() {
         const id = "<?= $autoOpenId ?>";
         const opt = document.querySelector(`.producto-item-option[data-id="${id}"]`);
         if (opt) {
             const sku = opt.getAttribute('data-sku');
             const desc = opt.getAttribute('data-descripcion');
             const precio = opt.getAttribute('data-precio');
-            document.getElementById('id_producto_hidden').value = id;
-            document.getElementById('producto_search_input').value = `${sku} - ${desc} ($${precio})`;
+            const inputHidden = document.getElementById('id_producto_hidden');
+            const searchInput = document.getElementById('producto_search_input');
+            if (inputHidden) inputHidden.value = id;
+            if (searchInput) searchInput.value = `${sku} - ${desc} ($${precio})`;
         }
         
         <?php if ($shouldOpenModal): ?>
@@ -857,10 +859,15 @@
             modal.show();
         }
         <?php endif; ?>
-    });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener("DOMContentLoaded", initAutoOpenEncargo);
+    } else {
+        initAutoOpenEncargo();
+    }
     <?php endif; ?>
 
-    document.addEventListener("DOMContentLoaded", function() {
+    function initPedidosEncargadosToasts() {
         // Inicializar y mostrar toasts de notificaciones del servidor
         function inicializarToasts() {
             const toasts = document.querySelectorAll('.toast:not(.showing):not(.show)');
@@ -874,6 +881,11 @@
         }
 
         inicializarToasts();
-    });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener("DOMContentLoaded", initPedidosEncargadosToasts);
+    } else {
+        initPedidosEncargadosToasts();
+    }
 </script>
 <?= $this->endSection() ?>
