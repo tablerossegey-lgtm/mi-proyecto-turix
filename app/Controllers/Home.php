@@ -9,9 +9,10 @@ class Home extends BaseController
         $productoModel = new \App\Models\ProductoModel();
         $categoriaModel = new \App\Models\CategoriaModel();
 
-        // 5 productos más recientes
+        // 5 productos más recientes con stock disponible
         $novedades = $productoModel->select('t_inventario.*, t_categorias.nombre as nombre_categoria')
                                    ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
+                                   ->where('t_inventario.stock !=', 0)
                                    ->orderBy('t_inventario.fecha_creacion', 'DESC')
                                    ->limit(5)
                                    ->findAll();

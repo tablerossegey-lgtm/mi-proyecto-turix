@@ -17,7 +17,7 @@ class Catalogo extends BaseController
 
     public function index()
     {
-        $productos = $this->productoModel->obtenerTodosConCategoria();
+        $productos = $this->productoModel->obtenerTodosConCategoria(true);
 
         $data = [
             'productos' => $productos,
@@ -33,8 +33,8 @@ class Catalogo extends BaseController
 
     public function porCategoria(int $categoriaId)
     {
-        // Filtramos productos por categoría y obtenemos el nombre de la categoría usando el Modelo
-        $productos = $this->productoModel->obtenerPorCategoria($categoriaId);
+        // Filtramos productos por categoría y obtenemos el nombre de la categoría usando el Modelo (solo con stock)
+        $productos = $this->productoModel->obtenerPorCategoria($categoriaId, true);
 
         // Obtenemos el nombre de la categoría para mostrarlo en el título usando su Modelo (MVC)
         $categoriaModel = new \App\Models\CategoriaModel();
@@ -62,16 +62,16 @@ class Catalogo extends BaseController
     {
         $termino = $this->request->getPost('q');
         
-        // Si no hay término, simplemente regresamos los productos normales
+        // Si no hay término, simplemente regresamos los productos normales (solo con stock)
         if (empty(trim((string)$termino))) {
             if ($categoriaId) {
-                $productos = $this->productoModel->obtenerPorCategoria((int)$categoriaId);
+                $productos = $this->productoModel->obtenerPorCategoria((int)$categoriaId, true);
             } else {
-                $productos = $this->productoModel->obtenerTodosConCategoria();
+                $productos = $this->productoModel->obtenerTodosConCategoria(true);
             }
         } else {
             // Buscamos con el término ingresado
-            $productos = $this->productoModel->buscarProductos((string)$termino, $categoriaId ? (int)$categoriaId : null);
+            $productos = $this->productoModel->buscarProductos((string)$termino, $categoriaId ? (int)$categoriaId : null, true);
         }
 
         return view('catalogo/_grid_productos', ['productos' => $productos]);
@@ -81,8 +81,8 @@ class Catalogo extends BaseController
     {
         $producto = $this->productoModel->obtenerPorIdConCategoria((int)$id);
 
-        if (!$producto) {
-            return '<div class="p-4 text-white">Producto no encontrado.</div>';
+        if (!$producto || (int)($producto['stock'] ?? 0) === 0) {
+            return '<div class="p-4 text-white">Producto no encontrado o sin stock.</div>';
         }
 
         // Cargar imágenes adicionales del inventario

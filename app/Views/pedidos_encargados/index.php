@@ -172,8 +172,19 @@
                                 $telefonoLimpio = '52' . $telefonoLimpio;
                             }
 
+                            $nombreProdMsg = $e['descripcion_producto'];
+                            $mostrarNotas = $e['notas'] ?? '';
+                            if (!$e['id_producto'] && !empty($e['notas'])) {
+                                if (preg_match('/^\[Producto:\s*(.*?)\](?:\s*\n*(.*))?$/s', $e['notas'], $matches)) {
+                                    $nombreProdMsg = $matches[1];
+                                    $mostrarNotas = $matches[2] ?? '';
+                                } else {
+                                    $nombreProdMsg = 'Producto Especial';
+                                }
+                            }
+
                             // Mensaje personalizado de WhatsApp según el estado
-                            $msgText = "Hola " . $e['nombre_cliente'] . ", te escribo de TurixShop referente a tu encargo de " . $e['cantidad'] . " pza(s) de '" . ($e['descripcion_producto'] ?: 'Producto') . "'";
+                            $msgText = "Hola " . $e['nombre_cliente'] . ", te escribo de TurixShop referente a tu encargo de " . $e['cantidad'] . " pza(s) de '" . ($nombreProdMsg ?: 'Producto') . "'";
                             if ($e['estado'] === 'Conseguido') {
                                 $msgText .= ". ¡Ya tenemos tu producto listo para entrega! Quedamos a tus órdenes.";
                             } elseif ($e['estado'] === 'Pendiente') {
@@ -206,8 +217,9 @@
                                                     <?= esc($e['codigo_sku']) ?>
                                                 </span>
                                             <?php else: ?>
+                                                <div class="fw-semibold admin-product-title" style="font-size: 0.9rem;"><?= esc($nombreProdMsg) ?></div>
                                                 <span class="badge px-2.5 py-1 rounded-pill font-monospace" style="background-color: rgba(13, 202, 240, 0.12) !important; color: #0dcaf0 !important; border: 1px solid rgba(13, 202, 240, 0.25) !important; font-size: 0.75rem;">
-                                                    <i class="fas fa-info-circle me-1"></i>Encargo Especial (Sin Inventario)
+                                                    <i class="fas fa-info-circle me-1"></i>Sin Inventario
                                                 </span>
                                             <?php endif; ?>
                                         </div>
@@ -281,13 +293,13 @@
                                 </td>
                             </tr>
                             
-                            <?php if (!empty($e['notas'])): ?>
-                                <tr class="admin-table-tr" style="background-color: rgba(0, 0, 0, 0.15) !important;">
-                                    <td colspan="7" class="ps-5 py-2 text-white-50 small">
-                                        <i class="fas fa-sticky-note me-2 text-info"></i><strong>Notas del Encargo:</strong> <?= esc($e['notas']) ?>
-                                    </td>
-                                </tr>
-                            <?php endif; ?>
+                            <?php if (!empty($mostrarNotas)): ?>
+                                                                <tr class="admin-table-tr" style="background-color: rgba(0, 0, 0, 0.15) !important;">
+                                                                    <td colspan="7" class="ps-5 py-2 text-white-50 small">
+                                                                        <i class="fas fa-sticky-note me-2 text-info"></i><strong>Notas del Encargo:</strong> <?= esc($mostrarNotas) ?>
+                                                                    </td>
+                                                                </tr>
+                                                            <?php endif; ?>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
@@ -327,6 +339,7 @@
                                 <input type="text" 
                                        class="form-control modal-encargo-control text-white w-100" 
                                        id="producto_search_input" 
+                                       name="producto_custom"
                                        placeholder="Escribe para buscar por SKU o nombre de producto..." 
                                        autocomplete="off">
                                 <div class="dropdown-menu w-100 p-2 shadow-lg" 
@@ -455,6 +468,7 @@
                                 <input type="text" 
                                        class="form-control modal-encargo-control text-white w-100" 
                                        id="edit_producto_search_input" 
+                                       name="producto_custom"
                                        placeholder="Escribe para buscar por SKU o nombre de producto..." 
                                        autocomplete="off">
                                 <div class="dropdown-menu w-100 p-2 shadow-lg" 
@@ -609,10 +623,8 @@
 
         // Filtrar productos al escribir
         input.addEventListener('input', function() {
+            hidden.value = '';
             const query = input.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-            if (query === '') {
-                hidden.value = '';
-            }
             let matches = 0;
 
             options.forEach(opt => {
@@ -772,7 +784,17 @@
         document.getElementById('edit_contacto_cliente').value = encargo.contacto_cliente || '';
         document.getElementById('edit_cantidad').value = encargo.cantidad;
         document.getElementById('edit_anticipo').value = encargo.anticipo;
-        document.getElementById('edit_notas').value = encargo.notas || '';
+
+        let notesText = encargo.notes || encargo.notas || '';
+        let customName = '';
+        if (notesText.startsWith('[Producto: ')) {
+            const match = notesText.match(/^\[Producto:\s*(.*?)\](?:\s*\n*(.*))?$/s);
+            if (match) {
+                customName = match[1];
+                notesText = match[2] || '';
+            }
+        }
+        document.getElementById('edit_notas').value = notesText;
         
         // Cargar producto seleccionado en el input de búsqueda editable
         const hiddenInput = document.getElementById('edit_id_producto_hidden');
@@ -790,7 +812,7 @@
             }
         } else {
             hiddenInput.value = '';
-            searchInput.value = 'Producto eliminado';
+            searchInput.value = customName;
         }
         
         modal.show();

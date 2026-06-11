@@ -60,6 +60,7 @@ class PedidosEncargados extends BaseController
     public function crear()
     {
         $idProducto = $this->request->getPost('id_producto') ?: null;
+        $productoCustom = trim((string)$this->request->getPost('producto_custom'));
         $nombreCliente = trim((string)$this->request->getPost('nombre_cliente'));
         $contactoCliente = trim((string)$this->request->getPost('contacto_cliente'));
         $cantidad = $this->request->getPost('cantidad');
@@ -71,8 +72,13 @@ class PedidosEncargados extends BaseController
             return redirect()->back()->withInput()->with('error', 'Por favor ingrese el nombre del cliente.');
         }
 
-        if (empty($idProducto) && empty($notas)) {
-            return redirect()->back()->withInput()->with('error', 'Debe seleccionar un producto del inventario o detallar el pedido en el campo de Notas.');
+        if (empty($idProducto) && empty($productoCustom) && empty($notas)) {
+            return redirect()->back()->withInput()->with('error', 'Debe seleccionar un producto del inventario, escribir uno personalizado o detallar el pedido en el campo de Notas.');
+        }
+
+        // Si no hay producto de inventario pero hay uno custom, lo guardamos en notas
+        if (empty($idProducto) && !empty($productoCustom)) {
+            $notas = "[Producto: " . $productoCustom . "]" . ($notas !== null ? "\n" . $notas : "");
         }
 
         // Buscar o guardar en t_clientes
@@ -118,6 +124,7 @@ class PedidosEncargados extends BaseController
         }
 
         $idProducto = $this->request->getPost('id_producto') ?: null;
+        $productoCustom = trim((string)$this->request->getPost('producto_custom'));
         $nombreCliente = trim((string)$this->request->getPost('nombre_cliente'));
         $contactoCliente = trim((string)$this->request->getPost('contacto_cliente'));
         $cantidad = $this->request->getPost('cantidad');
@@ -129,8 +136,13 @@ class PedidosEncargados extends BaseController
             return redirect()->back()->with('error', 'Por favor complete todos los campos obligatorios.');
         }
 
-        if (empty($idProducto) && empty($notas)) {
-            return redirect()->back()->with('error', 'Debe seleccionar un producto del inventario o detallar el pedido en el campo de Notas.');
+        if (empty($idProducto) && empty($productoCustom) && empty($notas)) {
+            return redirect()->back()->with('error', 'Debe seleccionar un producto del inventario, escribir uno personalizado o detallar el pedido en el campo de Notas.');
+        }
+
+        // Si no hay producto de inventario pero hay uno custom, lo guardamos en notas
+        if (empty($idProducto) && !empty($productoCustom)) {
+            $notas = "[Producto: " . $productoCustom . "]" . ($notas !== null ? "\n" . $notas : "");
         }
 
         // Buscar o guardar en t_clientes

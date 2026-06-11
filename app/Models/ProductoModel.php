@@ -22,34 +22,44 @@ class ProductoModel extends Model
     /**
      * Obtiene todos los productos junto con el nombre de su categoría
      */
-    public function obtenerTodosConCategoria()
+    public function obtenerTodosConCategoria(bool $soloConStock = false)
     {
-        return $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria,
+        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria,
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 1) AS stock_casa,
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 2) AS stock_oficina')
-            ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
-            ->orderBy('t_inventario.id', 'DESC')
+            ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left');
+
+        if ($soloConStock) {
+            $builder->where('t_inventario.stock !=', 0);
+        }
+
+        return $builder->orderBy('t_inventario.id', 'DESC')
             ->findAll();
     }
 
     /**
      * Obtiene los productos filtrados por una categoría específica, junto con su nombre de categoría
      */
-    public function obtenerPorCategoria(int $categoriaId)
+    public function obtenerPorCategoria(int $categoriaId, bool $soloConStock = false)
     {
-        return $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria,
+        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria,
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 1) AS stock_casa,
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 2) AS stock_oficina')
             ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria')
-            ->where('t_inventario.id_categoria', $categoriaId)
-            ->orderBy('t_inventario.id', 'DESC')
+            ->where('t_inventario.id_categoria', $categoriaId);
+
+        if ($soloConStock) {
+            $builder->where('t_inventario.stock !=', 0);
+        }
+
+        return $builder->orderBy('t_inventario.id', 'DESC')
             ->findAll();
     }
 
     /**
      * Busca productos por término, opcionalmente filtrando por categoría
      */
-    public function buscarProductos(string $termino, ?int $categoriaId = null)
+    public function buscarProductos(string $termino, ?int $categoriaId = null, bool $soloConStock = false)
     {
         $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria,
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 1) AS stock_casa,
@@ -72,6 +82,10 @@ class ProductoModel extends Model
 
         if ($categoriaId) {
             $builder->where('t_inventario.id_categoria', $categoriaId);
+        }
+
+        if ($soloConStock) {
+            $builder->where('t_inventario.stock !=', 0);
         }
 
         return $builder->orderBy('t_inventario.id', 'DESC')->findAll();
