@@ -55,3 +55,53 @@ if (!function_exists('obtener_ruta_imagen')) {
         return base_url($rutaImagen);
     }
 }
+
+if (!function_exists('obtener_ruta_categoria')) {
+    /**
+     * Resuelve la ruta correcta de la imagen de la categoría.
+     *
+     * @param string|null $imagen Campo imagen de la categoría en la BD
+     * @param string|null $categoriaNombre Nombre de la categoría
+     * @return string URL base de la imagen o default SinCategoria.jpg
+     */
+    function obtener_ruta_categoria(?string $imagen, ?string $categoriaNombre): string
+    {
+        $catRuta = '';
+        
+        // 1. Usar el campo de la base de datos si existe el archivo y es .jpg
+        if (!empty($imagen)) {
+            $pathInfo = pathinfo($imagen);
+            if (isset($pathInfo['extension']) && strtolower($pathInfo['extension']) === 'jpg') {
+                $rutaBD = 'images/categorias/' . $imagen;
+                if (file_exists(FCPATH . $rutaBD)) {
+                    $catRuta = $rutaBD;
+                }
+            }
+        }
+
+        // 2. Si no, calcular dinámicamente el nombre según el nombre de la categoría (solo .jpg)
+        if (empty($catRuta) && !empty($categoriaNombre)) {
+            $unaccented = str_replace(
+                ['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ', 'Ñ'], 
+                ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U', 'n', 'N'], 
+                $categoriaNombre
+            );
+            $baseName = str_replace(' ', '', ucwords(strtolower($unaccented)));
+            
+            // Check only .jpg
+            $rutaDinamicaJpg = 'images/categorias/' . $baseName . '.jpg';
+            
+            if (file_exists(FCPATH . $rutaDinamicaJpg)) {
+                $catRuta = $rutaDinamicaJpg;
+            }
+        }
+
+        // 3. Si no existe ninguno, usar imagen por defecto (SinCategoria.jpg)
+        if (empty($catRuta)) {
+            $catRuta = 'images/categorias/SinCategoria.jpg';
+        }
+
+        return base_url($catRuta);
+    }
+}
+

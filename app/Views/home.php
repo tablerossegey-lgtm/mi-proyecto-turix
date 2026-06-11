@@ -33,34 +33,7 @@
             <div class="row g-4 row-cols-2 row-cols-md-3 row-cols-lg-4">
                 <?php foreach ($categorias as $cat): ?>
                     <?php 
-                        // 1. Usar el campo de la base de datos si existe el archivo
-                        $catRuta = '';
-                        if (!empty($cat['imagen'])) {
-                            $rutaBD = 'images/categorias/' . $cat['imagen'];
-                            if (file_exists(FCPATH . $rutaBD)) {
-                                $catRuta = $rutaBD;
-                            }
-                        }
-
-                        // 2. Si no, calcular dinámicamente el nombre según el nombre de la categoría
-                        if (empty($catRuta)) {
-                            $unaccented = str_replace(
-                                ['á', 'é', 'í', 'ó', 'ú', 'Á', 'É', 'Í', 'Ó', 'Ú', 'ñ', 'Ñ'], 
-                                ['a', 'e', 'i', 'o', 'u', 'A', 'E', 'I', 'O', 'U', 'n', 'N'], 
-                                $cat['nombre']
-                            );
-                            $catFileName = str_replace(' ', '', ucwords(strtolower($unaccented))) . '.png';
-                            $rutaDinamica = 'images/categorias/' . $catFileName;
-                            if (file_exists(FCPATH . $rutaDinamica)) {
-                                $catRuta = $rutaDinamica;
-                            }
-                        }
-
-                        // 3. Si no existe ninguno, usar imagen por defecto
-                        if (empty($catRuta)) {
-                            $catRuta = 'images/categorias/SinCategoria.png';
-                        }
-                        $catImageSrc = base_url($catRuta);
+                        $catImageSrc = obtener_ruta_categoria($cat['imagen'] ?? '', $cat['nombre'] ?? '');
                     ?>
                     <div class="col">
                         <div class="cat-grid-card h-100" onclick="window.location.href='<?= base_url('catalogo/categoria/' . $cat['idCategoria']) ?>'">
@@ -68,7 +41,7 @@
                                 <img src="<?= $catImageSrc ?>" 
                                      alt="Categoría <?= esc($cat['nombre']) ?>" 
                                      class="cat-grid-img"
-                                     onerror="this.src='<?= base_url('images/categorias/SinCategoria.png') ?>'; this.onerror=null;">
+                                     onerror="this.src='<?= base_url('images/categorias/SinCategoria.jpg') ?>'; this.onerror=null;">
                             </div>
                             <div class="cat-grid-body">
                                 <h6 class="cat-grid-title"><?= esc($cat['nombre']) ?></h6>

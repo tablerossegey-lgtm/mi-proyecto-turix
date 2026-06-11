@@ -14,8 +14,9 @@
                 <div class="card h-100 border-0 card-categoria">
 
                     <div class="contenedor-imagen-categoria position-relative">
-                        <img src="<?= base_url('images/categorias/' . ($cat['imagen'] ?: 'sinImagen.png')) ?>"
-                            class="img-fluid foto-categoria" alt="<?= esc($cat['nombre']) ?>">
+                        <img src="<?= obtener_ruta_categoria($cat['imagen'] ?? '', $cat['nombre'] ?? '') ?>"
+                            class="img-fluid foto-categoria" alt="<?= esc($cat['nombre']) ?>"
+                            onerror="this.src='<?= base_url('images/categorias/SinCategoria.jpg') ?>'; this.onerror=null;">
                         <div class="position-absolute bottom-0 start-0 w-100 p-3" style="background: linear-gradient(transparent, rgba(0,0,0,0.7));">
                             <h6 class="text-white fw-bold mb-0 text-uppercase small" style="letter-spacing: 1px;"><?= esc($cat['nombre']) ?></h6>
                         </div>
