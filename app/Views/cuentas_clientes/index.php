@@ -1122,6 +1122,42 @@
                 }
             });
         }
+
+        // Spinner en formulario de editar compra
+        const formEditarCompra = document.getElementById('formEditarCompra');
+        if (formEditarCompra) {
+            formEditarCompra.addEventListener('submit', function () {
+                const btnSubmit = formEditarCompra.querySelector('button[type="submit"]');
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
+                }
+            });
+        }
+
+        // Spinner en formulario de editar cliente
+        const formEditarCliente = document.getElementById('formEditarCliente');
+        if (formEditarCliente) {
+            formEditarCliente.addEventListener('submit', function () {
+                const btnSubmit = formEditarCliente.querySelector('button[type="submit"]');
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Guardando...';
+                }
+            });
+        }
+
+        // Spinner en formulario de confirmar eliminación
+        const formConfirmarEliminar = document.getElementById('formConfirmarEliminar');
+        if (formConfirmarEliminar) {
+            formConfirmarEliminar.addEventListener('submit', function () {
+                const btnSubmit = formConfirmarEliminar.querySelector('button[type="submit"]');
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Eliminando...';
+                }
+            });
+        }
     }
 
     if (document.readyState === 'loading') {
@@ -1178,20 +1214,39 @@
         if (evt.detail.xhr.status === 200) {
             let modalId = null;
             let successMessage = "";
+            let btnRestoreHTML = null;
+            let btnRestoreSelector = null;
 
             if (targetId === "formEditarCompra") {
                 modalId = "modalEditarCompra";
                 successMessage = "Compra modificada con éxito.";
+                btnRestoreHTML = '<i class="fas fa-save me-1"></i> Guardar Cambios';
+                btnRestoreSelector = '#formEditarCompra button[type="submit"]';
             } else if (targetId === "formRegistrarAbono") {
                 modalId = "modalRegistrarAbono";
                 successMessage = "Abono registrado con éxito.";
                 document.getElementById("abono_monto").value = "";
+                btnRestoreHTML = '<i class="fas fa-save me-1"></i> Registrar Pago';
+                btnRestoreSelector = '#formRegistrarAbono button[type="submit"]';
             } else if (targetId === "formConfirmarEliminar") {
                 modalId = "modalConfirmarEliminar";
                 successMessage = "Registro de compra eliminado.";
+                btnRestoreHTML = 'Eliminar';
+                btnRestoreSelector = '#formConfirmarEliminar button[type="submit"]';
             } else if (targetId === "formEditarCliente") {
                 modalId = "modalEditarCliente";
                 successMessage = "Datos del cliente actualizados.";
+                btnRestoreHTML = '<i class="fas fa-save me-1"></i> Guardar Cambios';
+                btnRestoreSelector = '#formEditarCliente button[type="submit"]';
+            }
+
+            // Restaurar botón de submit (quitar spinner y re-habilitar)
+            if (btnRestoreSelector && btnRestoreHTML) {
+                const btn = document.querySelector(btnRestoreSelector);
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = btnRestoreHTML;
+                }
             }
 
             if (modalId) {
