@@ -55,6 +55,9 @@ class CajaChica extends BaseController
         $tipo = $this->request->getPost('tipo'); // 'Ingreso' o 'Egreso'
 
         if (empty($descripcion) || $monto <= 0 || !in_array($tipo, ['Ingreso', 'Egreso'])) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('Por favor complete todos los campos correctamente.');
+            }
             return redirect()->back()->withInput()->with('error', 'Por favor complete todos los campos correctamente.');
         }
 
@@ -66,9 +69,16 @@ class CajaChica extends BaseController
         ];
 
         if ($this->cajaModel->insert($nuevoMovimiento)) {
+            session()->setFlashdata('success', 'Movimiento registrado correctamente.');
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->index();
+            }
             return redirect()->to(base_url('admin/caja'))->with('success', 'Movimiento registrado correctamente.');
         }
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->response->setStatusCode(500)->setBody('No se pudo registrar el movimiento.');
+        }
         return redirect()->back()->withInput()->with('error', 'No se pudo registrar el movimiento.');
     }
 
@@ -77,13 +87,23 @@ class CajaChica extends BaseController
         $movimiento = $this->cajaModel->find($id);
 
         if (!$movimiento) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(404)->setBody('El movimiento no existe.');
+            }
             return redirect()->to(base_url('admin/caja'))->with('error', 'El movimiento no existe.');
         }
 
         if ($this->cajaModel->delete($id)) {
+            session()->setFlashdata('success', 'Movimiento de caja eliminado correctamente.');
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->index();
+            }
             return redirect()->to(base_url('admin/caja'))->with('success', 'Movimiento de caja eliminado correctamente.');
         }
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->response->setStatusCode(500)->setBody('No se pudo eliminar el movimiento.');
+        }
         return redirect()->to(base_url('admin/caja'))->with('error', 'No se pudo eliminar el movimiento.');
     }
 }

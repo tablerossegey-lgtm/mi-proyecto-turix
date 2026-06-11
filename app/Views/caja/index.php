@@ -2,7 +2,7 @@
 
 <?= $this->section('content') ?>
 <link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
-<div class="container py-4">
+<div id="caja-container" class="container py-4">
     <!-- Encabezado -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
         <div>
@@ -161,7 +161,9 @@
             </div>
             <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
                 <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
-                <form id="formConfirmarEliminarMovimiento" action="" method="POST" class="d-inline" onsubmit="mostrarSpinner(this, 'Eliminando...')">
+                <form id="formConfirmarEliminarMovimiento" action="" method="POST" class="d-inline"
+                      hx-post="" hx-target="#caja-container" hx-select="#caja-container" hx-swap="outerHTML"
+                      onsubmit="mostrarSpinner(this, 'Eliminando...')">
                     <?= csrf_field() ?>
                     <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">Eliminar</button>
                 </form>
@@ -180,7 +182,9 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="formNuevoMovimiento" action="<?= base_url('admin/caja/crear') ?>" method="POST" onsubmit="mostrarSpinner(this, 'Registrando...')">
+            <form id="formNuevoMovimiento" action="<?= base_url('admin/caja/crear') ?>" method="POST"
+                  hx-post="<?= base_url('admin/caja/crear') ?>" hx-target="#caja-container" hx-select="#caja-container" hx-swap="outerHTML"
+                  onsubmit="mostrarSpinner(this, 'Registrando...')">
                 <?= csrf_field() ?>
                 <div class="modal-body p-4">
                     <div class="row g-3">
@@ -261,6 +265,10 @@
         const form = document.getElementById('formConfirmarEliminarMovimiento');
         if (form) {
             form.action = url;
+            form.setAttribute('hx-post', url);
+            if (typeof htmx !== 'undefined') {
+                htmx.process(form);
+            }
         }
         const modalEl = document.getElementById('modalConfirmarEliminarMovimiento');
         if (modalEl && typeof bootstrap !== 'undefined') {
@@ -275,6 +283,42 @@
             }
         }
     };
+
+    // Resetear formulario al ocultarse el modal de nuevo movimiento
+    const modalNuevo = document.getElementById('modalNuevoMovimiento');
+    if (modalNuevo) {
+        modalNuevo.addEventListener('hidden.bs.modal', function () {
+            const form = document.getElementById('formNuevoMovimiento');
+            if (form) {
+                form.reset();
+                // Restablecer valores por defecto del formulario
+                const fechaInput = document.getElementById('fecha');
+                if (fechaInput) {
+                    fechaInput.value = new Date().toISOString().substring(0, 10);
+                }
+                const tipoIngreso = document.getElementById('tipo_ingreso');
+                if (tipoIngreso) {
+                    tipoIngreso.checked = true;
+                }
+            }
+        });
+    }
+
+    // Restablecer estado de botones submit tras peticiones de HTMX (éxito o error)
+    document.addEventListener('htmx:afterRequest', function(evt) {
+        const form = evt.target;
+        if (form && (form.id === 'formNuevoMovimiento' || form.id === 'formConfirmarEliminarMovimiento')) {
+            const btn = form.querySelector('button[type="submit"]');
+            if (btn) {
+                btn.disabled = false;
+                if (form.id === 'formNuevoMovimiento') {
+                    btn.innerHTML = '<i class="fas fa-save me-1"></i> Registrar';
+                } else if (form.id === 'formConfirmarEliminarMovimiento') {
+                    btn.innerHTML = 'Eliminar';
+                }
+            }
+        }
+    });
 })();
 </script>
 <?= $this->endSection() ?>
