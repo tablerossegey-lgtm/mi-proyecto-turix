@@ -85,14 +85,18 @@ class VentasSemillas extends BaseController
         $id_cliente = (int)$this->request->getPost('id_cliente');
         $nombre_cliente_libre = $this->request->getPost('nombre_cliente_libre');
         $fecha = $this->request->getPost('fecha') ?: date('Y-m-d');
-        $producto = $this->request->getPost('producto');
-        $cantidad = (int)$this->request->getPost('cantidad');
-        $precio_venta = (float)$this->request->getPost('precio_venta');
-        $precio_bea = (float)$this->request->getPost('precio_bea');
         $metodo_pago = $this->request->getPost('metodo_pago'); // 'contado' o 'cuenta'
 
-        if (empty($producto) || $cantidad <= 0 || $precio_venta < 0 || $precio_bea < 0) {
-            return redirect()->back()->withInput()->with('error', 'Por favor, completa los campos correctamente.');
+        $productos = $this->request->getPost('productos');
+        $cantidades = $this->request->getPost('cantidades');
+        $precios_venta = $this->request->getPost('precios_venta');
+        $precios_bea = $this->request->getPost('precios_bea');
+
+        if (empty($productos) || !is_array($productos) || count($productos) === 0) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('Debes agregar al menos un producto a la venta.');
+            }
+            return redirect()->back()->withInput()->with('error', 'Debes agregar al menos un producto a la venta.');
         }
 
         // Obtener el nombre del cliente si está registrado
@@ -104,81 +108,113 @@ class VentasSemillas extends BaseController
             }
         }
 
-        // Buscar si existe el producto en el inventario para descontar stock
-        $productoInventario = $this->productoModel->where('descripcion', $producto)->first();
-        $idInventario = 0;
-        if ($productoInventario) {
-            $idInventario = (int)$productoInventario['id'];
-        }
-
         $db = \Config\Database::connect();
         $db->transStart();
 
-        // Descontar stock del inventario si el producto existe
-        if ($idInventario > 0) {
-            $nuevoStock = $productoInventario['stock'] - $cantidad;
-            $this->productoModel->update($idInventario, ['stock' => max(0, $nuevoStock)]);
-        }
+        $montoTotalVenta = 0;
+        $detallesCajaChica = [];
 
-        if ($metodo_pago === 'cuenta') {
-            if ($id_cliente <= 0) {
+        foreach ($productos as $i => $producto) {
+            $cantidad = (int)($cantidades[$i] ?? 1);
+            $precio_venta = (float)($precios_venta[$i] ?? 0.00);
+            $precio_bea = (float)($precios_bea[$i] ?? 0.00);
+
+            if (empty($producto) || $cantidad <= 0 || $precio_venta < 0 || $precio_bea < 0) {
                 $db->transRollback();
-                return redirect()->back()->withInput()->with('error', 'Debes seleccionar un cliente registrado para vender a cuenta.');
+                if ($this->request->getHeaderLine('HX-Request')) {
+                    return $this->response->setStatusCode(400)->setBody('Los datos de los productos son inválidos.');
+                }
+                return redirect()->back()->withInput()->with('error', 'Los datos de los productos son inválidos.');
             }
 
-            // 1. Insertar en cuenta corriente del cliente
-            $nuevaCompra = [
-                'idCliente'     => $id_cliente,
-                'fechaCompra'   => $fecha,
-                'cantidad'      => $cantidad,
-                'descProducto'  => $producto,
-                'precioUnit'    => $precio_venta,
-                'totalProduc'   => $precio_venta * $cantidad,
-                'estatusCompra' => '0', // 0 = Pendiente
-                'idInventario'  => $idInventario
-            ];
-            
-            $this->cuentaClienteModel->insert($nuevaCompra);
-            $idCompra = $this->cuentaClienteModel->getInsertID();
+            // Buscar si existe el producto en el inventario para descontar stock
+            $productoInventario = $this->productoModel->where('descripcion', $producto)->first();
+            $idInventario = 0;
+            if ($productoInventario) {
+                $idInventario = (int)$productoInventario['id'];
+            }
 
-            // 2. Insertar en t_ventas_semillas
-            $nuevaVenta = [
-                'id_cliente'        => $id_cliente,
-                'nombre_cliente'    => null,
-                'fecha'             => $fecha,
-                'producto'          => $producto,
-                'cantidad'          => $cantidad,
-                'precio_venta'      => $precio_venta,
-                'precio_bea'        => $precio_bea,
-                'estatus_pago'      => 'Pendiente',
-                'entregado_bea'     => 'No',
-                'id_cuenta_cliente' => $idCompra
-            ];
-            $this->ventaModel->insert($nuevaVenta);
+            // Descontar stock del inventario si el producto existe
+            if ($idInventario > 0) {
+                $nuevoStock = $productoInventario['stock'] - $cantidad;
+                $this->productoModel->update($idInventario, ['stock' => max(0, $nuevoStock)]);
+            }
 
-        } else {
-            // Venta de Contado
-            // 1. Insertar en t_ventas_semillas
-            $nuevaVenta = [
-                'id_cliente'        => $id_cliente > 0 ? $id_cliente : null,
-                'nombre_cliente'    => $id_cliente > 0 ? null : $nombre_cliente_libre,
-                'fecha'             => $fecha,
-                'producto'          => $producto,
-                'cantidad'          => $cantidad,
-                'precio_venta'      => $precio_venta,
-                'precio_bea'        => $precio_bea,
-                'estatus_pago'      => 'Pagado',
-                'entregado_bea'     => 'No',
-                'id_cuenta_cliente' => null
-            ];
-            $this->ventaModel->insert($nuevaVenta);
+            if ($metodo_pago === 'cuenta') {
+                if ($id_cliente <= 0) {
+                    $db->transRollback();
+                    if ($this->request->getHeaderLine('HX-Request')) {
+                        return $this->response->setStatusCode(400)->setBody('Debes seleccionar un cliente registrado para vender a cuenta.');
+                    }
+                    return redirect()->back()->withInput()->with('error', 'Debes seleccionar un cliente registrado para vender a cuenta.');
+                }
 
-            // 2. Registrar el ingreso completo en Caja Chica
+                // 1. Insertar en cuenta corriente del cliente
+                $nuevaCompra = [
+                    'idCliente'     => $id_cliente,
+                    'fechaCompra'   => $fecha,
+                    'cantidad'      => $cantidad,
+                    'descProducto'  => $producto,
+                    'precioUnit'    => $precio_venta,
+                    'totalProduc'   => $precio_venta * $cantidad,
+                    'estatusCompra' => '0', // 0 = Pendiente
+                    'idInventario'  => $idInventario
+                ];
+                
+                $this->cuentaClienteModel->insert($nuevaCompra);
+                $idCompra = $this->cuentaClienteModel->getInsertID();
+
+                // 2. Insertar en t_ventas_semillas
+                $nuevaVenta = [
+                    'id_cliente'        => $id_cliente,
+                    'nombre_cliente'    => null,
+                    'fecha'             => $fecha,
+                    'producto'          => $producto,
+                    'cantidad'          => $cantidad,
+                    'precio_venta'      => $precio_venta,
+                    'precio_bea'        => $precio_bea,
+                    'estatus_pago'      => 'Pendiente',
+                    'entregado_bea'     => 'No',
+                    'id_cuenta_cliente' => $idCompra
+                ];
+                $this->ventaModel->insert($nuevaVenta);
+
+            } else {
+                // Venta de Contado
+                // 1. Insertar en t_ventas_semillas
+                $nuevaVenta = [
+                    'id_cliente'        => $id_cliente > 0 ? $id_cliente : null,
+                    'nombre_cliente'    => $id_cliente > 0 ? null : $nombre_cliente_libre,
+                    'fecha'             => $fecha,
+                    'producto'          => $producto,
+                    'cantidad'          => $cantidad,
+                    'precio_venta'      => $precio_venta,
+                    'precio_bea'        => $precio_bea,
+                    'estatus_pago'      => 'Pagado',
+                    'entregado_bea'     => 'No',
+                    'id_cuenta_cliente' => null
+                ];
+                $this->ventaModel->insert($nuevaVenta);
+
+                $montoTotalVenta += ($precio_venta * $cantidad);
+                $detallesCajaChica[] = "{$cantidad}x {$producto}";
+            }
+        }
+
+        // Si es de contado, registrar el movimiento consolidado en Caja Chica
+        if ($metodo_pago === 'contado' && $montoTotalVenta > 0) {
             $nombreMostrar = $id_cliente > 0 ? $nombreClienteReg : (empty($nombre_cliente_libre) ? 'Cliente Gral.' : $nombre_cliente_libre);
+            $descripcionMovimiento = "Venta Contado Semillas: " . implode(', ', $detallesCajaChica) . " ({$nombreMostrar})";
+            
+            // Truncar descripción si excede 255 caracteres
+            if (strlen($descripcionMovimiento) > 255) {
+                $descripcionMovimiento = substr($descripcionMovimiento, 0, 250) . '...';
+            }
+
             $db->table('t_caja_chica')->insert([
                 'fecha'       => $fecha,
-                'descripcion' => "Venta Contado Semillas: {$producto} ({$nombreMostrar})",
-                'monto'       => $precio_venta * $cantidad,
+                'descripcion' => $descripcionMovimiento,
+                'monto'       => $montoTotalVenta,
                 'tipo'        => 'Ingreso'
             ]);
         }

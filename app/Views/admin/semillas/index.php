@@ -287,7 +287,7 @@
 
 <!-- MODAL: REGISTRAR VENTA -->
 <div class="modal fade" id="modalNuevaVenta" tabindex="-1" aria-labelledby="modalNuevaVentaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content modal-encargo-content text-white">
             <div class="modal-header modal-encargo-header py-3 px-4">
                 <h5 class="modal-title fw-bold text-white" id="modalNuevaVentaLabel">
@@ -331,32 +331,75 @@
                         </div>
                     </div>
 
-                    <!-- Producto -->
-                    <div class="mb-3">
-                        <label for="producto_sel" class="form-label modal-encargo-label">Producto *</label>
-                        <select class="form-select modal-encargo-select text-white w-100" id="producto_sel" name="producto_sel" onchange="seleccionarProductoPredefinido(this.value)" required>
-                            <option value="" selected>-- Selecciona un Producto --</option>
-                            <?php foreach ($productosPredefinidos as $p): ?>
-                                <option value="<?= esc($p['nombre']) ?>"><?= esc($p['nombre']) ?> - Venta: $<?= number_format($p['precio_venta'], 2) ?> (<?= $p['inventario'] ?>)</option>
-                            <?php endforeach; ?>
-                            <option value="otro">Otro (Personalizado)</option>
-                        </select>
-                    </div>
-
-                    <!-- Nombre del Producto personalizado (si elige "Otro") -->
-                    <div class="mb-3" id="seccion_producto_nombre_personalizado" style="display: none;">
-                        <label for="producto_custom" class="form-label modal-encargo-label">Nombre del Producto *</label>
-                        <input type="text" class="form-control modal-encargo-control text-white" id="producto_custom" name="producto_custom" placeholder="Ej: Mix Especial">
-                    </div>
-
-                    <div class="row g-3 mb-3">
-                        <!-- Cantidad -->
-                        <div class="col-6">
-                            <label for="cantidad" class="form-label modal-encargo-label">Cantidad *</label>
-                            <input type="number" class="form-control modal-encargo-control text-white" id="cantidad" name="cantidad" value="1" min="1" required oninput="calcularGranTotalForm()">
-                        </div>
+                    <!-- SECCIÓN: AGREGAR PRODUCTO -->
+                    <div class="card p-3 mb-3 bg-dark border-secondary border-opacity-25" style="border-radius: 12px;">
+                        <h6 class="fw-bold text-warning mb-2" style="font-size: 0.9rem;">
+                            <i class="bi bi-cart-plus-fill"></i> Agregar Producto a la Venta
+                        </h6>
                         
-                        <!-- Estatus / Método de Pago -->
+                        <div class="row g-2 mb-2">
+                            <div class="col-12 col-md-7">
+                                <label for="producto_sel" class="form-label modal-encargo-label" style="font-size: 0.75rem;">Producto</label>
+                                <select class="form-select modal-encargo-select text-white w-100 py-1.5" id="producto_sel" onchange="seleccionarProductoPredefinido(this.value)">
+                                    <option value="" selected>-- Selecciona un Producto --</option>
+                                    <?php foreach ($productosPredefinidos as $p): ?>
+                                        <option value="<?= esc($p['nombre']) ?>"><?= esc($p['nombre']) ?> - Venta: $<?= number_format($p['precio_venta'], 2) ?> (<?= $p['inventario'] ?>)</option>
+                                    <?php endforeach; ?>
+                                    <option value="otro">Otro (Personalizado)</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-5" id="seccion_producto_nombre_personalizado" style="display: none;">
+                                <label for="producto_custom" class="form-label modal-encargo-label" style="font-size: 0.75rem;">Nombre Producto Personalizado</label>
+                                <input type="text" class="form-control modal-encargo-control text-white py-1.5" id="producto_custom" placeholder="Ej: Mix Especial">
+                            </div>
+                        </div>
+
+                        <div class="row g-2">
+                            <div class="col-4">
+                                <label for="cantidad" class="form-label modal-encargo-label" style="font-size: 0.75rem;">Cantidad</label>
+                                <input type="number" class="form-control modal-encargo-control text-white py-1.5" id="cantidad" value="1" min="1">
+                            </div>
+                            <div class="col-4">
+                                <label for="precio_venta" class="form-label modal-encargo-label" style="font-size: 0.75rem;">Precio Venta ($)</label>
+                                <input type="number" step="0.01" min="0" class="form-control modal-encargo-control text-white py-1.5" id="precio_venta" value="0.00">
+                            </div>
+                            <div class="col-4">
+                                <label for="precio_bea" class="form-label modal-encargo-label" style="font-size: 0.75rem;">Precio Bea ($)</label>
+                                <input type="number" step="0.01" min="0" class="form-control modal-encargo-control text-white py-1.5" id="precio_bea" value="0.00">
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn btn-warning btn-sm fw-bold text-dark w-100 mt-3 d-flex align-items-center justify-content-center gap-1" onclick="agregarProductoALaLista()">
+                            <i class="bi bi-plus-circle-fill"></i> Agregar Producto
+                        </button>
+                    </div>
+
+                    <!-- TABLA DE PRODUCTOS AGREGADOS -->
+                    <div class="mb-3">
+                        <label class="form-label modal-encargo-label"><i class="bi bi-list-ul"></i> Productos Seleccionados</label>
+                        <div class="table-responsive border border-secondary border-opacity-25 rounded" style="max-height: 180px; overflow-y: auto; background-color: rgba(0,0,0,0.15);">
+                            <table class="table table-dark table-sm align-middle mb-0" id="tabla_productos_lista">
+                                <thead class="text-white-50" style="font-size: 0.75rem; background-color: rgba(255,255,255,0.05);">
+                                    <tr>
+                                        <th class="ps-2">Producto</th>
+                                        <th class="text-center" style="width: 65px;">Cant.</th>
+                                        <th class="text-end" style="width: 95px;">Precio Venta</th>
+                                        <th class="text-end" style="width: 95px;">Precio Bea</th>
+                                        <th class="text-end" style="width: 100px;">Total</th>
+                                        <th class="text-center" style="width: 45px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tbody_productos_lista" style="font-size: 0.8rem;">
+                                    <tr id="tr_lista_vacia">
+                                        <td colspan="6" class="text-center py-3 text-white-50">Aún no has agregado ningún producto.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- METODO DE PAGO Y FECHA -->
+                    <div class="row g-3 mb-3">
                         <div class="col-6">
                             <label class="form-label modal-encargo-label d-block">Pago *</label>
                             <div class="btn-group w-100" role="group">
@@ -367,31 +410,17 @@
                                 <label class="btn btn-outline-danger btn-sm fw-bold" for="pago_cuenta">A Cuenta</label>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Precios -->
-                    <div class="row g-3 mb-3">
                         <div class="col-6">
-                            <label for="precio_venta" class="form-label modal-encargo-label">Precio de Venta ($) *</label>
-                            <input type="number" step="0.01" min="0" class="form-control modal-encargo-control text-white" id="precio_venta" name="precio_venta" value="0.00" required oninput="calcularGranTotalForm()">
-                        </div>
-                        <div class="col-6">
-                            <label for="precio_bea" class="form-label modal-encargo-label">Precio Bea ($) *</label>
-                            <input type="number" step="0.01" min="0" class="form-control modal-encargo-control text-white" id="precio_bea" name="precio_bea" value="0.00" required oninput="calcularGranTotalForm()">
+                            <label for="fecha" class="form-label modal-encargo-label">Fecha de Venta *</label>
+                            <input type="date" class="form-control modal-encargo-control text-white py-1.5" id="fecha" name="fecha" value="<?= date('Y-m-d') ?>" required>
                         </div>
                     </div>
 
-                    <!-- Fecha -->
-                    <div class="mb-4">
-                        <label for="fecha" class="form-label modal-encargo-label">Fecha de Venta *</label>
-                        <input type="date" class="form-control modal-encargo-control text-white" id="fecha" name="fecha" value="<?= date('Y-m-d') ?>" required>
-                    </div>
-
-                    <!-- Inputs finales ocultos que se envían -->
-                    <input type="hidden" id="producto" name="producto" value="">
+                    <!-- Contenedor para los inputs ocultos de los productos a enviar en el POST -->
+                    <div id="inputs_productos_ocultos"></div>
 
                     <!-- Resumen del Registro -->
-                    <div class="p-3 rounded bg-dark border border-secondary border-opacity-25">
+                    <div class="p-3 rounded bg-dark border border-secondary border-opacity-25 mt-3">
                         <div class="d-flex justify-content-between align-items-center mb-1 text-white-50 small">
                             <span>Total de la venta:</span>
                             <span class="fw-bold text-white" id="lbl_venta_total">$0.00</span>
@@ -515,6 +544,8 @@
         }
     }
 
+    let itemsVenta = [];
+
     // Al seleccionar un producto, auto-completar precios
     function seleccionarProductoPredefinido(nombre) {
         const customDiv = document.getElementById('seccion_producto_nombre_personalizado');
@@ -524,13 +555,11 @@
 
         if (nombre === 'otro') {
             customDiv.style.display = 'block';
-            customInput.required = true;
             customInput.value = '';
             precioVentaInput.value = '0.00';
             precioBeaInput.value = '0.00';
         } else {
             customDiv.style.display = 'none';
-            customInput.required = false;
             customInput.value = '';
 
             // Buscar en el JSON
@@ -538,19 +567,129 @@
             if (prod) {
                 precioVentaInput.value = prod.precio_venta.toFixed(2);
                 precioBeaInput.value = prod.precio_bea.toFixed(2);
+            } else {
+                precioVentaInput.value = '0.00';
+                precioBeaInput.value = '0.00';
             }
         }
+    }
+
+    // Agregar un producto a la lista intermedia
+    function agregarProductoALaLista() {
+        const pSel = document.getElementById('producto_sel').value;
+        const customVal = document.getElementById('producto_custom').value.trim();
+        const cantidadVal = parseInt(document.getElementById('cantidad').value) || 0;
+        const precioVentaVal = parseFloat(document.getElementById('precio_venta').value) || 0;
+        const precioBeaVal = parseFloat(document.getElementById('precio_bea').value) || 0;
+
+        if (!pSel) {
+            alert('Por favor, selecciona un producto.');
+            return;
+        }
+
+        let nombreProducto = pSel;
+        if (pSel === 'otro') {
+            if (!customVal) {
+                alert('Escribe el nombre del producto personalizado.');
+                return;
+            }
+            nombreProducto = customVal;
+        }
+
+        if (cantidadVal <= 0) {
+            alert('La cantidad debe ser mayor o igual a 1.');
+            return;
+        }
+
+        if (precioVentaVal < 0 || precioBeaVal < 0) {
+            alert('Los precios no pueden ser negativos.');
+            return;
+        }
+
+        // Agregar al arreglo
+        itemsVenta.push({
+            producto: nombreProducto,
+            cantidad: cantidadVal,
+            precio_venta: precioVentaVal,
+            precio_bea: precioBeaVal
+        });
+
+        // Limpiar campos de selección de producto
+        document.getElementById('producto_sel').value = '';
+        document.getElementById('producto_custom').value = '';
+        document.getElementById('seccion_producto_nombre_personalizado').style.display = 'none';
+        document.getElementById('cantidad').value = '1';
+        document.getElementById('precio_venta').value = '0.00';
+        document.getElementById('precio_bea').value = '0.00';
+
+        // Renderizar lista y actualizar cálculos
+        renderListaProductos();
         calcularGranTotalForm();
     }
 
-    // Calcular montos acumulados y ganancias en el formulario
-    function calcularGranTotalForm() {
-        const cantidad = parseInt(document.getElementById('cantidad').value) || 0;
-        const precioVenta = parseFloat(document.getElementById('precio_venta').value) || 0;
-        const precioBea = parseFloat(document.getElementById('precio_bea').value) || 0;
+    // Eliminar producto de la lista intermedia
+    function eliminarProductoDeLaLista(index) {
+        itemsVenta.splice(index, 1);
+        renderListaProductos();
+        calcularGranTotalForm();
+    }
 
-        const totalVenta = cantidad * precioVenta;
-        const totalBea = cantidad * precioBea;
+    // Renderizar la lista de productos en el DOM y generar inputs ocultos
+    function renderListaProductos() {
+        const tbody = document.getElementById('tbody_productos_lista');
+        const inputsContainer = document.getElementById('inputs_productos_ocultos');
+
+        tbody.innerHTML = '';
+        inputsContainer.innerHTML = '';
+
+        if (itemsVenta.length === 0) {
+            tbody.innerHTML = `
+                <tr id="tr_lista_vacia">
+                    <td colspan="6" class="text-center py-3 text-white-50">Aún no has agregado ningún producto.</td>
+                </tr>
+            `;
+            return;
+        }
+
+        itemsVenta.forEach((item, index) => {
+            const total = item.cantidad * item.precio_venta;
+            
+            // Fila de la tabla
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="ps-2 fw-semibold text-white">${escapeHtml(item.producto)}</td>
+                <td class="text-center fw-bold text-white-50">${item.cantidad}</td>
+                <td class="text-end text-white">$${item.precio_venta.toFixed(2)}</td>
+                <td class="text-end text-success">$${item.precio_bea.toFixed(2)}</td>
+                <td class="text-end fw-bold text-white">$${total.toFixed(2)}</td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-outline-danger btn-sm border-0 p-1" onclick="eliminarProductoDeLaLista(${index})">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+
+            // Inputs ocultos para el envío del formulario
+            inputsContainer.innerHTML += `
+                <input type="hidden" name="productos[]" value="${escapeHtml(item.producto)}">
+                <input type="hidden" name="cantidades[]" value="${item.cantidad}">
+                <input type="hidden" name="precios_venta[]" value="${item.precio_venta}">
+                <input type="hidden" name="precios_bea[]" value="${item.precio_bea}">
+            `;
+        });
+    }
+
+    // Calcular montos acumulados y ganancias totales en el formulario
+    function calcularGranTotalForm() {
+        let totalVenta = 0;
+        let totalBea = 0;
+
+        itemsVenta.forEach(item => {
+            totalVenta += item.cantidad * item.precio_venta;
+            totalBea += item.cantidad * item.precio_bea;
+        });
+
         const totalGanancia = totalVenta - totalBea;
 
         document.getElementById('lbl_venta_total').innerText = '$' + totalVenta.toFixed(2);
@@ -558,25 +697,21 @@
         document.getElementById('lbl_ganancia_total').innerText = '$' + totalGanancia.toFixed(2);
     }
 
+    // Helper para escapar HTML y evitar inyecciones XSS en el cliente
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
     // Validar formulario antes de enviar
     function validarVentaForm() {
-        const pSel = document.getElementById('producto_sel').value;
-        const customVal = document.getElementById('producto_custom').value.trim();
-        const inputProductoOculto = document.getElementById('producto');
-
-        if (!pSel) {
-            alert('Por favor, selecciona un producto.');
+        if (itemsVenta.length === 0) {
+            alert('Debes agregar al menos un producto a la lista de venta antes de registrar.');
             return false;
-        }
-
-        if (pSel === 'otro') {
-            if (!customVal) {
-                alert('Escribe el nombre del producto personalizado.');
-                return false;
-            }
-            inputProductoOculto.value = customVal;
-        } else {
-            inputProductoOculto.value = pSel;
         }
 
         const metodo = document.querySelector('input[name="metodo_pago"]:checked').value;
@@ -728,6 +863,29 @@
         calcularGranTotalForm();
     }
 
+    // Resetear lista al abrir el modal
+    const modalNuevaVentaEl = document.getElementById('modalNuevaVenta');
+    if (modalNuevaVentaEl) {
+        modalNuevaVentaEl.addEventListener('show.bs.modal', function () {
+            itemsVenta = [];
+            renderListaProductos();
+            
+            // Restablecer campos del modal
+            document.getElementById('cli_general').checked = true;
+            toggleClienteInput('general');
+            document.getElementById('id_cliente').value = '0';
+            document.getElementById('nombre_cliente_libre').value = '';
+            document.getElementById('producto_sel').value = '';
+            document.getElementById('producto_custom').value = '';
+            document.getElementById('seccion_producto_nombre_personalizado').style.display = 'none';
+            document.getElementById('cantidad').value = '1';
+            document.getElementById('precio_venta').value = '0.00';
+            document.getElementById('precio_bea').value = '0.00';
+            document.getElementById('pago_contado').checked = true;
+            calcularGranTotalForm();
+        });
+    }
+
     // Manejar el cierre de modales y feedback al completar peticiones HTMX
     document.addEventListener("htmx:afterOnLoad", function (evt) {
         const targetId = evt.detail.elt.id;
@@ -764,6 +922,8 @@
     window.confirmarEliminarVenta = confirmarEliminarVenta;
     window.mostrarToastExito = mostrarToastExito;
     window.mostrarToastError = mostrarToastError;
+    window.agregarProductoALaLista = agregarProductoALaLista;
+    window.eliminarProductoDeLaLista = eliminarProductoDeLaLista;
 })();
 </script>
 <?= $this->endSection() ?>
