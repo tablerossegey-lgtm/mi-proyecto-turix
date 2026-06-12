@@ -87,11 +87,12 @@
                     <i class="bi bi-cash-coin text-success"></i> Por Entregar a Bea
                 </div>
                 <div class="admin-stat-value text-success d-flex align-items-center justify-content-between">
-                    <span>$<?= number_format($estadisticas['por_entregar_bea'], 2) ?></span>
+                    <span id="lbl-por-entregar-bea">$<?= number_format($estadisticas['por_entregar_bea'], 2) ?></span>
                     <?php if ($estadisticas['por_entregar_bea'] > 0): ?>
                         <button class="btn btn-sm btn-success rounded-pill px-2.5 py-1 fw-bold text-white small"
                             style="font-size: 0.7rem; box-shadow: 0 0 10px rgba(40,167,69,0.3);"
-                            data-bs-toggle="modal" data-bs-target="#modalLiquidarBea">
+                            data-bs-toggle="modal" data-bs-target="#modalLiquidarBea"
+                            onclick="actualizarMontoLiquidar()">
                             Liquidar
                         </button>
                     <?php endif; ?>
@@ -479,7 +480,7 @@
                 <p class="mb-3 text-white-50" style="font-size: 0.95rem;">¿Estás seguro de que deseas liquidar las ventas a Bea?</p>
                 <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 mb-3">
                     <span class="small text-white-50 d-block mb-1">Monto a retirar de Caja Chica:</span>
-                    <span class="fs-3 fw-bold text-success">$<?= number_format($estadisticas['por_entregar_bea'], 2) ?></span>
+                    <span class="fs-3 fw-bold text-success" id="modal-liquidar-monto">$<?= number_format($estadisticas['por_entregar_bea'], 2) ?></span>
                 </div>
                 <p class="small text-white-50 mb-0">Esta acción marcará los registros correspondientes como <strong>Entregados</strong> y registrará de forma automática el Egreso en Caja Chica.</p>
             </div>
@@ -807,6 +808,16 @@
         return true;
     }
 
+    // Actualizar monto a liquidar en el modal a partir del KPI en tiempo real
+    function actualizarMontoLiquidar() {
+        const lblVal = document.getElementById('lbl-por-entregar-bea');
+        const modalVal = document.getElementById('modal-liquidar-monto');
+        if (lblVal && modalVal) {
+            // Extract numerical value or copy text exactly
+            modalVal.textContent = lblVal.textContent;
+        }
+    }
+
     // Configurar modal de eliminación
     function confirmarEliminarVenta(id, tieneCuentaCliente) {
         const form = document.getElementById('formConfirmarEliminarVenta');
@@ -1006,6 +1017,7 @@
     window.mostrarToastError = mostrarToastError;
     window.agregarProductoALaLista = agregarProductoALaLista;
     window.eliminarProductoDeLaLista = eliminarProductoDeLaLista;
+    window.actualizarMontoLiquidar = actualizarMontoLiquidar;
 })();
 </script>
 <?= $this->endSection() ?>
