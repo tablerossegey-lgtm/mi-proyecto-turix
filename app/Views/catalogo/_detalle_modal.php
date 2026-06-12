@@ -143,7 +143,7 @@
                         <i class="bi bi-dash"></i>
                     </button>
                     <input class="cant-input" type="text" id="detalle-cantidad-input" value="1" readonly>
-                    <button class="cant-btn" type="button" onclick="const input = document.getElementById('detalle-cantidad-input'); input.value = parseInt(input.value) + 1;">
+                    <button class="cant-btn" type="button" onclick="const input = document.getElementById('detalle-cantidad-input'); const stock = <?= (int)($p['stock'] ?? 0) ?>; if(parseInt(input.value) < stock) input.value = parseInt(input.value) + 1;">
                         <i class="bi bi-plus"></i>
                     </button>
                 </div>
@@ -153,7 +153,7 @@
             <div class="d-grid gap-2 mt-3">
                 <button type="button" 
                         class="btn btn-warning text-dark fw-bold py-3 shadow d-flex align-items-center justify-content-center gap-2"
-                        onclick="agregarAlCarritoDetalle('<?= $p['id'] ?>', '<?= esc(addslashes($p['descripcion'])) ?>', '<?= $p['precio'] ?>', '<?= esc(addslashes($foto_final_src)) ?>', '<?= esc(addslashes($p['codigo_sku'] ?? '')) ?>', '<?= esc(addslashes($p['nombre_categoria'] ?? '')) ?>')">
+                        onclick="agregarAlCarritoDetalle('<?= $p['id'] ?>', '<?= esc(addslashes($p['descripcion'])) ?>', '<?= $p['precio'] ?>', '<?= esc(addslashes($foto_final_src)) ?>', '<?= esc(addslashes($p['codigo_sku'] ?? '')) ?>', '<?= esc(addslashes($p['nombre_categoria'] ?? '')) ?>', <?= (int)($p['stock'] ?? 9999) ?>)">
                     <i class="bi bi-cart-plus-fill fs-5"></i> Agregar al Carrito
                 </button>
                 <a href="https://wa.me/529995441466?text=Hola, me interesa el producto: <?= urlencode($p['descripcion']) ?>" 

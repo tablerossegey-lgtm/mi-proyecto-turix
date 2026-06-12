@@ -55,15 +55,25 @@ function agregarAlCarritoRapido(producto) {
         foto: producto.foto_url || '',
         sku: producto.codigo_sku || '',
         nombre_categoria: producto.nombre_categoria || '',
-        cantidad: 1
+        cantidad: 1,
+        stock: parseInt(producto.stock) !== undefined ? parseInt(producto.stock) : 9999
     };
 
     let carrito = obtenerCarrito();
     const indice = carrito.findIndex(i => i.id === item.id);
 
     if (indice !== -1) {
+        const stockLimit = carrito[indice].stock !== undefined ? parseInt(carrito[indice].stock) : item.stock;
+        if (carrito[indice].cantidad >= stockLimit) {
+            mostrarToastError(item.descripcion, `No puedes agregar más. Límite de stock: ${stockLimit} pzas.`);
+            return;
+        }
         carrito[indice].cantidad += 1;
     } else {
+        if (item.stock < 1) {
+            mostrarToastError(item.descripcion, `Producto temporalmente sin stock disponible.`);
+            return;
+        }
         carrito.push(item);
     }
 
@@ -72,9 +82,10 @@ function agregarAlCarritoRapido(producto) {
 }
 
 // Agregar producto con cantidad seleccionada desde la modal de detalle
-function agregarAlCarritoDetalle(productoId, descripcion, precio, foto, sku, categoria) {
+function agregarAlCarritoDetalle(productoId, descripcion, precio, foto, sku, categoria, stock) {
     const inputCant = document.getElementById('detalle-cantidad-input');
     const cantidad = inputCant ? parseInt(inputCant.value) : 1;
+    const stockLimit = stock !== undefined ? parseInt(stock) : 9999;
 
     const item = {
         id: parseInt(productoId),
@@ -83,15 +94,33 @@ function agregarAlCarritoDetalle(productoId, descripcion, precio, foto, sku, cat
         foto: foto,
         sku: sku,
         nombre_categoria: categoria,
-        cantidad: cantidad
+        cantidad: cantidad,
+        stock: stockLimit
     };
 
     let carrito = obtenerCarrito();
     const indice = carrito.findIndex(i => i.id === item.id);
 
     if (indice !== -1) {
-        carrito[indice].cantidad += cantidad;
+        const nuevaCantidad = carrito[indice].cantidad + cantidad;
+        const currentStockLimit = carrito[indice].stock !== undefined ? parseInt(carrito[indice].stock) : stockLimit;
+        if (nuevaCantidad > currentStockLimit) {
+            const disponible = currentStockLimit - carrito[indice].cantidad;
+            if (disponible <= 0) {
+                mostrarToastError(item.descripcion, `Ya tienes el stock máximo en el carrito (${currentStockLimit} pzas).`);
+            } else {
+                mostrarToastError(item.descripcion, `Solo puedes agregar ${disponible} más. Límite de stock: ${currentStockLimit} pzas.`);
+            }
+            return;
+        }
+        carrito[indice].cantidad = nuevaCantidad;
+        // Asegurar que guardamos el stock por si acaso
+        carrito[indice].stock = currentStockLimit;
     } else {
+        if (cantidad > stockLimit) {
+            mostrarToastError(item.descripcion, `La cantidad supera el stock disponible (${stockLimit} pzas).`);
+            return;
+        }
         carrito.push(item);
     }
 
@@ -145,14 +174,59 @@ function mostrarToastNotificacion(nombreProducto) {
     });
 }
 
+// Mostrar notificación de error o límite de stock Toast
+function mostrarToastError(nombreProducto, mensaje) {
+    let toastContainer = document.getElementById('toast-cart-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-cart-container';
+        toastContainer.className = 'toast-container position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '1090';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toastId = 'toast-err-' + Date.now();
+    const toastHTML = `
+        <div id="${toastId}" class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="bi bi-exclamation-triangle-fill text-warning fs-5"></i>
+                    <div>
+                        <strong>Límite de Stock</strong><br>
+                        <span class="small text-white-50">${mensaje}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `;
+
+    toastContainer.insertAdjacentHTML('beforeend', toastHTML);
+    const toastEl = document.getElementById(toastId);
+    const toast = new bootstrap.Toast(toastEl);
+    toast.show();
+
+    toastEl.addEventListener('hidden.bs.toast', () => {
+        toastEl.remove();
+    });
+}
+
 // Modificar cantidad desde el modal del carrito
 function cambiarCantidadCart(id, delta) {
     let carrito = obtenerCarrito();
     const indice = carrito.findIndex(i => i.id === id);
 
     if (indice !== -1) {
-        carrito[indice].cantidad += delta;
-        if (carrito[indice].cantidad <= 0) {
+        const item = carrito[indice];
+        const stockLimit = item.stock !== undefined ? parseInt(item.stock) : 9999;
+        
+        if (delta > 0 && item.cantidad >= stockLimit) {
+            mostrarToastError(item.descripcion, `No puedes agregar más. Límite de stock: ${stockLimit} pzas.`);
+            return;
+        }
+
+        item.cantidad += delta;
+        if (item.cantidad <= 0) {
             carrito.splice(indice, 1);
         }
         guardarCarrito(carrito);

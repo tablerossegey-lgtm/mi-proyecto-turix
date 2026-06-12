@@ -14,7 +14,7 @@
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon_turix.ico') ?>">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="<?= base_url('js/carrito.js?v=1.4') ?>"></script>
+    <script src="<?= base_url('js/carrito.js?v=1.5') ?>"></script>
     <script>
         // Función global para mostrar spinner en botones de submit
         function mostrarSpinner(form, text = 'Guardando...') {
