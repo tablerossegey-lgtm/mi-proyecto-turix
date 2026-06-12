@@ -1284,6 +1284,57 @@
         });
     }
 
+    function copiarEstadoCuenta(btn) {
+        const text = btn.getAttribute('data-mensaje');
+        if (!text) return;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+            
+            // Cambiar temporalmente a estilos de éxito
+            const originalClass = btn.className;
+            btn.className = btn.className.replace('btn-outline-success', 'btn-success text-white');
+
+            mostrarToastExito('Estado de cuenta copiado al portapapeles.');
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.className = originalClass;
+            }, 2000);
+        }).catch(err => {
+            console.error('Error al copiar:', err);
+            // Fallback manual con textarea si falla
+            try {
+                const textArea = document.createElement("textarea");
+                textArea.value = text;
+                textArea.style.cssText = "position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;opacity:0;";
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                const successful = document.execCommand('copy');
+                document.body.removeChild(textArea);
+                if (successful) {
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-check"></i> ¡Copiado!';
+                    const originalClass = btn.className;
+                    btn.className = btn.className.replace('btn-outline-success', 'btn-success text-white');
+                    
+                    mostrarToastExito('Estado de cuenta copiado al portapapeles.');
+                    
+                    setTimeout(() => {
+                        btn.innerHTML = originalHTML;
+                        btn.className = originalClass;
+                    }, 2000);
+                } else {
+                    alert('No se pudo copiar el texto automáticamente. Por favor, selecciónalo manualmente.');
+                }
+            } catch (fallbackErr) {
+                alert('No se pudo copiar el texto automáticamente.');
+            }
+        });
+    }
+
     // Exportar funciones globales al objeto window para acceso desde atributos HTML
     window.seleccionarCliente = seleccionarCliente;
     window.toggleTipoForm = toggleTipoForm;
@@ -1298,6 +1349,7 @@
     window.confirmarEliminarCompra = confirmarEliminarCompra;
     window.abrirModalRegistrarAbono = abrirModalRegistrarAbono;
     window.mostrarToastExito = mostrarToastExito;
+    window.copiarEstadoCuenta = copiarEstadoCuenta;
 })();
 </script>
 <?= $this->endSection() ?>

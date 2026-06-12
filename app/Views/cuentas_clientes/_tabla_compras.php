@@ -6,25 +6,32 @@ if (strlen($telefonoLimpio) === 10) {
     $telefonoLimpio = '52' . $telefonoLimpio;
 }
 
-// Generación de Mensaje de WhatsApp
+// Generación de Mensaje de WhatsApp y Clipboard
 $mensaje = "Hola *" . $cliente['nombre'] . "*, te comparto el estado de tu cuenta en *TurixShop*:\n\n";
-$lineasPendientes = [];
-foreach ($compras as $c) {
-    if ($c['estatusCompra'] == '0') {
-        $fechaFormateada = date('d/m', strtotime($c['fechaCompra']));
-        $lineasPendientes[] = "- *{$c['cantidad']}x* {$c['descProducto']} ({$fechaFormateada}) - *$" . number_format($c['totalProduc'], 2) . "*";
-    }
-}
 
 if ($totalPendiente > 0) {
-    if (!empty($lineasPendientes)) {
-        $mensaje .= "*COMPRAS PENDIENTES:*\n" . implode("\n", $lineasPendientes) . "\n\n";
+    // Agrupar compras pendientes por fecha
+    $comprasPorFecha = [];
+    foreach ($compras as $c) {
+        if ($c['estatusCompra'] == '0') {
+            $fecha = date('d/m/y', strtotime($c['fechaCompra']));
+            $comprasPorFecha[$fecha][] = $c;
+        }
     }
+
+    foreach ($comprasPorFecha as $fecha => $itemsDeFecha) {
+        $mensaje .= "*Compra del día ({$fecha})*\n";
+        foreach ($itemsDeFecha as $c) {
+            $mensaje .= "  · {$c['cantidad']} {$c['descProducto']}: $" . number_format($c['totalProduc'], 2) . "\n";
+        }
+    }
+    
+    $mensaje .= "\n";
+    $mensaje .= "*Subtotal:* $" . number_format($totalComprasActivas, 2) . "\n";
     if ($totalPagadoActivo > 0) {
-        $mensaje .= "*Suma de Adeudos:* $" . number_format($totalComprasActivas, 2) . "\n";
         $mensaje .= "*Abonado a Cuenta:* $" . number_format($totalPagadoActivo, 2) . "\n";
     }
-    $mensaje .= "*Saldo Pendiente a Liquidar: $" . number_format($totalPendiente, 2) . "*\n";
+    $mensaje .= "*Nuevo Total:* $" . number_format($totalPendiente, 2) . "\n";
 } else {
     $mensaje .= "*¡Felicidades!* Tu cuenta se encuentra totalmente liquidada al día de hoy.\n";
 }
@@ -52,11 +59,11 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
             </span>
         </div>
         <div class="d-flex flex-wrap gap-2 align-items-center">
-            <?php if (!empty($telefonoLimpio)): ?>
-                <a href="<?= $waUrl ?>" target="_blank" class="btn btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-2">
-                    <i class="fab fa-whatsapp"></i> Enviar Cuenta
-                </a>
-            <?php endif; ?>
+            <button type="button" class="btn btn-outline-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-2"
+                    data-mensaje="<?= htmlspecialchars($mensaje, ENT_QUOTES, 'UTF-8') ?>"
+                    onclick="copiarEstadoCuenta(this)">
+                <i class="fas fa-copy"></i> Copiar Cuenta
+            </button>
             <?php if ($totalPendiente > 0): ?>
                 <button type="button" class="btn btn-warning text-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-2" onclick="abrirModalRegistrarAbono(<?= $cliente['idCliente'] ?>, <?= $totalPendiente ?>)">
                     <i class="fas fa-hand-holding-usd text-dark"></i> Registrar Pago
