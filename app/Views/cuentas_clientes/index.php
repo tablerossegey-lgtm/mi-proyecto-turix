@@ -160,7 +160,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
-            <form id="formNuevaCompra" action="<?= base_url('admin/cuentas/crear') ?>" method="POST" hx-post="<?= base_url('admin/cuentas/crear') ?>" hx-swap="none">
+            <form id="formNuevaCompra" action="<?= base_url('admin/cuentas/crear') ?>" method="POST">
                 <input type="hidden" name="id_cliente" id="modal_id_cliente" value="">
 
                 <div class="modal-body p-4">
@@ -970,13 +970,22 @@
             });
         }
 
-        // Manejar el submit del formulario de registro de compra por HTMX
+        // Manejar el submit del formulario de registro de compra por FETCH
         const formNuevaCompra = document.getElementById('formNuevaCompra');
         if (formNuevaCompra) {
-            // Configurar petición de HTMX para enviar payload JSON
-            formNuevaCompra.addEventListener('htmx:configRequest', function (evt) {
-                evt.detail.headers['Content-Type'] = 'application/json';
-                evt.detail.headers['X-Requested-With'] = 'XMLHttpRequest';
+            formNuevaCompra.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                if (listaProductos.length === 0) {
+                    alert('Por favor, agrega al menos un producto a la lista antes de registrar.');
+                    return;
+                }
+
+                const btnSubmit = document.getElementById('btn-registrar-compra-submit');
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Registrando...';
+                }
 
                 const idCliente = document.getElementById('modal_id_cliente').value;
                 const fechaCompra = document.getElementById('fecha_compra').value;
@@ -989,75 +998,72 @@
                     productos: listaProductos
                 };
 
-                evt.detail.rawParameters = JSON.stringify(payload);
-            });
+                fetch(formNuevaCompra.action, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify(payload)
+                })
+                .then(res => {
+                    const contentType = res.headers.get('content-type');
+                    if (contentType && contentType.includes('application/json')) {
+                        return res.json();
+                    }
+                    return res.text().then(text => {
+                        throw new Error(text);
+                    });
+                })
+                .then(data => {
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Compra';
+                    }
 
-            // Validar antes de iniciar petición HTMX y mostrar spinner
-            formNuevaCompra.addEventListener('submit', function (e) {
-                if (listaProductos.length === 0) {
-                    e.preventDefault();
-                    alert('Por favor, agrega al menos un producto a la lista antes de registrar.');
-                    return;
-                }
+                    if (data.success) {
+                        // Ocultar modal de nueva compra
+                        const modalNueva = bootstrap.Modal.getInstance(document.getElementById('modalNuevaCompra'));
+                        if (modalNueva) modalNueva.hide();
 
-                const btnSubmit = document.getElementById('btn-registrar-compra-submit');
-                if (btnSubmit) {
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Registrando...';
-                }
-            });
+                        // Guardar saldo de retorno
+                        nuevoSaldoPendiente = data.totalPendiente;
 
-            // Procesar respuesta de HTMX
-            formNuevaCompra.addEventListener('htmx:afterRequest', function (evt) {
-                const btnSubmit = document.getElementById('btn-registrar-compra-submit');
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Compra';
-                }
+                        // Cargar y formatear texto en el modal del ticket
+                        document.getElementById('ticket-content').innerHTML = formatTicketForDisplay(data.ticket);
 
-                if (evt.detail.successful) {
-                    try {
-                        const responseText = evt.detail.xhr.responseText.trim();
-                        
-                        // Si la respuesta es HTML (ej. redirección al Login por sesión expirada o error 500 HTML)
-                        if (responseText.startsWith('<!') || responseText.startsWith('<html') || responseText.includes('name="password"') || responseText.includes('<form')) {
-                            alert('Tu sesión de usuario ha expirado o se produjo un error en el servidor. La página se recargará.');
-                            window.location.reload();
-                            return;
-                        }
-
-                        const data = JSON.parse(responseText);
-                        if (data.success) {
-                            // Ocultar modal de nueva compra
-                            const modalNueva = bootstrap.Modal.getInstance(document.getElementById('modalNuevaCompra'));
-                            if (modalNueva) modalNueva.hide();
-
-                            // Guardar saldo de retorno
-                            nuevoSaldoPendiente = data.totalPendiente;
-
-                            // Cargar y formatear texto en el modal del ticket
-                            document.getElementById('ticket-content').innerHTML = formatTicketForDisplay(data.ticket);
-
-                            // Guardar datos en el botón de WhatsApp
-                            const btnCopiar = document.getElementById('btn-copiar-whatsapp');
+                        // Guardar datos en el botón de WhatsApp
+                        const btnCopiar = document.getElementById('btn-copiar-whatsapp');
+                        if (btnCopiar) {
                             btnCopiar.setAttribute('data-ticket', data.ticket);
                             btnCopiar.setAttribute('data-cel', data.cel || '');
-
-                            // Abrir modal de ticket digital
-                            const modalTicket = new bootstrap.Modal(document.getElementById('modalTicketDigital'));
-                            modalTicket.show();
-                        } else {
-                            alert(data.message || 'Ocurrió un error al registrar la compra.');
                         }
-                    } catch (e) {
-                        console.error('Error parsing response:', e);
-                        alert('Error al procesar la respuesta del servidor.');
+
+                        // Abrir modal de ticket digital
+                        const modalTicket = new bootstrap.Modal(document.getElementById('modalTicketDigital'));
+                        modalTicket.show();
+                    } else {
+                        alert(data.message || 'Ocurrió un error al registrar la compra.');
                     }
-                } else {
-                    alert('Error de conexión al registrar la compra.');
-                }
+                })
+                .catch(err => {
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Compra';
+                    }
+                    console.error('Error submitting purchase:', err);
+                    
+                    const errorText = err.message || '';
+                    if (errorText.startsWith('<!') || errorText.startsWith('<html') || errorText.includes('name="password"') || errorText.includes('<form')) {
+                        alert('Tu sesión de usuario ha expirado o se produjo un error en el servidor. La página se recargará.');
+                        window.location.reload();
+                    } else {
+                        alert('Error de conexión al registrar la compra.');
+                    }
+                });
             });
         }
+
 
         // Manejar el clic en el botón de WhatsApp para copiar la información
         const btnCopiar = document.getElementById('btn-copiar-whatsapp');
