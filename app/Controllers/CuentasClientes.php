@@ -61,7 +61,7 @@ class CuentasClientes extends BaseController
 
     public function crear()
     {
-        if ($this->request->isAJAX()) {
+        if ($this->request->isAJAX() || $this->request->getHeaderLine('HX-Request')) {
             $json = $this->request->getJSON(true);
             $idCliente = (int)($json['id_cliente'] ?? 0);
             $fechaCompra = $json['fecha_compra'] ?: date('Y-m-d');

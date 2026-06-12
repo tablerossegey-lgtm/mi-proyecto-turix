@@ -976,6 +976,7 @@
             // Configurar petición de HTMX para enviar payload JSON
             formNuevaCompra.addEventListener('htmx:configRequest', function (evt) {
                 evt.detail.headers['Content-Type'] = 'application/json';
+                evt.detail.headers['X-Requested-With'] = 'XMLHttpRequest';
 
                 const idCliente = document.getElementById('modal_id_cliente').value;
                 const fechaCompra = document.getElementById('fecha_compra').value;
