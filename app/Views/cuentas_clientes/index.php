@@ -143,7 +143,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                     aria-label="Close"></button>
             </div>
-            <form id="formNuevaCompra" action="<?= base_url('admin/cuentas/crear') ?>" method="POST">
+            <form id="formNuevaCompra" action="<?= base_url('admin/cuentas/crear') ?>" method="POST" hx-post="<?= base_url('admin/cuentas/crear') ?>" hx-swap="none">
                 <input type="hidden" name="id_cliente" id="modal_id_cliente" value="">
 
                 <div class="modal-body p-4">
@@ -983,24 +983,12 @@
             });
         }
 
-        // Manejar el submit del formulario de registro de compra por AJAX
+        // Manejar el submit del formulario de registro de compra por HTMX
         const formNuevaCompra = document.getElementById('formNuevaCompra');
         if (formNuevaCompra) {
-            formNuevaCompra.addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                if (listaProductos.length === 0) {
-                    alert('Por favor, agrega al menos un producto a la lista antes de registrar.');
-                    return;
-                }
-
-                const btnSubmit = document.getElementById('btn-registrar-compra-submit');
-                let originalBtnHTML = "";
-                if (btnSubmit) {
-                    originalBtnHTML = btnSubmit.innerHTML;
-                    btnSubmit.disabled = true;
-                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Registrando...';
-                }
+            // Configurar petición de HTMX para enviar payload JSON
+            formNuevaCompra.addEventListener('htmx:configRequest', function (evt) {
+                evt.detail.headers['Content-Type'] = 'application/json';
 
                 const idCliente = document.getElementById('modal_id_cliente').value;
                 const fechaCompra = document.getElementById('fecha_compra').value;
@@ -1013,21 +1001,35 @@
                     productos: listaProductos
                 };
 
-                fetch(this.action, {
-                    method: 'POST',
-                    body: JSON.stringify(payload),
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    }
-                })
-                    .then(res => res.json())
-                    .then(data => {
-                        if (btnSubmit) {
-                            btnSubmit.disabled = false;
-                            btnSubmit.innerHTML = originalBtnHTML;
-                        }
-                        
+                evt.detail.rawParameters = JSON.stringify(payload);
+            });
+
+            // Validar antes de iniciar petición HTMX y mostrar spinner
+            formNuevaCompra.addEventListener('submit', function (e) {
+                if (listaProductos.length === 0) {
+                    e.preventDefault();
+                    alert('Por favor, agrega al menos un producto a la lista antes de registrar.');
+                    return;
+                }
+
+                const btnSubmit = document.getElementById('btn-registrar-compra-submit');
+                if (btnSubmit) {
+                    btnSubmit.disabled = true;
+                    btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span> Registrando...';
+                }
+            });
+
+            // Procesar respuesta de HTMX
+            formNuevaCompra.addEventListener('htmx:afterRequest', function (evt) {
+                const btnSubmit = document.getElementById('btn-registrar-compra-submit');
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Compra';
+                }
+
+                if (evt.detail.successful) {
+                    try {
+                        const data = JSON.parse(evt.detail.xhr.responseText);
                         if (data.success) {
                             // Ocultar modal de nueva compra
                             const modalNueva = bootstrap.Modal.getInstance(document.getElementById('modalNuevaCompra'));
@@ -1050,15 +1052,13 @@
                         } else {
                             alert(data.message || 'Ocurrió un error al registrar la compra.');
                         }
-                    })
-                    .catch(err => {
-                        if (btnSubmit) {
-                            btnSubmit.disabled = false;
-                            btnSubmit.innerHTML = originalBtnHTML;
-                        }
-                        console.error('Error:', err);
-                        alert('Error de conexión al registrar la compra.');
-                    });
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                        alert('Error al procesar la respuesta del servidor.');
+                    }
+                } else {
+                    alert('Error de conexión al registrar la compra.');
+                }
             });
         }
 

@@ -156,44 +156,29 @@
                             <!-- Categoría -->
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-white-50 small fw-semibold">Categoría *</label>
-                                <div class="dropdown dropdown-search-select" id="dropdownSearchCategoriaNuevo">
-                                    <button class="form-select text-white text-start d-flex justify-content-between align-items-center" 
-                                            type="button" 
-                                            id="btnDropdownCategoriaNuevo" 
-                                            data-bs-toggle="dropdown" 
-                                            data-bs-auto-close="outside"
-                                            aria-expanded="false">
-                                        <span>Seleccione una categoría</span>
-                                    </button>
-                                    <div class="dropdown-menu w-100" aria-labelledby="btnDropdownCategoriaNuevo">
-                                        <div class="position-relative">
-                                            <input type="text" 
-                                                   class="form-control search-input w-100 pe-5" 
-                                                   id="inputSearchCategoriaNuevo" 
-                                                   placeholder="Buscar categoría..." 
-                                                   autocomplete="off">
+                                <div class="position-relative searchable-select-container" id="container-nuevo-categoria">
+                                    <input type="hidden" name="id_categoria" id="id_categoria" required>
+                                    <input type="text" 
+                                           class="form-control text-white w-100" 
+                                           id="categoria_search_input" 
+                                           placeholder="Escribe para buscar..." 
+                                           autocomplete="off"
+                                           required>
+                                    <div class="dropdown-menu w-100 p-2 shadow-lg" 
+                                         id="categoria_search_dropdown" 
+                                         style="max-height: 200px; overflow-y: auto; background-color: #2a2e3d; border: 1px solid rgba(255,255,255,0.12); border-radius: 0.5rem; display: none; position: absolute; z-index: 1060; left: 0; right: 0;">
+                                        <?php foreach ($categorias as $cat): ?>
                                             <button type="button" 
-                                                    class="btn-clear-search position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent text-white-50 px-3 d-none" 
-                                                    id="btnClearCategoriaNuevo" 
-                                                    style="z-index: 10;"
-                                                    title="Limpiar búsqueda">
-                                                <i class="bi bi-x-lg small"></i>
+                                                    class="dropdown-item text-white border-0 py-2 px-3 rounded-2 text-start categoria-item-option" 
+                                                    style="background: transparent; font-size: 0.85rem;"
+                                                    data-id="<?= $cat['idCategoria'] ?>"
+                                                    data-nombre="<?= esc($cat['nombre']) ?>">
+                                                <strong><?= esc($cat['nombre']) ?></strong>
                                             </button>
-                                        </div>
-                                        <div class="options-list" id="optionsListCategoriaNuevo">
-                                            <?php foreach ($categorias as $cat): ?>
-                                                <button class="dropdown-item category-option-btn-nuevo" 
-                                                        type="button" 
-                                                        data-value="<?= $cat['idCategoria'] ?>" 
-                                                        data-name="<?= esc($cat['nombre']) ?>">
-                                                    <?= esc($cat['nombre']) ?>
-                                                </button>
-                                            <?php endforeach; ?>
-                                            <div class="text-muted text-center py-2 small d-none no-results-msg">No se encontraron resultados</div>
-                                        </div>
+                                        <?php endforeach; ?>
+                                        <div class="text-white-50 p-2 text-center small categoria-search-no-results" style="display: none;">No se encontraron categorías</div>
                                     </div>
                                 </div>
-                                <input type="hidden" name="id_categoria" id="id_categoria" required>
                             </div>
 
                             <!-- Descripción -->
@@ -327,44 +312,29 @@
                             <!-- Categoría -->
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-white-50 small fw-semibold">Categoría *</label>
-                                <div class="dropdown dropdown-search-select" id="dropdownSearchCategoriaEdit">
-                                    <button class="form-select text-white text-start d-flex justify-content-between align-items-center" 
-                                            type="button" 
-                                            id="btnDropdownCategoriaEdit" 
-                                            data-bs-toggle="dropdown" 
-                                            data-bs-auto-close="outside"
-                                            aria-expanded="false">
-                                        <span>Seleccione una categoría</span>
-                                    </button>
-                                    <div class="dropdown-menu w-100" aria-labelledby="btnDropdownCategoriaEdit">
-                                        <div class="position-relative">
-                                            <input type="text" 
-                                                   class="form-control search-input w-100 pe-5" 
-                                                   id="inputSearchCategoriaEdit" 
-                                                   placeholder="Buscar categoría..." 
-                                                   autocomplete="off">
+                                <div class="position-relative searchable-select-container" id="container-editar-categoria">
+                                    <input type="hidden" name="id_categoria" id="edit_id_categoria" required>
+                                    <input type="text" 
+                                           class="form-control text-white w-100" 
+                                           id="edit_categoria_search_input" 
+                                           placeholder="Escribe para buscar..." 
+                                           autocomplete="off"
+                                           required>
+                                    <div class="dropdown-menu w-100 p-2 shadow-lg" 
+                                         id="edit_categoria_search_dropdown" 
+                                         style="max-height: 200px; overflow-y: auto; background-color: #2a2e3d; border: 1px solid rgba(255,255,255,0.12); border-radius: 0.5rem; display: none; position: absolute; z-index: 1060; left: 0; right: 0;">
+                                        <?php foreach ($categorias as $cat): ?>
                                             <button type="button" 
-                                                    class="btn-clear-search position-absolute end-0 top-50 translate-middle-y border-0 bg-transparent text-white-50 px-3 d-none" 
-                                                    id="btnClearCategoriaEdit" 
-                                                    style="z-index: 10;"
-                                                    title="Limpiar búsqueda">
-                                                <i class="bi bi-x-lg small"></i>
+                                                    class="dropdown-item text-white border-0 py-2 px-3 rounded-2 text-start edit-categoria-item-option" 
+                                                    style="background: transparent; font-size: 0.85rem;"
+                                                    data-id="<?= $cat['idCategoria'] ?>"
+                                                    data-nombre="<?= esc($cat['nombre']) ?>">
+                                                <strong><?= esc($cat['nombre']) ?></strong>
                                             </button>
-                                        </div>
-                                        <div class="options-list" id="optionsListCategoriaEdit">
-                                            <?php foreach ($categorias as $cat): ?>
-                                                <button class="dropdown-item category-option-btn-edit" 
-                                                        type="button" 
-                                                        data-value="<?= $cat['idCategoria'] ?>" 
-                                                        data-name="<?= esc($cat['nombre']) ?>">
-                                                    <?= esc($cat['nombre']) ?>
-                                                </button>
-                                            <?php endforeach; ?>
-                                            <div class="text-muted text-center py-2 small d-none no-results-msg">No se encontraron resultados</div>
-                                        </div>
+                                        <?php endforeach; ?>
+                                        <div class="text-white-50 p-2 text-center small edit-categoria-search-no-results" style="display: none;">No se encontraron categorías</div>
                                     </div>
                                 </div>
-                                <input type="hidden" name="id_categoria" id="edit_id_categoria" required>
                             </div>
 
                             <!-- Descripción -->
@@ -479,14 +449,13 @@
         const nombreInput = document.getElementById(prefix + 'descripcion');
         const skuInput = document.getElementById(prefix + 'codigo_sku');
         const categoriaSelect = document.getElementById(prefix + 'id_categoria');
+        const searchInputId = isEdit ? 'edit_categoria_search_input' : 'categoria_search_input';
+        const searchInput = document.getElementById(searchInputId);
         
         // Validar que se haya seleccionado categoría primero
         if (categoriaSelect.value === "") {
             alert('Por favor, selecciona primero una Categoría para poder incluir su prefijo en el SKU.');
-            // Abrir el dropdown de categoría correspondiente para guiar al usuario
-            const btnFocusId = isEdit ? 'btnDropdownCategoriaEdit' : 'btnDropdownCategoriaNuevo';
-            const btnFocus = document.getElementById(btnFocusId);
-            if (btnFocus) btnFocus.focus();
+            if (searchInput) searchInput.focus();
             return;
         }
 
@@ -497,10 +466,8 @@
             return;
         }
 
-        // Obtener el texto de la categoría seleccionada (ej. "Juguetes") desde el botón del dropdown
-        const btnId = isEdit ? 'btnDropdownCategoriaEdit' : 'btnDropdownCategoriaNuevo';
-        const btnDropdown = document.getElementById(btnId);
-        const categoriaTexto = btnDropdown ? btnDropdown.querySelector('span').innerText : '';
+        // Obtener el texto de la categoría seleccionada (ej. "Juguetes") desde el input buscador
+        const categoriaTexto = searchInput ? searchInput.value.trim() : '';
         let prefijoCat = categoriaTexto.normalize("NFD")
                                         .replace(/[\u0300-\u036f]/g, "") // Quitar acentos
                                         .toUpperCase()
@@ -586,16 +553,16 @@
         document.getElementById('edit_stock_oficina').value = producto.stock_oficina !== undefined ? producto.stock_oficina : 0;
         document.getElementById('edit_masDetalle').value = producto.masDetalle || '';
         
-        // Rellenar campo oculto y botón del selector de categoría
+        // Rellenar campo oculto y buscador del selector de categoría
         const hiddenInputEdit = document.getElementById('edit_id_categoria');
-        const btnDropdownEdit = document.getElementById('btnDropdownCategoriaEdit');
-        const matchingBtn = document.querySelector(`.category-option-btn-edit[data-value="${producto.id_categoria}"]`);
-        if (matchingBtn) {
+        const searchInputEdit = document.getElementById('edit_categoria_search_input');
+        const matchingOption = document.querySelector(`.edit-categoria-item-option[data-id="${producto.id_categoria}"]`);
+        if (matchingOption) {
             hiddenInputEdit.value = producto.id_categoria;
-            btnDropdownEdit.querySelector('span').innerText = matchingBtn.getAttribute('data-name');
+            searchInputEdit.value = matchingOption.getAttribute('data-nombre');
         } else {
             hiddenInputEdit.value = '';
-            btnDropdownEdit.querySelector('span').innerText = 'Seleccione una categoría';
+            searchInputEdit.value = '';
         }
         
         // Limpiar el campo file
@@ -604,10 +571,17 @@
         modal.show();
     };
 
-    // Deshabilitar botón de guardar y mostrar spinner al enviar el formulario para evitar doble submit
+    // Deshabilitar botón de guardar y mostrar spinner al enviar el formulario para evitar doble submit (validando categoría)
     const formNuevo = document.getElementById('formNuevoProducto');
     if (formNuevo) {
-        formNuevo.addEventListener('submit', function() {
+        formNuevo.addEventListener('submit', function(e) {
+            const hiddenCat = document.getElementById('id_categoria');
+            if (!hiddenCat.value) {
+                e.preventDefault();
+                alert('Por favor, selecciona una categoría válida de la lista sugerida.');
+                document.getElementById('categoria_search_input').focus();
+                return;
+            }
             const btnSubmit = formNuevo.querySelector('button[type="submit"]');
             if (btnSubmit) {
                 btnSubmit.disabled = true;
@@ -618,7 +592,14 @@
 
     const formEditar = document.getElementById('formEditarProducto');
     if (formEditar) {
-        formEditar.addEventListener('submit', function() {
+        formEditar.addEventListener('submit', function(e) {
+            const hiddenCat = document.getElementById('edit_id_categoria');
+            if (!hiddenCat.value) {
+                e.preventDefault();
+                alert('Por favor, selecciona una categoría válida de la lista sugerida.');
+                document.getElementById('edit_categoria_search_input').focus();
+                return;
+            }
             const btnSubmit = formEditar.querySelector('button[type="submit"]');
             if (btnSubmit) {
                 btnSubmit.disabled = true;
@@ -650,159 +631,111 @@
     // Escuchar el evento de HTMX tras un swap de contenido para mostrar toasts en peticiones dinámicas
     document.body.addEventListener('htmx:afterSettle', inicializarToasts);
 
-    // ----------------- BUSCADOR DE CATEGORÍAS (NUEVO PRODUCTO) -----------------
-    const btnDropdownNuevo = document.getElementById('btnDropdownCategoriaNuevo');
-    const inputSearchNuevo = document.getElementById('inputSearchCategoriaNuevo');
-    const hiddenInputNuevo = document.getElementById('id_categoria');
-    const optionBtnsNuevo = document.querySelectorAll('.category-option-btn-nuevo');
-    const dropdownSearchNuevo = document.getElementById('dropdownSearchCategoriaNuevo');
-    
-    if (btnDropdownNuevo && inputSearchNuevo && dropdownSearchNuevo) {
-        const noResultsNuevo = dropdownSearchNuevo.querySelector('.no-results-msg');
-        const btnClearNuevo = document.getElementById('btnClearCategoriaNuevo');
+    // ----------------- BUSCADOR DE CATEGORÍAS (TIPO SEARCHABLE SELECT) -----------------
+    // Función general para inicializar un buscador de categorías (tipo searchable-select)
+    function inicializarBuscadorCategorias(inputId, dropdownId, hiddenId, optionClass, noResultsClass) {
+        const input = document.getElementById(inputId);
+        const dropdown = document.getElementById(dropdownId);
+        const hidden = document.getElementById(hiddenId);
+        const options = dropdown.querySelectorAll('.' + optionClass);
+        const noResults = dropdown.querySelector('.' + noResultsClass);
 
-        // Filtrado en tiempo real
-        inputSearchNuevo.addEventListener('input', function() {
-            const filter = this.value.toLowerCase().trim();
-            let found = false;
-            
-            // Mostrar/ocultar botón limpiar
-            if (this.value.length > 0) {
-                if (btnClearNuevo) btnClearNuevo.classList.remove('d-none');
-            } else {
-                if (btnClearNuevo) btnClearNuevo.classList.add('d-none');
-            }
+        // Mostrar dropdown al enfocar
+        input.addEventListener('focus', function() {
+            dropdown.style.display = 'block';
+        });
 
-            optionBtnsNuevo.forEach(btn => {
-                const text = btn.getAttribute('data-name').toLowerCase();
-                if (text.includes(filter)) {
-                    btn.classList.remove('d-none');
-                    found = true;
+        // Filtrar categorías al escribir
+        input.addEventListener('input', function() {
+            hidden.value = '';
+            const query = input.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            let matches = 0;
+
+            options.forEach(opt => {
+                const nombre = opt.getAttribute('data-nombre').normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+                if (nombre.includes(query)) {
+                    opt.style.display = 'block';
+                    matches++;
                 } else {
-                    btn.classList.add('d-none');
+                    opt.style.display = 'none';
                 }
             });
-            if (found) {
-                if (noResultsNuevo) noResultsNuevo.classList.add('d-none');
+
+            if (matches === 0) {
+                noResults.style.display = 'block';
             } else {
-                if (noResultsNuevo) noResultsNuevo.classList.remove('d-none');
+                noResults.style.display = 'none';
             }
         });
 
-        // Evento de click para limpiar búsqueda
-        if (btnClearNuevo) {
-            btnClearNuevo.addEventListener('click', function(e) {
-                e.stopPropagation(); // Evitar cerrar dropdown
-                inputSearchNuevo.value = '';
-                this.classList.add('d-none');
-                inputSearchNuevo.dispatchEvent(new Event('input'));
-                inputSearchNuevo.focus();
-            });
-        }
+        // Seleccionar una opción
+        options.forEach(opt => {
+            opt.addEventListener('click', function() {
+                const id = opt.getAttribute('data-id');
+                const nombre = opt.getAttribute('data-nombre');
 
-        // Evento de selección
-        optionBtnsNuevo.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const val = this.getAttribute('data-value');
-                const name = this.getAttribute('data-name');
-                hiddenInputNuevo.value = val;
-                btnDropdownNuevo.querySelector('span').innerText = name;
-                
-                // Cerrar dropdown
-                const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(btnDropdownNuevo);
-                dropdownInstance.hide();
+                hidden.value = id;
+                input.value = nombre;
+                dropdown.style.display = 'none';
             });
         });
 
-        // Resetear al abrir/cerrar modal
-        const modalNuevoEl = document.getElementById('modalNuevoProducto');
-        if (modalNuevoEl) {
-            modalNuevoEl.addEventListener('show.bs.modal', function () {
-                inputSearchNuevo.value = '';
-                if (btnClearNuevo) btnClearNuevo.classList.add('d-none');
-                optionBtnsNuevo.forEach(btn => btn.classList.remove('d-none'));
-                if (noResultsNuevo) noResultsNuevo.classList.add('d-none');
-                hiddenInputNuevo.value = '';
-                btnDropdownNuevo.querySelector('span').innerText = 'Seleccione una categoría';
-            });
-        }
+        // Cerrar dropdown al hacer clic fuera
+        document.addEventListener('click', function(e) {
+            const container = input.closest('.searchable-select-container');
+            if (container && !container.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
     }
 
+    // Inicializar buscadores de categorías
+    inicializarBuscadorCategorias(
+        'categoria_search_input',
+        'categoria_search_dropdown',
+        'id_categoria',
+        'categoria-item-option',
+        'categoria-search-no-results'
+    );
 
-    // ----------------- BUSCADOR DE CATEGORÍAS (EDITAR PRODUCTO) -----------------
-    const btnDropdownEdit = document.getElementById('btnDropdownCategoriaEdit');
-    const inputSearchEdit = document.getElementById('inputSearchCategoriaEdit');
-    const hiddenInputEdit = document.getElementById('edit_id_categoria');
-    const optionBtnsEdit = document.querySelectorAll('.category-option-btn-edit');
-    const dropdownSearchEdit = document.getElementById('dropdownSearchCategoriaEdit');
-    
-    if (btnDropdownEdit && inputSearchEdit && dropdownSearchEdit) {
-        const noResultsEdit = dropdownSearchEdit.querySelector('.no-results-msg');
-        const btnClearEdit = document.getElementById('btnClearCategoriaEdit');
+    inicializarBuscadorCategorias(
+        'edit_categoria_search_input',
+        'edit_categoria_search_dropdown',
+        'edit_id_categoria',
+        'edit-categoria-item-option',
+        'edit-categoria-search-no-results'
+    );
 
-        // Filtrado en tiempo real
-        inputSearchEdit.addEventListener('input', function() {
-            const filter = this.value.toLowerCase().trim();
-            let found = false;
+    // Resetear al abrir/cerrar modal
+    const modalNuevoEl = document.getElementById('modalNuevoProducto');
+    if (modalNuevoEl) {
+        modalNuevoEl.addEventListener('show.bs.modal', function () {
+            document.getElementById('id_categoria').value = '';
+            const searchInput = document.getElementById('categoria_search_input');
+            searchInput.value = '';
             
-            // Mostrar/ocultar botón limpiar
-            if (this.value.length > 0) {
-                if (btnClearEdit) btnClearEdit.classList.remove('d-none');
-            } else {
-                if (btnClearEdit) btnClearEdit.classList.add('d-none');
-            }
-
-            optionBtnsEdit.forEach(btn => {
-                const text = btn.getAttribute('data-name').toLowerCase();
-                if (text.includes(filter)) {
-                    btn.classList.remove('d-none');
-                    found = true;
-                } else {
-                    btn.classList.add('d-none');
-                }
-            });
-            if (found) {
-                if (noResultsEdit) noResultsEdit.classList.add('d-none');
-            } else {
-                if (noResultsEdit) noResultsEdit.classList.remove('d-none');
-            }
+            // Restablecer el estado de las opciones del dropdown
+            const dropdown = document.getElementById('categoria_search_dropdown');
+            dropdown.style.display = 'none';
+            dropdown.querySelectorAll('.categoria-item-option').forEach(opt => opt.style.display = 'block');
+            dropdown.querySelector('.categoria-search-no-results').style.display = 'none';
         });
+    }
 
-        // Evento de click para limpiar búsqueda
-        if (btnClearEdit) {
-            btnClearEdit.addEventListener('click', function(e) {
-                e.stopPropagation(); // Evitar cerrar dropdown
-                inputSearchEdit.value = '';
-                this.classList.add('d-none');
-                inputSearchEdit.dispatchEvent(new Event('input'));
-                inputSearchEdit.focus();
-            });
-        }
-
-        // Evento de selección
-        optionBtnsEdit.forEach(btn => {
-            btn.addEventListener('click', function() {
-                const val = this.getAttribute('data-value');
-                const name = this.getAttribute('data-name');
-                hiddenInputEdit.value = val;
-                btnDropdownEdit.querySelector('span').innerText = name;
-                
-                // Cerrar dropdown
-                const dropdownInstance = bootstrap.Dropdown.getOrCreateInstance(btnDropdownEdit);
-                dropdownInstance.hide();
-            });
+    const modalEditarEl = document.getElementById('modalEditarProducto');
+    if (modalEditarEl) {
+        modalEditarEl.addEventListener('hidden.bs.modal', function () {
+            document.getElementById('edit_id_categoria').value = '';
+            const searchInput = document.getElementById('edit_categoria_search_input');
+            searchInput.value = '';
+            
+            // Restablecer el estado de las opciones del dropdown
+            const dropdown = document.getElementById('edit_categoria_search_dropdown');
+            dropdown.style.display = 'none';
+            dropdown.querySelectorAll('.edit-categoria-item-option').forEach(opt => opt.style.display = 'block');
+            dropdown.querySelector('.edit-categoria-search-no-results').style.display = 'none';
         });
-
-        // Resetear al abrir/cerrar modal
-        const modalEditarEl = document.getElementById('modalEditarProducto');
-        if (modalEditarEl) {
-            modalEditarEl.addEventListener('show.bs.modal', function () {
-                inputSearchEdit.value = '';
-                if (btnClearEdit) btnClearEdit.classList.add('d-none');
-                optionBtnsEdit.forEach(btn => btn.classList.remove('d-none'));
-                if (noResultsEdit) noResultsEdit.classList.add('d-none');
-            });
-        }
     }
 })();
 </script>
