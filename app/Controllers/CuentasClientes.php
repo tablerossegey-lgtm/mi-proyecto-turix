@@ -51,7 +51,10 @@ class CuentasClientes extends BaseController
 
     public function obtenerCompras($idCliente)
     {
-        $data = $this->obtenerDatosCliente((int)$idCliente);
+        $idClienteCast = (int)$idCliente;
+        $this->recalcularEstatusCompras($idClienteCast);
+        
+        $data = $this->obtenerDatosCliente($idClienteCast);
         if (!$data) {
             return $this->response->setStatusCode(404)->setBody('Cliente no encontrado');
         }
@@ -141,6 +144,8 @@ class CuentasClientes extends BaseController
             if ($db->transStatus() === false) {
                 return $this->response->setJSON(['success' => false, 'message' => 'No se pudo registrar la compra debido a un error de base de datos.']);
             }
+
+            $this->recalcularEstatusCompras($idCliente);
 
             // Obtener detalles del cliente para el saldo y celular
             $cliente = $this->clienteModel->find($idCliente);
@@ -241,6 +246,7 @@ class CuentasClientes extends BaseController
             if ($estatusCompra == '1') {
                 $this->registrarPagoCaja($idCliente, $totalProduc);
             }
+            $this->recalcularEstatusCompras($idCliente);
             return redirect()->to(base_url('admin/cuentas'))->with('success', 'Compra registrada con éxito.');
         }
 
@@ -301,6 +307,8 @@ class CuentasClientes extends BaseController
             $this->registrarPagoCaja($compra['idCliente'], $totalProduc);
         }
 
+        $this->recalcularEstatusCompras((int)$compra['idCliente']);
+
         if ($this->request->getHeaderLine('HX-Request')) {
             $data = $this->obtenerDatosCliente((int)$compra['idCliente']);
             return view('cuentas_clientes/_tabla_compras', $data);
@@ -335,6 +343,8 @@ class CuentasClientes extends BaseController
             ->where('id_cuenta_cliente', $idCompra)
             ->delete();
 
+        $this->recalcularEstatusCompras($idCliente);
+
         if ($this->request->getHeaderLine('HX-Request')) {
             $data = $this->obtenerDatosCliente($idCliente);
             return view('cuentas_clientes/_tabla_compras', $data);
@@ -361,6 +371,8 @@ class CuentasClientes extends BaseController
         if ($nuevoEstado == '1') {
             $this->registrarPagoCaja($compra['idCliente'], $compra['totalProduc']);
         }
+
+        $this->recalcularEstatusCompras((int)$compra['idCliente']);
 
         // Recalcular saldo total del cliente para enviarlo de vuelta
         $compras = $this->cuentaClienteModel->obtenerComprasPorCliente($compra['idCliente']);
@@ -480,30 +492,8 @@ class CuentasClientes extends BaseController
             'tipo'        => 'Ingreso'
         ]);
 
-        // 3. Obtener compras pendientes ordenadas por fecha (de la más vieja a la más nueva)
-        $comprasPendientes = $this->cuentaClienteModel
-            ->where('idCliente', $idCliente)
-            ->where('estatusCompra', '0')
-            ->orderBy('fechaCompra', 'ASC')
-            ->orderBy('idCompra', 'ASC')
-            ->findAll();
-
-        // Aplicar el abono a los adeudos pendientes, marcando como pagados los que se cubran
-        $saldoAbono = $monto;
-        foreach ($comprasPendientes as $compra) {
-            if ($saldoAbono >= $compra['totalProduc']) {
-                $this->cuentaClienteModel->update($compra['idCompra'], ['estatusCompra' => '1']);
-                
-                $db->table('t_ventas_semillas')
-                   ->where('id_cuenta_cliente', $compra['idCompra'])
-                   ->update(['estatus_pago' => 'Pagado']);
-                   
-                $saldoAbono -= $compra['totalProduc'];
-            } else {
-                // Si el abono no cubre por completo la compra, no la marcamos como pagada
-                break;
-            }
-        }
+        // 3. Recalcular el estatus de todas las compras del cliente cronológicamente
+        $this->recalcularEstatusCompras($idCliente);
 
         $db->transComplete();
 
@@ -520,6 +510,43 @@ class CuentasClientes extends BaseController
         }
 
         return redirect()->to(base_url('admin/cuentas'))->with('success', 'Abono registrado con éxito por $' . number_format($monto, 2));
+    }
+
+    private function recalcularEstatusCompras(int $idCliente)
+    {
+        $db = \Config\Database::connect();
+        
+        $totalPagado = $db->table('t_abono_cliente')
+            ->where('idCliente', $idCliente)
+            ->selectSum('abono')
+            ->get()
+            ->getRow()
+            ->abono ?? 0.00;
+            
+        $compras = $this->cuentaClienteModel
+            ->where('idCliente', $idCliente)
+            ->orderBy('fechaCompra', 'ASC')
+            ->orderBy('idCompra', 'ASC')
+            ->findAll();
+            
+        $saldoRestante = round((float)$totalPagado, 2);
+        foreach ($compras as $c) {
+            $totalProduc = round((float)$c['totalProduc'], 2);
+            $nuevoEstatus = '0';
+            
+            if ($saldoRestante >= $totalProduc) {
+                $nuevoEstatus = '1';
+                $saldoRestante = round($saldoRestante - $totalProduc, 2);
+            }
+            
+            if ($c['estatusCompra'] !== $nuevoEstatus) {
+                $this->cuentaClienteModel->update($c['idCompra'], ['estatusCompra' => $nuevoEstatus]);
+                
+                $db->table('t_ventas_semillas')
+                   ->where('id_cuenta_cliente', $c['idCompra'])
+                   ->update(['estatus_pago' => $nuevoEstatus == '1' ? 'Pagado' : 'Pendiente']);
+            }
+        }
     }
 
     private function registrarPagoCaja($idCliente, $monto)
