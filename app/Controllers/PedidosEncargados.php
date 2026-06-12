@@ -69,10 +69,16 @@ class PedidosEncargados extends BaseController
         $estado = $this->request->getPost('estado') ?: 'Pendiente';
 
         if (empty($nombreCliente)) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('Por favor ingrese el nombre del cliente.');
+            }
             return redirect()->back()->withInput()->with('error', 'Por favor ingrese el nombre del cliente.');
         }
 
         if (empty($idProducto) && empty($productoCustom) && empty($notas)) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('Debe seleccionar un producto del inventario, escribir uno personalizado o detallar el pedido en el campo de Notas.');
+            }
             return redirect()->back()->withInput()->with('error', 'Debe seleccionar un producto del inventario, escribir uno personalizado o detallar el pedido en el campo de Notas.');
         }
 
@@ -109,9 +115,16 @@ class PedidosEncargados extends BaseController
         ];
 
         if ($this->pedidoEncargadoModel->insert($nuevoEncargo)) {
+            session()->setFlashdata('success', 'Pedido encargado registrado con éxito.');
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->index();
+            }
             return redirect()->to(base_url('admin/encargos'))->with('success', 'Pedido encargado registrado con éxito.');
         }
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->response->setStatusCode(500)->setBody('Ocurrió un error al registrar el encargo.');
+        }
         return redirect()->back()->withInput()->with('error', 'Ocurrió un error al registrar el encargo.');
     }
 
@@ -120,6 +133,9 @@ class PedidosEncargados extends BaseController
         $encargo = $this->pedidoEncargadoModel->find($id);
 
         if (!$encargo) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(404)->setBody('El encargo especificado no existe.');
+            }
             return redirect()->to(base_url('admin/encargos'))->with('error', 'El encargo especificado no existe.');
         }
 
@@ -133,10 +149,16 @@ class PedidosEncargados extends BaseController
         $estado = $this->request->getPost('estado');
 
         if (empty($nombreCliente) || empty($estado)) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('Por favor complete todos los campos obligatorios.');
+            }
             return redirect()->back()->with('error', 'Por favor complete todos los campos obligatorios.');
         }
 
         if (empty($idProducto) && empty($productoCustom) && empty($notas)) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('Debe seleccionar un producto del inventario, escribir uno personalizado o detallar el pedido en el campo de Notas.');
+            }
             return redirect()->back()->with('error', 'Debe seleccionar un producto del inventario, escribir uno personalizado o detallar el pedido en el campo de Notas.');
         }
 
@@ -173,9 +195,16 @@ class PedidosEncargados extends BaseController
         ];
 
         if ($this->pedidoEncargadoModel->update($id, $datosActualizados)) {
+            session()->setFlashdata('success', 'El pedido encargado se ha actualizado correctamente.');
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->index();
+            }
             return redirect()->to(base_url('admin/encargos'))->with('success', 'El pedido encargado se ha actualizado correctamente.');
         }
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->response->setStatusCode(500)->setBody('Ocurrió un error al actualizar el encargo.');
+        }
         return redirect()->back()->with('error', 'Ocurrió un error al actualizar el encargo.');
     }
 
@@ -184,13 +213,23 @@ class PedidosEncargados extends BaseController
         $encargo = $this->pedidoEncargadoModel->find($id);
 
         if (!$encargo) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(404)->setBody('El encargo no existe.');
+            }
             return redirect()->to(base_url('admin/encargos'))->with('error', 'El encargo no existe.');
         }
 
         if ($this->pedidoEncargadoModel->delete($id)) {
+            session()->setFlashdata('success', 'El registro de encargo ha sido eliminado.');
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->index();
+            }
             return redirect()->to(base_url('admin/encargos'))->with('success', 'El registro de encargo ha sido eliminado.');
         }
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->response->setStatusCode(500)->setBody('Ocurrió un error al intentar eliminar el encargo.');
+        }
         return redirect()->to(base_url('admin/encargos'))->with('error', 'Ocurrió un error al intentar eliminar el encargo.');
     }
 }

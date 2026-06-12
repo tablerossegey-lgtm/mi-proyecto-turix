@@ -79,6 +79,9 @@ class ComprasProveedores extends BaseController
         $items = $this->request->getPost('productos');
 
         if (empty($idProveedor) || empty($items) || !is_array($items)) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('Por favor, seleccione un proveedor y agregue al menos un producto a la compra.');
+            }
             return redirect()->back()->withInput()->with('error', 'Por favor, seleccione un proveedor y agregue al menos un producto a la compra.');
         }
 
@@ -88,6 +91,9 @@ class ComprasProveedores extends BaseController
             $cantidad = intval($item['cantidad'] ?? 0);
             $precio_proveedor = floatval($item['precio_proveedor'] ?? 0);
             if ($cantidad <= 0 || $precio_proveedor < 0) {
+                if ($this->request->getHeaderLine('HX-Request')) {
+                    return $this->response->setStatusCode(400)->setBody('La cantidad debe ser mayor a 0 y el precio no puede ser negativo.');
+                }
                 return redirect()->back()->withInput()->with('error', 'La cantidad debe ser mayor a 0 y el precio no puede ser negativo.');
             }
             $total_productos += $precio_proveedor * $cantidad;
@@ -116,6 +122,9 @@ class ComprasProveedores extends BaseController
 
         if (!$idCompra) {
             $db->transRollback();
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(500)->setBody('No se pudo guardar la cabecera de la compra.');
+            }
             return redirect()->back()->withInput()->with('error', 'No se pudo guardar la cabecera de la compra.');
         }
 
@@ -203,7 +212,16 @@ class ComprasProveedores extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === FALSE) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(500)->setBody('Ocurrió un error al procesar la compra en la base de datos.');
+            }
             return redirect()->back()->withInput()->with('error', 'Ocurrió un error al procesar la compra en la base de datos.');
+        }
+
+        session()->setFlashdata('success', 'Compra registrada exitosamente, stock actualizado e importe cargado a Caja Chica.');
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->index();
         }
 
         return redirect()->to(base_url('admin/compras'))->with('success', 'Compra registrada exitosamente, stock actualizado e importe cargado a Caja Chica.');
@@ -234,6 +252,9 @@ class ComprasProveedores extends BaseController
         $compra = $this->compraModel->find($id);
 
         if (!$compra) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(404)->setBody('La compra no existe.');
+            }
             return redirect()->to(base_url('admin/compras'))->with('error', 'La compra no existe.');
         }
 
@@ -266,7 +287,16 @@ class ComprasProveedores extends BaseController
         $db->transComplete();
 
         if ($db->transStatus() === FALSE) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(500)->setBody('No se pudo eliminar la compra.');
+            }
             return redirect()->to(base_url('admin/compras'))->with('error', 'No se pudo eliminar la compra.');
+        }
+
+        session()->setFlashdata('success', 'Compra eliminada exitosamente. Se revirtió el stock de los productos y se removió el egreso en Caja Chica.');
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->index();
         }
 
         return redirect()->to(base_url('admin/compras'))->with('success', 'Compra eliminada exitosamente. Se revirtió el stock de los productos y se removió el egreso en Caja Chica.');
