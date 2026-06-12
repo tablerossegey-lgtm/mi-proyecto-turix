@@ -1016,7 +1016,16 @@
 
                 if (evt.detail.successful) {
                     try {
-                        const data = JSON.parse(evt.detail.xhr.responseText);
+                        const responseText = evt.detail.xhr.responseText.trim();
+                        
+                        // Si la respuesta es HTML (ej. redirección al Login por sesión expirada o error 500 HTML)
+                        if (responseText.startsWith('<!') || responseText.startsWith('<html') || responseText.includes('name="password"') || responseText.includes('<form')) {
+                            alert('Tu sesión de usuario ha expirado o se produjo un error en el servidor. La página se recargará.');
+                            window.location.reload();
+                            return;
+                        }
+
+                        const data = JSON.parse(responseText);
                         if (data.success) {
                             // Ocultar modal de nueva compra
                             const modalNueva = bootstrap.Modal.getInstance(document.getElementById('modalNuevaCompra'));

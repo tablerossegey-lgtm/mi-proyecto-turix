@@ -15,6 +15,7 @@ class UsuarioModel extends Model
         'contrasena_hash',
         'nombre_completo',
         'rol',
-        'fecha_creacion'
+        'fecha_creacion',
+        'remember_token'
     ];
 }

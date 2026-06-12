@@ -76,6 +76,23 @@ class AuthController extends BaseController
         ];
         
         $session->set($ses_data);
+
+        // Recordarme (Remember Me)
+        $remember = $this->request->getPost('remember');
+        if ($remember) {
+            $token = bin2hex(random_bytes(32));
+            $usuarioModel->update($user['id'], [
+                'remember_token' => $token
+            ]);
+            // Establecer cookie por 30 días
+            setcookie('remember_token', $token, time() + (86400 * 30), '/');
+        } else {
+            // Limpiar si no se seleccionó
+            $usuarioModel->update($user['id'], [
+                'remember_token' => null
+            ]);
+            setcookie('remember_token', '', time() - 3600, '/');
+        }
  
         if ($this->request->getHeaderLine('HX-Request')) {
             $this->response->setHeader('HX-Redirect', base_url('admin/productos'));
@@ -87,6 +104,15 @@ class AuthController extends BaseController
 
     public function logout()
     {
+        $userId = session()->get('id');
+        if ($userId) {
+            $usuarioModel = new UsuarioModel();
+            $usuarioModel->update($userId, [
+                'remember_token' => null
+            ]);
+        }
+        setcookie('remember_token', '', time() - 3600, '/');
+
         session()->destroy();
         if ($this->request->getHeaderLine('HX-Request')) {
             $this->response->setHeader('HX-Redirect', base_url('catalogo'));

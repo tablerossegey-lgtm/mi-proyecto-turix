@@ -58,6 +58,16 @@
                         </div>
                     </div>
 
+                    <!-- Recordarme Checkbox -->
+                    <div class="mb-4 d-flex align-items-center">
+                        <div class="form-check m-0">
+                            <input class="form-check-input remember-check" type="checkbox" id="remember" name="remember" style="background-color: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.25); cursor: pointer;">
+                            <label class="form-check-label text-white-50 small ps-2" for="remember" style="cursor: pointer; user-select: none;">
+                                Recordarme en este equipo
+                            </label>
+                        </div>
+                    </div>
+
                     <!-- Botón Ingresar -->
                     <div class="d-grid mt-5">
                         <button type="submit" class="btn btn-login-premium" id="btnLogin">
