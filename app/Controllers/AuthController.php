@@ -11,6 +11,10 @@ class AuthController extends BaseController
     {
         // Si ya está logueado, redirigir al panel de administración
         if (session()->get('isLoggedIn')) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                $this->response->setHeader('HX-Redirect', base_url('admin/productos'));
+                return $this->response;
+            }
             return redirect()->to(base_url('admin/productos'));
         }
 
@@ -72,6 +76,11 @@ class AuthController extends BaseController
         ];
         
         $session->set($ses_data);
+ 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $this->response->setHeader('HX-Redirect', base_url('admin/productos'));
+            return $this->response;
+        }
 
         return redirect()->to(base_url('admin/productos'))->with('success', '¡Bienvenida de nuevo, ' . $user['nombre_completo'] . '!');
     }
@@ -79,6 +88,10 @@ class AuthController extends BaseController
     public function logout()
     {
         session()->destroy();
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $this->response->setHeader('HX-Redirect', base_url('catalogo'));
+            return $this->response;
+        }
         return redirect()->to(base_url('catalogo'));
     }
 
@@ -94,6 +107,10 @@ class AuthController extends BaseController
             'isLoggedIn'     => true,
         ];
         $session->set($ses_data);
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $this->response->setHeader('HX-Redirect', base_url('admin/caja'));
+            return $this->response;
+        }
         return redirect()->to(base_url('admin/caja'));
     }
 }

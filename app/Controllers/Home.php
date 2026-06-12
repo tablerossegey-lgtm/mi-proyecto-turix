@@ -26,6 +26,11 @@ class Home extends BaseController
             'titulo'     => 'Inicio'
         ];
 
+        if ($this->request->getHeaderLine('HX-Request') && !$this->request->getHeaderLine('HX-Boosted')) {
+            return view('_home_content', $data);
+        }
+
         return view('home', $data);
     }
 }
+
