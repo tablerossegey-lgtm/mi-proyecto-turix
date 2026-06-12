@@ -57,16 +57,33 @@
                 <h5 class="fw-bold text-white mb-3"><i class="fas fa-users text-success me-2"></i> Clientes Fijos</h5>
 
                 <!-- Buscador de Clientes -->
-                <form action="<?= base_url('admin/cuentas') ?>" method="GET" class="mb-3" id="form-buscador-clientes"
-                    onsubmit="return false;">
+                <form id="form-buscador-clientes" action="<?= base_url('admin/cuentas') ?>" method="GET" class="mb-3"
+                    hx-get="<?= base_url('admin/cuentas') ?>"
+                    hx-target="#lista-clientes"
+                    hx-select="#lista-clientes"
+                    hx-swap="outerHTML">
                     <div class="input-group">
                         <input type="text" id="search-cliente" name="q"
                             class="form-control bg-dark text-white border-secondary" placeholder="Buscar cliente..."
-                            value="<?= esc($q) ?>" autocomplete="off">
-                        <button class="btn btn-success" type="button" id="btn-search-cliente"><i
+                            value="<?= esc($q) ?>" autocomplete="off"
+                            hx-get="<?= base_url('admin/cuentas') ?>"
+                            hx-trigger="input changed delay:300ms, search"
+                            hx-target="#lista-clientes"
+                            hx-select="#lista-clientes"
+                            hx-swap="outerHTML"
+                            oninput="toggleClearBtn(this.value)">
+                        <button class="btn btn-success" type="submit" id="btn-search-cliente"><i
                                 class="fas fa-search"></i></button>
                         <button class="btn btn-outline-secondary" type="button" id="btn-clear-search"
-                            style="display: none;"><i class="fas fa-times"></i></button>
+                            hx-get="<?= base_url('admin/cuentas') ?>"
+                            hx-vals='{"q": ""}'
+                            hx-target="#lista-clientes"
+                            hx-select="#lista-clientes"
+                            hx-swap="outerHTML"
+                            style="display: <?= !empty($q) ? 'block' : 'none' ?>;"
+                            onclick="document.getElementById('search-cliente').value = ''; this.style.display = 'none';">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 </form>
 
@@ -561,8 +578,17 @@
 (function() {
     document.body.classList.add('admin-body');
 
+    window.activeClientId = null;
+    window.toggleClearBtn = function(val) {
+        const btn = document.getElementById('btn-clear-search');
+        if (btn) {
+            btn.style.display = val.trim() !== '' ? 'block' : 'none';
+        }
+    };
+
     // Cambiar estilos de selección de cliente activo
     function seleccionarCliente(id) {
+        window.activeClientId = id;
         document.querySelectorAll('.client-item').forEach(item => {
             item.classList.remove('active');
         });
@@ -839,56 +865,17 @@
 
     // Buscador en vivo de clientes en la barra lateral
     function initCuentasClientes() {
-        const searchInput = document.getElementById('search-cliente');
-        const clearBtn = document.getElementById('btn-clear-search');
-        const clientItems = document.querySelectorAll('.client-item');
-        const noResults = document.getElementById('no-search-results');
-
-        function filterClients() {
-            const query = searchInput.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
-            let visibleCount = 0;
-
-            clientItems.forEach(item => {
-                const name = item.querySelector('.client-name').textContent.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-                const phone = item.querySelector('.client-phone').textContent.toLowerCase();
-
-                if (name.includes(query) || phone.includes(query)) {
-                    item.style.setProperty('display', 'flex', 'important');
-                    visibleCount++;
-                } else {
-                    item.style.setProperty('display', 'none', 'important');
+        // Escuchar cuando HTMX reemplace la lista de clientes para re-aplicar la clase active al cliente seleccionado
+        document.body.addEventListener('htmx:afterSwap', function (evt) {
+            if (evt.detail.target.id === 'lista-clientes') {
+                if (window.activeClientId) {
+                    const element = document.getElementById('client-item-' + window.activeClientId);
+                    if (element) {
+                        element.classList.add('active');
+                    }
                 }
-            });
-
-            // Mostrar u ocultar botón de limpiar
-            if (query.length > 0) {
-                clearBtn.style.display = 'block';
-            } else {
-                clearBtn.style.display = 'none';
             }
-
-            // Mostrar mensaje si no hay resultados
-            if (visibleCount === 0 && clientItems.length > 0) {
-                noResults.style.display = 'block';
-            } else {
-                noResults.style.display = 'none';
-            }
-        }
-
-        if (searchInput) {
-            searchInput.addEventListener('input', filterClients);
-
-            // Ejecutar al cargar por si viene de una recarga con valor preestablecido
-            filterClients();
-        }
-
-        if (clearBtn) {
-            clearBtn.addEventListener('click', function () {
-                searchInput.value = '';
-                filterClients();
-                searchInput.focus();
-            });
-        }
+        });
 
         // Inicializar y mostrar toasts de notificaciones del servidor
         function inicializarToasts() {
