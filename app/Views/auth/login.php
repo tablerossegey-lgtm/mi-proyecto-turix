@@ -117,8 +117,10 @@
             loginForm.addEventListener('submit', function () {
                 const btnLogin = document.getElementById('btnLogin');
                 if (btnLogin) {
-                    btnLogin.disabled = true;
                     btnLogin.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Iniciando Sesión...';
+                    setTimeout(() => {
+                        btnLogin.disabled = true;
+                    }, 0);
                 }
             });
         }

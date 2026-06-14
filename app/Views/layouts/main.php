@@ -161,6 +161,18 @@
                 <span>TURIX<span style="color: var(--turix-yellow);">SHOP</span></span>
             </a>
 
+            <!-- Botón del Carrito para Móvil/Tableta (se muestra a la izquierda del menú hamburguesa) -->
+            <div class="d-flex align-items-center ms-auto me-3 d-lg-none">
+                <a class="position-relative mobile-cart-btn" 
+                   href="#" 
+                   data-bs-toggle="modal" 
+                   data-bs-target="#modalCarrito" 
+                   onclick="renderCarritoModal()">
+                    <i class="bi bi-cart3 fs-4"></i>
+                    <span class="cart-badge" style="display: none; top: -6px; right: -8px;">0</span>
+                </a>
+            </div>
+
             <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                 aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -183,7 +195,7 @@
                             <i class="bi bi-bag me-1"></i> Catálogo
                         </a>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item d-none d-lg-block">
                         <a class="nav-link text-white-50 nav-cart-btn" href="#" data-bs-toggle="modal"
                             data-bs-target="#modalCarrito" onclick="renderCarritoModal()">
                             <i class="bi bi-cart3 me-1"></i> Carrito

@@ -345,9 +345,23 @@ function enviarPedidoWhatsApp() {
     mensaje += "Quedo atento a la confirmación de disponibilidad y detalles de pago. ¡Gracias!";
 
     const whatsappNumber = "529995441466";
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(mensaje)}`;
     
-    // Abrir WhatsApp en nueva ventana
+    // Detectar si es dispositivo móvil o tableta (incluyendo iPads que solicitan sitio de escritorio)
+    const isMobileOrTablet = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) 
+        || (navigator.maxTouchPoints && navigator.maxTouchPoints > 1)
+        || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
+    let whatsappUrl;
+    if (isMobileOrTablet) {
+        // En móviles y tabletas, whatsapp:// abre la aplicación nativa directamente (ya sea normal o business)
+        // saltándose la redirección web de wa.me que suele fallar en tablets pidiendo descargar la app.
+        whatsappUrl = `whatsapp://send?phone=${whatsappNumber}&text=${encodeURIComponent(mensaje)}`;
+    } else {
+        // En computadoras de escritorio, usamos el enlace estándar de WhatsApp Web / API de comunicación
+        whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsappNumber}&text=${encodeURIComponent(mensaje)}`;
+    }
+    
+    // Abrir WhatsApp
     window.open(whatsappUrl, '_blank');
 
     // Vaciar el carrito tras el pedido

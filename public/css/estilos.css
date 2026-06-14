@@ -812,6 +812,25 @@ footer .text-muted {
     position: relative;
 }
 
+/* Carrito para Móviles/Tabletas */
+.mobile-cart-btn {
+    color: #ffffff !important;
+    transition: all 0.3s ease;
+}
+
+.mobile-cart-btn:hover,
+.mobile-cart-btn:active,
+.mobile-cart-btn:focus {
+    color: var(--turix-yellow) !important;
+}
+
+.mobile-cart-text {
+    font-size: 0.7rem;
+    font-weight: 600;
+    margin-top: 1px;
+    letter-spacing: 0.3px;
+}
+
 .cart-badge {
     position: absolute;
     top: -2px;
