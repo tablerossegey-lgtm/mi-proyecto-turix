@@ -7,8 +7,8 @@
             <p class="hero-subtitle">
                 Descubre un catálogo lleno de novedades exclusivas, adornos especiales para festividades, soluciones en computación y los mejores accesorios para ti.
             </p>
-            <div class="d-flex flex-column flex-md-row gap-2 gap-md-3">
-                <a href="<?= base_url('catalogo') ?>" class="btn btn-gradient rounded-pill fw-bold">
+            <div class="hero-buttons-container d-flex flex-column flex-sm-row flex-md-row gap-2 gap-md-3">
+                <a href="<?= base_url('catalogo') ?>" class="btn btn-gradient rounded-pill fw-bold btn-primary-hero">
                     <i class="bi bi-bag"></i> Explorar Catálogo
                 </a>
                 <a href="#categorias-section" class="btn btn-outline-white rounded-pill fw-bold">
