@@ -158,7 +158,8 @@ class VentasSemillas extends BaseController
                     'precioUnit'    => $precio_venta,
                     'totalProduc'   => $precio_venta * $cantidad,
                     'estatusCompra' => '0', // 0 = Pendiente
-                    'idInventario'  => $idInventario
+                    'idInventario'  => $idInventario,
+                    'estatus_entrega' => 0
                 ];
                 
                 $this->cuentaClienteModel->insert($nuevaCompra);

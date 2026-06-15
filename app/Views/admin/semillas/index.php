@@ -467,8 +467,39 @@
 </div>
 
 <!-- MODAL: LIQUIDAR A BEA -->
+<?php
+$desgloseBea = [];
+$textoDesglose = "";
+if (!empty($ventas)) {
+    foreach ($ventas as $v) {
+        if ($v['estatus_pago'] === 'Pagado' && $v['entregado_bea'] === 'No') {
+            $prod = $v['producto'];
+            $cant = (int)$v['cantidad'];
+            $montoBea = (float)$v['precio_bea'] * $cant;
+            
+            if (!isset($desgloseBea[$prod])) {
+                $desgloseBea[$prod] = [
+                    'cantidad' => 0,
+                    'total_bea' => 0.00
+                ];
+            }
+            $desgloseBea[$prod]['cantidad'] += $cant;
+            $desgloseBea[$prod]['total_bea'] += $montoBea;
+        }
+    }
+    
+    if (!empty($desgloseBea)) {
+        $textoDesglose = "*Liquidación a Bea*\n\n";
+        $textoDesglose .= "*Monto Total:* $" . number_format($estadisticas['por_entregar_bea'], 2) . "\n\n";
+        $textoDesglose .= "*Desglose de Productos:*\n";
+        foreach ($desgloseBea as $prod => $info) {
+            $textoDesglose .= "· {$prod} (x{$info['cantidad']}): $" . number_format($info['total_bea'], 2) . "\n";
+        }
+    }
+}
+?>
 <div class="modal fade" id="modalLiquidarBea" tabindex="-1" aria-labelledby="modalLiquidarBeaLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content modal-encargo-content text-white" style="border-radius: 20px; background-color: #121824; border: 1px solid rgba(255,255,255,0.15);">
             <div class="modal-header modal-encargo-header py-3 px-4">
                 <h5 class="modal-title fw-bold text-white d-flex align-items-center gap-2" id="modalLiquidarBeaLabel">
@@ -482,6 +513,29 @@
                     <span class="small text-white-50 d-block mb-1">Monto a retirar de Caja Chica:</span>
                     <span class="fs-3 fw-bold text-success" id="modal-liquidar-monto">$<?= number_format($estadisticas['por_entregar_bea'], 2) ?></span>
                 </div>
+                
+                <?php if (!empty($desgloseBea)): ?>
+                    <div class="p-3 bg-dark rounded border border-secondary border-opacity-25 mb-3 text-start">
+                        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                            <span class="small text-white-50 fw-bold" style="font-size: 0.82rem;"><i class="bi bi-list-ul text-warning me-1"></i> Desglose de Productos a Entregar</span>
+                            <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-2 py-0.5" 
+                                    style="font-size: 0.72rem; font-weight: bold; border-width: 1px; transition: all 0.2s;"
+                                    data-texto="<?= htmlspecialchars($textoDesglose, ENT_QUOTES, 'UTF-8') ?>"
+                                    onclick="copiarDesgloseBea(this)">
+                                <i class="bi bi-clipboard"></i> Copiar Desglose
+                            </button>
+                        </div>
+                        <ul class="list-unstyled mb-0 px-2" style="font-size: 0.85rem; max-height: 180px; overflow-y: auto;">
+                            <?php foreach ($desgloseBea as $prod => $info): ?>
+                                <li class="d-flex justify-content-between mb-1.5 border-bottom border-secondary border-opacity-10 pb-1">
+                                    <span class="text-white fw-semibold">· <?= esc($prod) ?> (x<?= $info['cantidad'] ?>)</span>
+                                    <span class="text-success fw-bold">$<?= number_format($info['total_bea'], 2) ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                <?php endif; ?>
+
                 <p class="small text-white-50 mb-0">Esta acción marcará los registros correspondientes como <strong>Entregados</strong> y registrará de forma automática el Egreso en Caja Chica.</p>
             </div>
             <div class="modal-footer d-flex gap-2 justify-content-center pb-4" style="border-top: none;">
@@ -1006,6 +1060,29 @@
         }
     });
 
+    function copiarDesgloseBea(btn) {
+        const text = btn.getAttribute('data-texto');
+        if (!text) return;
+
+        navigator.clipboard.writeText(text).then(() => {
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="bi bi-check"></i> ¡Copiado!';
+            btn.className = btn.className.replace('btn-outline-warning', 'btn-warning text-dark');
+
+            if (window.mostrarToastExito) {
+                window.mostrarToastExito('Desglose copiado al portapapeles.');
+            }
+
+            setTimeout(() => {
+                btn.innerHTML = originalHTML;
+                btn.className = btn.className.replace('btn-warning text-dark', 'btn-outline-warning');
+            }, 2000);
+        }).catch(err => {
+            console.error('Error al copiar:', err);
+            alert('No se pudo copiar el texto automáticamente.');
+        });
+    }
+
     // Exportar funciones globales al objeto window para acceso desde atributos HTML
     window.toggleClienteInput = toggleClienteInput;
     window.toggleMetodoPago = toggleMetodoPago;
@@ -1018,6 +1095,7 @@
     window.agregarProductoALaLista = agregarProductoALaLista;
     window.eliminarProductoDeLaLista = eliminarProductoDeLaLista;
     window.actualizarMontoLiquidar = actualizarMontoLiquidar;
+    window.copiarDesgloseBea = copiarDesgloseBea;
 })();
 </script>
 <?= $this->endSection() ?>

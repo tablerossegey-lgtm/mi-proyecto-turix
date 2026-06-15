@@ -81,22 +81,32 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
 
     <!-- Cards de Balance del Cliente -->
     <div class="row g-3 mt-3">
-        <div class="col-12 col-md-4">
-            <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15);">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15); height: 100%;">
                 <div class="admin-stat-label opacity-75"><i class="fas fa-shopping-bag me-1 text-info"></i> Suma de Adeudos</div>
                 <div class="fs-4 fw-bold text-white mt-1" id="lbl-total-compras">$<?= number_format($totalComprasActivas, 2) ?></div>
             </div>
         </div>
-        <div class="col-12 col-md-4">
-            <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15);">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15); height: 100%;">
                 <div class="admin-stat-label opacity-75"><i class="fas fa-check-circle me-1 text-success"></i> Abonado a Cuenta</div>
                 <div class="fs-4 fw-bold text-success mt-1" id="lbl-total-pagado">$<?= number_format($totalPagadoActivo, 2) ?></div>
             </div>
         </div>
-        <div class="col-12 col-md-4">
-            <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15);">
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15); height: 100%;">
                 <div class="admin-stat-label opacity-75"><i class="fas fa-hourglass-half me-1 text-danger"></i> Total Pendiente</div>
                 <div class="fs-4 fw-bold text-danger mt-1" id="lbl-total-pendiente">$<?= number_format($totalPendiente, 2) ?></div>
+            </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+            <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15); height: 100%;">
+                <div class="admin-stat-label opacity-75"><i class="fas fa-boxes me-1 text-warning"></i> Control de Entregas</div>
+                <div class="fs-4 fw-bold text-warning mt-1" id="lbl-por-entregar" style="font-size: 1.15rem; padding-top: 4px;">
+                    <span class="text-danger" id="lbl-val-por-empacar"><?= $porEmpacarCount ?? 0 ?></span> <span class="small text-white-50" style="font-size: 0.72rem;">por empacar</span>
+                    <span class="mx-1 text-white-50">|</span>
+                    <span class="text-info" id="lbl-val-por-entregar"><?= $porEntregarCount ?? 0 ?></span> <span class="small text-white-50" style="font-size: 0.72rem;">por entregar</span>
+                </div>
             </div>
         </div>
     </div>
@@ -118,15 +128,20 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                     <th class="py-3 text-end admin-table-th">P. Unitario</th>
                     <th class="py-3 text-end admin-table-th">Total</th>
                     <th class="py-3 text-center admin-table-th">Pago</th>
+                    <th class="py-3 text-center admin-table-th">Entrega</th>
                     <th class="py-3 text-end pe-4 admin-table-th">Acciones</th>
                 </tr>
             </thead>
             <tbody>
                 <?php 
-                $comprasPendientes = array_filter($compras, function($c) { return $c['estatusCompra'] == '0'; });
-                if (!empty($comprasPendientes)): 
+                $comprasActivas = array_filter($compras, function($c) { 
+                    $unpaid = ($c['estatusCompra'] == '0');
+                    $undelivered = (($c['estatus_entrega'] ?? 0) != 2);
+                    return $unpaid || $undelivered; 
+                });
+                if (!empty($comprasActivas)): 
                 ?>
-                    <?php foreach ($comprasPendientes as $c): ?>
+                    <?php foreach ($comprasActivas as $c): ?>
                         <tr class="admin-table-tr" id="compra-row-<?= $c['idCompra'] ?>" style="<?= $c['estatusCompra'] == '1' ? 'opacity: 0.75;' : '' ?>">
                             <td class="ps-4 py-3 text-white-50 small">
                                 <?= date('d/m/Y', strtotime($c['fechaCompra'])) ?>
@@ -168,6 +183,41 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                                           id="badge-estatus-<?= $c['idCompra'] ?>" style="font-size: 0.65rem;">
                                         <?= $c['estatusCompra'] == '1' ? 'Pagado' : 'Pendiente' ?>
                                     </span>
+                                </div>
+                            </td>
+                            <td class="py-3 text-center">
+                                <div class="dropdown d-inline-block">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-2.5 py-1 text-white border-secondary border-opacity-50" 
+                                            type="button" 
+                                            id="dropdownEntrega-<?= $c['idCompra'] ?>" 
+                                            data-bs-toggle="dropdown" 
+                                            aria-expanded="false"
+                                            style="font-size: 0.75rem; min-width: 105px;">
+                                        <?php if (($c['estatus_entrega'] ?? 0) == 0): ?>
+                                            <span class="text-danger"><i class="fas fa-box me-1"></i> Pendiente</span>
+                                        <?php elseif ($c['estatus_entrega'] == 1): ?>
+                                            <span class="text-info"><i class="fas fa-boxes me-1"></i> Empacado</span>
+                                        <?php else: ?>
+                                            <span class="text-success"><i class="fas fa-check-circle me-1"></i> Entregado</span>
+                                        <?php endif; ?>
+                                    </button>
+                                    <ul class="dropdown-menu dropdown-menu-dark shadow border-0 p-1" aria-labelledby="dropdownEntrega-<?= $c['idCompra'] ?>" style="font-size: 0.8rem; background-color: #1a2238;">
+                                        <li>
+                                            <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button" onclick="cambiarEstatusEntrega(<?= $c['idCompra'] ?>, 0)">
+                                                <span class="text-danger"><i class="fas fa-box"></i> Pendiente</span>
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button" onclick="cambiarEstatusEntrega(<?= $c['idCompra'] ?>, 1)">
+                                                <span class="text-info"><i class="fas fa-boxes"></i> Empacado</span>
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button" onclick="cambiarEstatusEntrega(<?= $c['idCompra'] ?>, 2)">
+                                                <span class="text-success"><i class="fas fa-check-circle"></i> Entregado</span>
+                                            </button>
+                                        </li>
+                                    </ul>
                                 </div>
                             </td>
                             <td class="py-3 text-end pe-4">
@@ -283,6 +333,20 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
             <?= esc($cliente['nombre']) ?></div>
         <small class="text-white-50 client-phone"><i class="fas fa-phone-alt me-1 text-muted"
                 style="font-size: 0.75rem;"></i> <?= esc($cliente['cel'] ?: 'Sin teléfono') ?></small>
+        
+        <!-- Badges de entrega en el sidebar -->
+        <div class="mt-1 d-flex gap-1.5 flex-wrap">
+            <?php if (($porEmpacarCount ?? 0) > 0): ?>
+                <span class="badge bg-danger text-white font-monospace" style="font-size: 0.65rem;" title="Productos por empacar">
+                    <i class="fas fa-box"></i> <?= $porEmpacarCount ?> empacar
+                </span>
+            <?php endif; ?>
+            <?php if (($porEntregarCount ?? 0) > 0): ?>
+                <span class="badge bg-info text-dark font-monospace" style="font-size: 0.65rem;" title="Productos por entregar">
+                    <i class="fas fa-boxes"></i> <?= $porEntregarCount ?> entregar
+                </span>
+            <?php endif; ?>
+        </div>
     </div>
     <div class="text-end">
         <?php if ($totalPendiente > 0): ?>

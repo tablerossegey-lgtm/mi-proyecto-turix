@@ -2,6 +2,19 @@
 
 <?= $this->section('content') ?>
 <link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
+<style>
+.btn-filtro-cuenta {
+    color: rgba(255, 255, 255, 0.6) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    background: transparent !important;
+    transition: all 0.2s ease-in-out;
+}
+.btn-filtro-cuenta:hover {
+    color: #121824 !important;
+    background-color: #f8f9fa !important;
+    border-color: #f8f9fa !important;
+}
+</style>
 <div class="container py-4">
     <!-- Encabezado -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
@@ -62,11 +75,13 @@
                     hx-target="#lista-clientes"
                     hx-select="#lista-clientes"
                     hx-swap="outerHTML">
+                    <input type="hidden" name="filter" id="input-filter-value" value="<?= esc($filter ?? 'todos') ?>">
                     <div class="input-group">
                         <input type="text" id="search-cliente" name="q"
                             class="form-control bg-dark text-white border-secondary" placeholder="Buscar cliente..."
                             value="<?= esc($q) ?>" autocomplete="off"
                             hx-get="<?= base_url('admin/cuentas') ?>"
+                            hx-include="#input-filter-value"
                             hx-trigger="input changed delay:300ms, search"
                             hx-target="#lista-clientes"
                             hx-select="#lista-clientes"
@@ -90,6 +105,48 @@
                 <!-- Lista de Clientes -->
                 <div class="client-sidebar list-group list-group-flush rounded-3 border border-secondary border-opacity-25"
                     id="lista-clientes">
+                    
+                    <!-- Filtros Rápidos -->
+                    <div class="p-2 border-bottom border-secondary border-opacity-25 bg-dark bg-opacity-10 d-flex gap-2 justify-content-center">
+                        <?php $activeFilter = $filter ?? 'todos'; ?>
+                        <button type="button" 
+                                class="btn btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 <?= $activeFilter === 'todos' ? 'btn-success text-white' : 'btn-filtro-cuenta' ?>"
+                                style="font-size: 0.75rem;"
+                                hx-get="<?= base_url('admin/cuentas') ?>"
+                                hx-include="#search-cliente"
+                                hx-vals='{"filter": "todos"}'
+                                hx-target="#lista-clientes"
+                                hx-select="#lista-clientes"
+                                hx-swap="outerHTML"
+                                onclick="document.getElementById('input-filter-value').value = 'todos'">
+                            Todos
+                        </button>
+                        <button type="button" 
+                                class="btn btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 <?= $activeFilter === 'empacar' ? 'btn-danger text-white' : 'btn-filtro-cuenta' ?>"
+                                style="font-size: 0.75rem;"
+                                hx-get="<?= base_url('admin/cuentas') ?>"
+                                hx-include="#search-cliente"
+                                hx-vals='{"filter": "empacar"}'
+                                hx-target="#lista-clientes"
+                                hx-select="#lista-clientes"
+                                hx-swap="outerHTML"
+                                onclick="document.getElementById('input-filter-value').value = 'empacar'">
+                            <i class="fas fa-box"></i> Por Empacar
+                        </button>
+                        <button type="button" 
+                                class="btn btn-sm rounded-pill px-3 py-1 fw-bold d-flex align-items-center gap-1 <?= $activeFilter === 'entrega' ? 'btn-warning text-dark' : 'btn-filtro-cuenta' ?>"
+                                style="font-size: 0.75rem;"
+                                hx-get="<?= base_url('admin/cuentas') ?>"
+                                hx-include="#search-cliente"
+                                hx-vals='{"filter": "entrega"}'
+                                hx-target="#lista-clientes"
+                                hx-select="#lista-clientes"
+                                hx-swap="outerHTML"
+                                onclick="document.getElementById('input-filter-value').value = 'entrega'">
+                            <i class="fas fa-boxes"></i> Por Entregar
+                        </button>
+                    </div>
+
                     <?php if (!empty($clientes)): ?>
                         <?php foreach ($clientes as $c): ?>
                             <div class="list-group-item client-item p-3 border-bottom border-secondary border-opacity-25 text-white d-flex justify-content-between align-items-center"
@@ -102,6 +159,20 @@
                                         <?= esc($c['nombre']) ?></div>
                                     <small class="text-white-50 client-phone"><i class="fas fa-phone-alt me-1 text-muted"
                                             style="font-size: 0.75rem;"></i> <?= esc($c['cel'] ?: 'Sin teléfono') ?></small>
+                                    
+                                    <!-- Badges de entrega en el sidebar -->
+                                    <div class="mt-1 d-flex gap-1.5 flex-wrap">
+                                        <?php if (($c['cant_por_empacar'] ?? 0) > 0): ?>
+                                            <span class="badge bg-danger text-white font-monospace" style="font-size: 0.65rem;" title="Productos por empacar">
+                                                <i class="fas fa-box"></i> <?= $c['cant_por_empacar'] ?> empacar
+                                            </span>
+                                        <?php endif; ?>
+                                        <?php if (($c['cant_por_entregar'] ?? 0) > 0): ?>
+                                            <span class="badge bg-info text-dark font-monospace" style="font-size: 0.65rem;" title="Productos por entregar">
+                                                <i class="fas fa-boxes"></i> <?= $c['cant_por_entregar'] ?> entregar
+                                            </span>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                                 <div class="text-end">
                                     <?php if ($c['total_pendiente'] > 0): ?>
@@ -478,10 +549,17 @@
                 </div>
 
                 <button type="button"
-                    class="btn w-100 py-3 rounded-pill fw-bold text-dark d-flex align-items-center justify-content-center gap-2 mb-3"
-                    id="btn-copiar-whatsapp"
-                    style="background: linear-gradient(135deg, #2ce3f6 0%, #0072ff 100%); border: none; font-size: 1.1rem; transition: transform 0.2s, box-shadow 0.2s; color: #121824 !important;">
-                    <i class="fas fa-copy"></i> WhatsApp
+                    class="btn w-100 py-3 rounded-pill fw-bold text-dark d-flex align-items-center justify-content-center gap-2 mb-2"
+                    id="btn-copiar-resumen-ticket"
+                    style="background: linear-gradient(135deg, #2ce3f6 0%, #0072ff 100%); border: none; font-size: 1.05rem; transition: transform 0.2s, box-shadow 0.2s; color: #121824 !important;">
+                    <i class="fas fa-copy"></i> Copiar al Portapapeles
+                </button>
+
+                <button type="button"
+                    class="btn w-100 py-3 rounded-pill fw-bold text-white d-flex align-items-center justify-content-center gap-2 mb-3"
+                    id="btn-compartir-whatsapp-ticket"
+                    style="background-color: #25D366; border: none; font-size: 1.05rem; transition: transform 0.2s, box-shadow 0.2s;">
+                    <i class="fab fa-whatsapp"></i> Compartir por WhatsApp
                 </button>
 
                 <button type="button" class="btn btn-link text-white-50 text-decoration-none fw-semibold"
@@ -863,6 +941,52 @@
             });
     }
 
+    // Actualizar el estado de entrega del producto vía AJAX
+    function cambiarEstatusEntrega(idCompra, nuevoEstatus) {
+        const formData = new FormData();
+        formData.append('estatus_entrega', nuevoEstatus);
+
+        fetch('<?= base_url("admin/cuentas/entrega") ?>/' + idCompra, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    // 1. Actualizar el botón del dropdown de la fila
+                    const btn = document.getElementById('dropdownEntrega-' + idCompra);
+                    if (btn) {
+                        let html = '';
+                        if (data.nuevoEstado == 0) {
+                            html = '<span class="text-danger"><i class="fas fa-box me-1"></i> Pendiente</span>';
+                        } else if (data.nuevoEstado == 1) {
+                            html = '<span class="text-info"><i class="fas fa-boxes me-1"></i> Empacado</span>';
+                        } else {
+                            html = '<span class="text-success"><i class="fas fa-check-circle me-1"></i> Entregado</span>';
+                        }
+                        btn.innerHTML = html;
+                    }
+                    
+                    // 2. Actualizar contadores de la tarjeta de entrega
+                    const lblValPorEmpacar = document.getElementById('lbl-val-por-empacar');
+                    const lblValPorEntregar = document.getElementById('lbl-val-por-entregar');
+                    if (lblValPorEmpacar) lblValPorEmpacar.innerText = data.porEmpacar;
+                    if (lblValPorEntregar) lblValPorEntregar.innerText = data.porEntregar;
+
+                    mostrarToastExito('Estado de entrega actualizado.');
+                } else {
+                    alert('No se pudo cambiar el estado de entrega: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                alert('Ocurrió un error al procesar el cambio de estado de entrega.');
+            });
+    }
+
     // Buscador en vivo de clientes en la barra lateral
     function initCuentasClientes() {
         // Escuchar cuando HTMX reemplace la lista de clientes para re-aplicar la clase active al cliente seleccionado
@@ -901,6 +1025,7 @@
 
         // Variable local para guardar el saldo pendiente devuelto por ajax
         let nuevoSaldoPendiente = null;
+        let esAbono = false;
 
         // Manejar el clic en el botón de agregar producto a la lista temporal
         const btnAgregarLista = document.getElementById('btn-agregar-producto-lista');
@@ -1028,15 +1153,20 @@
 
                         // Guardar saldo de retorno
                         nuevoSaldoPendiente = data.totalPendiente;
+                        esAbono = false;
 
                         // Cargar y formatear texto en el modal del ticket
                         document.getElementById('ticket-content').innerHTML = formatTicketForDisplay(data.ticket);
 
-                        // Guardar datos en el botón de WhatsApp
-                        const btnCopiar = document.getElementById('btn-copiar-whatsapp');
+                        // Guardar datos en los botones del ticket
+                        const btnCopiar = document.getElementById('btn-copiar-resumen-ticket');
+                        const btnWhatsApp = document.getElementById('btn-compartir-whatsapp-ticket');
                         if (btnCopiar) {
                             btnCopiar.setAttribute('data-ticket', data.ticket);
-                            btnCopiar.setAttribute('data-cel', data.cel || '');
+                        }
+                        if (btnWhatsApp) {
+                            btnWhatsApp.setAttribute('data-ticket', data.ticket);
+                            btnWhatsApp.setAttribute('data-cel', data.cel || '');
                         }
 
                         // Abrir modal de ticket digital
@@ -1065,13 +1195,13 @@
         }
 
 
-        // Manejar el clic en el botón de WhatsApp para copiar la información
-        const btnCopiar = document.getElementById('btn-copiar-whatsapp');
+        // Manejar el clic en el botón para copiar la información al portapapeles
+        const btnCopiar = document.getElementById('btn-copiar-resumen-ticket');
         if (btnCopiar) {
             btnCopiar.addEventListener('click', function () {
                 const text = this.getAttribute('data-ticket');
+                if (!text) return;
 
-                // Copiar al portapapeles
                 navigator.clipboard.writeText(text).then(() => {
                     // Feedback visual
                     const originalHTML = btnCopiar.innerHTML;
@@ -1086,12 +1216,46 @@
             });
         }
 
+        // Manejar el clic en el botón de WhatsApp para compartir el mensaje
+        const btnWhatsApp = document.getElementById('btn-compartir-whatsapp-ticket');
+        if (btnWhatsApp) {
+            btnWhatsApp.addEventListener('click', function () {
+                const text = this.getAttribute('data-ticket') || '';
+                const cel = this.getAttribute('data-cel') || '';
+                
+                // Intentar copiar al portapapeles en segundo plano para mayor comodidad del usuario
+                if (text) {
+                    navigator.clipboard.writeText(text).catch(err => console.error('Error al copiar en segundo plano:', err));
+                }
+
+                // Limpieza de teléfono para WhatsApp
+                const telClean = cel.replace(/[^0-9]/g, '');
+                let phone = telClean;
+                if (phone.length === 10) {
+                    phone = '52' + phone;
+                }
+
+                // Generar URL de WhatsApp
+                const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(text)}`;
+                
+                // Abrir enlace en pestaña nueva
+                window.open(waUrl, '_blank');
+            });
+        }
+
         // Actualizar la vista al cerrar el modal del ticket
         const modalTicketEl = document.getElementById('modalTicketDigital');
         if (modalTicketEl) {
             modalTicketEl.addEventListener('hidden.bs.modal', function () {
                 const idCliente = document.getElementById('modal_id_cliente').value;
                 if (idCliente) {
+                    // Si fue un abono, la vista ya está actualizada mediante el submit HTMX.
+                    // Retornamos temprano para evitar recargas duplicadas/redudantes.
+                    if (esAbono) {
+                        esAbono = false;
+                        return;
+                    }
+
                     // Actualizar badge de la barra lateral
                     if (nuevoSaldoPendiente !== null) {
                         const sidebarBadge = document.getElementById('sidebar-debt-' + idCliente);
@@ -1170,6 +1334,7 @@
 
             // Limpiar nuevoSaldoPendiente para evitar usar valores antiguos
             nuevoSaldoPendiente = null;
+            esAbono = true;
 
             // Cargar y formatear texto en el modal del ticket
             const ticketContentEl = document.getElementById('ticket-content');
@@ -1177,11 +1342,15 @@
                 ticketContentEl.innerHTML = formatTicketForDisplay(ticket);
             }
 
-            // Guardar datos en el botón de WhatsApp
-            const btnCopiar = document.getElementById('btn-copiar-whatsapp');
+            // Guardar datos en los botones del ticket
+            const btnCopiar = document.getElementById('btn-copiar-resumen-ticket');
+            const btnWhatsApp = document.getElementById('btn-compartir-whatsapp-ticket');
             if (btnCopiar) {
                 btnCopiar.setAttribute('data-ticket', ticket);
-                btnCopiar.setAttribute('data-cel', cel || '');
+            }
+            if (btnWhatsApp) {
+                btnWhatsApp.setAttribute('data-ticket', ticket);
+                btnWhatsApp.setAttribute('data-cel', cel || '');
             }
 
             // Abrir modal de ticket digital
@@ -1400,6 +1569,7 @@
     window.abrirModalRegistrarAbono = abrirModalRegistrarAbono;
     window.mostrarToastExito = mostrarToastExito;
     window.copiarEstadoCuenta = copiarEstadoCuenta;
+    window.cambiarEstatusEntrega = cambiarEstatusEntrega;
 })();
 </script>
 <?= $this->endSection() ?>

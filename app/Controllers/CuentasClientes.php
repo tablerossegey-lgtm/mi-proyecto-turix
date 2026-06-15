@@ -23,19 +23,30 @@ class CuentasClientes extends BaseController
     public function index()
     {
         $q = $this->request->getVar('q');
+        $filter = $this->request->getVar('filter') ?: 'todos';
         
-        // Obtener clientes con balances sumados en una sola consulta
+        // Obtener clientes con balances sumados y contadores de entrega
         $db = \Config\Database::connect();
         $builder = $db->table('t_clientes c')
             ->select('c.*, 
                 ((SELECT COALESCE(SUM(totalProduc), 0) FROM t_cuenta_cliente WHERE idCliente = c.idCliente) - 
                  (SELECT COALESCE(SUM(abono), 0) FROM t_abono_cliente WHERE idCliente = c.idCliente)) AS total_pendiente,
-                (SELECT COALESCE(SUM(abono), 0) FROM t_abono_cliente WHERE idCliente = c.idCliente) AS total_pagado')
+                (SELECT COALESCE(SUM(abono), 0) FROM t_abono_cliente WHERE idCliente = c.idCliente) AS total_pagado,
+                (SELECT COALESCE(SUM(cantidad), 0) FROM t_cuenta_cliente WHERE idCliente = c.idCliente AND estatus_entrega = 0) AS cant_por_empacar,
+                (SELECT COALESCE(SUM(cantidad), 0) FROM t_cuenta_cliente WHERE idCliente = c.idCliente AND (estatus_entrega = 0 OR estatus_entrega = 1)) AS cant_por_entregar')
             ->orderBy('c.nombre', 'ASC');
 
         if (!empty($q)) {
-            $builder->like('c.nombre', $q)
-                    ->orLike('c.cel', $q);
+            $builder->groupStart()
+                    ->like('c.nombre', $q)
+                    ->orLike('c.cel', $q)
+                    ->groupEnd();
+        }
+
+        if ($filter === 'entrega') {
+            $builder->having('cant_por_entregar > 0');
+        } elseif ($filter === 'empacar') {
+            $builder->having('cant_por_empacar > 0');
         }
 
         $clientes = $builder->get()->getResultArray();
@@ -43,6 +54,7 @@ class CuentasClientes extends BaseController
         $data = [
             'clientes' => $clientes,
             'q' => $q,
+            'filter' => $filter,
             'titulo' => 'Gestión de Cuentas de Clientes'
         ];
 
@@ -125,7 +137,8 @@ class CuentasClientes extends BaseController
                     'precioUnit'    => $precioUnit,
                     'totalProduc'   => $totalProduc,
                     'estatusCompra' => $estatusCompra,
-                    'idInventario'  => $idInventario
+                    'idInventario'  => $idInventario,
+                    'estatus_entrega' => 0
                 ];
 
                 $this->cuentaClienteModel->insert($nuevaCompra);
@@ -239,7 +252,8 @@ class CuentasClientes extends BaseController
             'precioUnit'    => $precioUnit,
             'totalProduc'   => $totalProduc,
             'estatusCompra' => $estatusCompra,
-            'idInventario'  => $idInventario
+            'idInventario'  => $idInventario,
+            'estatus_entrega' => 0
         ];
 
         if ($this->cuentaClienteModel->insert($nuevaCompra)) {
@@ -651,10 +665,21 @@ class CuentasClientes extends BaseController
         // Calcular balances históricos matemáticos
         $totalComprasHistorico = 0;
         $totalComprasActivas = 0;
+        $porEmpacarCount = 0;
+        $porEntregarCount = 0;
         foreach ($compras as $c) {
             $totalComprasHistorico += $c['totalProduc'];
             if ($c['estatusCompra'] == '0') {
                 $totalComprasActivas += $c['totalProduc'];
+            }
+            
+            // Contadores de entregas
+            $estEntrega = (int)($c['estatus_entrega'] ?? 0);
+            if ($estEntrega == 0) {
+                $porEmpacarCount += $c['cantidad'];
+            }
+            if ($estEntrega == 0 || $estEntrega == 1) {
+                $porEntregarCount += $c['cantidad'];
             }
         }
 
@@ -675,7 +700,45 @@ class CuentasClientes extends BaseController
             'totalPendiente' => $totalPendiente,
             'totalPagadoActivo' => $abonadoActivo,
             'totalComprasActivas' => $totalComprasActivas,
-            'totalPagadoHistorico' => $totalPagadoHistorico
+            'totalPagadoHistorico' => $totalPagadoHistorico,
+            'porEmpacarCount' => $porEmpacarCount,
+            'porEntregarCount' => $porEntregarCount
         ];
+    }
+
+    public function actualizarEstatusEntrega($idCompra)
+    {
+        $compra = $this->cuentaClienteModel->find($idCompra);
+        if (!$compra) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Compra no encontrada']);
+        }
+
+        $nuevoEstado = (int)$this->request->getPost('estatus_entrega');
+        if (!in_array($nuevoEstado, [0, 1, 2])) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Estado no válido']);
+        }
+
+        $this->cuentaClienteModel->update($idCompra, ['estatus_entrega' => $nuevoEstado]);
+
+        // Recalcular los contadores de entrega del cliente
+        $compras = $this->cuentaClienteModel->where('idCliente', $compra['idCliente'])->findAll();
+        $porEmpacar = 0;
+        $porEntregar = 0;
+        foreach ($compras as $c) {
+            $estEntrega = (int)($c['estatus_entrega'] ?? 0);
+            if ($estEntrega == 0) {
+                $porEmpacar += $c['cantidad'];
+            }
+            if ($estEntrega == 0 || $estEntrega == 1) {
+                $porEntregar += $c['cantidad'];
+            }
+        }
+
+        return $this->response->setJSON([
+            'success' => true,
+            'nuevoEstado' => $nuevoEstado,
+            'porEmpacar' => $porEmpacar,
+            'porEntregar' => $porEntregar
+        ]);
     }
 }

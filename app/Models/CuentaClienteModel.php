@@ -20,7 +20,8 @@ class CuentaClienteModel extends Model
         'precioUnit',
         'totalProduc',
         'estatusCompra',
-        'idInventario'
+        'idInventario',
+        'estatus_entrega'
     ];
 
     // Dates
