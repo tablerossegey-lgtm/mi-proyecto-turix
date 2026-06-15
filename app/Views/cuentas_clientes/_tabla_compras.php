@@ -29,7 +29,11 @@ if ($totalPendiente > 0) {
     $mensaje .= "\n";
     $mensaje .= "*Subtotal:* $" . number_format($totalComprasActivas, 2) . "\n";
     if ($totalPagadoActivo > 0) {
-        $mensaje .= "*Abonado a Cuenta:* $" . number_format($totalPagadoActivo, 2) . "\n";
+        $fechaAbonoStr = '';
+        if (!empty($abonos) && isset($abonos[0]['fechaAbono'])) {
+            $fechaAbonoStr = ' (' . date('d/m/y', strtotime($abonos[0]['fechaAbono'])) . ')';
+        }
+        $mensaje .= "*Abono{$fechaAbonoStr}:* $" . number_format($totalPagadoActivo, 2) . "\n";
     }
     $mensaje .= "*Nuevo Total:* $" . number_format($totalPendiente, 2) . "\n";
 } else {

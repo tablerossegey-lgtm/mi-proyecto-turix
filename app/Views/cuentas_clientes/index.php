@@ -1161,6 +1161,36 @@
                 }
             });
         }
+
+        // Escuchar el evento abonoRegistrado disparado por HTMX
+        document.body.addEventListener("abonoRegistrado", function (evt) {
+            const ticket = evt.detail.ticket;
+            const cel = evt.detail.cel;
+            if (!ticket) return;
+
+            // Limpiar nuevoSaldoPendiente para evitar usar valores antiguos
+            nuevoSaldoPendiente = null;
+
+            // Cargar y formatear texto en el modal del ticket
+            const ticketContentEl = document.getElementById('ticket-content');
+            if (ticketContentEl) {
+                ticketContentEl.innerHTML = formatTicketForDisplay(ticket);
+            }
+
+            // Guardar datos en el botón de WhatsApp
+            const btnCopiar = document.getElementById('btn-copiar-whatsapp');
+            if (btnCopiar) {
+                btnCopiar.setAttribute('data-ticket', ticket);
+                btnCopiar.setAttribute('data-cel', cel || '');
+            }
+
+            // Abrir modal de ticket digital
+            const modalEl = document.getElementById('modalTicketDigital');
+            if (modalEl) {
+                const modalTicket = new bootstrap.Modal(modalEl);
+                modalTicket.show();
+            }
+        });
     }
 
     if (document.readyState === 'loading') {
@@ -1203,6 +1233,10 @@
     // Función para abrir el modal de registrar pago / abono
     function abrirModalRegistrarAbono(idCliente, saldoPendiente) {
         document.getElementById('abono_id_cliente').value = idCliente;
+        const modalIdCliente = document.getElementById('modal_id_cliente');
+        if (modalIdCliente) {
+            modalIdCliente.value = idCliente;
+        }
         document.getElementById('abono_monto').value = parseFloat(saldoPendiente).toFixed(2);
         document.getElementById('abono_monto_help').innerText = `Monto total pendiente: $${parseFloat(saldoPendiente).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 

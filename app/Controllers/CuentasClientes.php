@@ -506,6 +506,24 @@ class CuentasClientes extends BaseController
 
         if ($this->request->getHeaderLine('HX-Request')) {
             $data = $this->obtenerDatosCliente($idCliente);
+
+            // Generar el resumen de abono para el ticket digital
+            $saldoPendiente = $data['totalPendiente'] ?? 0.00;
+            $saldoAnterior = $saldoPendiente + $monto;
+            $fechaTicket = date('d/m/y', strtotime($fecha));
+
+            $ticketText = "*Resumen de Abono*\n\n";
+            $ticketText .= "*Saldo Anterior:* $" . number_format($saldoAnterior, 2) . "\n";
+            $ticketText .= "*Abono ({$fechaTicket}):* $" . number_format($monto, 2) . "\n";
+            $ticketText .= "*Nuevo Saldo:* $" . number_format($saldoPendiente, 2);
+
+            $this->response->setHeader('HX-Trigger', json_encode([
+                'abonoRegistrado' => [
+                    'ticket' => $ticketText,
+                    'cel' => $cliente['cel'] ?? ''
+                ]
+            ]));
+
             return view('cuentas_clientes/_tabla_compras', $data);
         }
 
@@ -516,36 +534,73 @@ class CuentasClientes extends BaseController
     {
         $db = \Config\Database::connect();
         
-        $totalPagado = $db->table('t_abono_cliente')
+        $totalPagado = (float)($db->table('t_abono_cliente')
             ->where('idCliente', $idCliente)
             ->selectSum('abono')
             ->get()
             ->getRow()
-            ->abono ?? 0.00;
+            ->abono ?? 0.00);
             
         $compras = $this->cuentaClienteModel
             ->where('idCliente', $idCliente)
             ->orderBy('fechaCompra', 'ASC')
             ->orderBy('idCompra', 'ASC')
             ->findAll();
-            
-        $saldoRestante = round((float)$totalPagado, 2);
+
+        // 1. Calcular la suma de lo que ya está marcado como Pagado (estatusCompra == '1')
+        $sumaPagadas = 0.00;
         foreach ($compras as $c) {
-            $totalProduc = round((float)$c['totalProduc'], 2);
-            $nuevoEstatus = '0';
-            
-            if ($saldoRestante >= $totalProduc) {
-                $nuevoEstatus = '1';
-                $saldoRestante = round($saldoRestante - $totalProduc, 2);
+            if ($c['estatusCompra'] == '1') {
+                $sumaPagadas += (float)$c['totalProduc'];
             }
-            
-            if ($c['estatusCompra'] !== $nuevoEstatus) {
-                $this->cuentaClienteModel->update($c['idCompra'], ['estatusCompra' => $nuevoEstatus]);
+        }
+
+        // 2. Si el total de abonos es menor a la suma de compras ya pagadas,
+        // significa que se eliminó/editó algún abono y debemos recalcular todo por FIFO
+        if ($totalPagado < $sumaPagadas) {
+            $saldoRestante = round($totalPagado, 2);
+            foreach ($compras as $c) {
+                $totalProduc = round((float)$c['totalProduc'], 2);
+                $nuevoEstatus = '0';
                 
-                $db->table('t_ventas_semillas')
-                   ->where('id_cuenta_cliente', $c['idCompra'])
-                   ->update(['estatus_pago' => $nuevoEstatus == '1' ? 'Pagado' : 'Pendiente']);
+                if ($saldoRestante >= $totalProduc) {
+                    $nuevoEstatus = '1';
+                    $saldoRestante = round($saldoRestante - $totalProduc, 2);
+                }
+                
+                if ($c['estatusCompra'] !== $nuevoEstatus) {
+                    $this->cuentaClienteModel->update($c['idCompra'], ['estatusCompra' => $nuevoEstatus]);
+                    
+                    $db->table('t_ventas_semillas')
+                       ->where('id_cuenta_cliente', $c['idCompra'])
+                       ->update(['estatus_pago' => $nuevoEstatus == '1' ? 'Pagado' : 'Pendiente']);
+                }
             }
+        } else {
+            // El abono cubre lo ya pagado. El saldo restante para las compras pendientes es:
+            $saldoRestante = round($totalPagado - $sumaPagadas, 2);
+
+            // Calcular cuánto suman las compras que están pendientes (estatusCompra == '0')
+            $sumaPendientes = 0.00;
+            foreach ($compras as $c) {
+                if ($c['estatusCompra'] == '0') {
+                    $sumaPendientes += (float)$c['totalProduc'];
+                }
+            }
+
+            // Si el saldo restante cubre COMPLETAMENTE todas las compras pendientes, las marcamos todas como Pagadas
+            if ($saldoRestante >= round($sumaPendientes, 2)) {
+                foreach ($compras as $c) {
+                    if ($c['estatusCompra'] == '0') {
+                        $this->cuentaClienteModel->update($c['idCompra'], ['estatusCompra' => '1']);
+                        
+                        $db->table('t_ventas_semillas')
+                           ->where('id_cuenta_cliente', $c['idCompra'])
+                           ->update(['estatus_pago' => 'Pagado']);
+                    }
+                }
+            }
+            // Si no las cubre por completo, se quedan todas como Pendientes (no hacemos cambios a '1')
         }
     }
 
