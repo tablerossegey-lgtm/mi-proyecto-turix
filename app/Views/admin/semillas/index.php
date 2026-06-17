@@ -617,62 +617,75 @@ if (!empty($ventas)) {
         }
     }
 
-    // Inicializar el buscador de clientes en el modal de Venta
-    (function initVentaClienteAutocomplete() {
-        const input    = document.getElementById('venta_cliente_search_input');
-        const dropdown = document.getElementById('venta_cliente_search_dropdown');
-        const hidden   = document.getElementById('id_cliente');
-        const options  = dropdown ? dropdown.querySelectorAll('.venta-cliente-item-option') : [];
-        const noResults = dropdown ? dropdown.querySelector('.venta-cliente-no-results') : null;
+    // Mostrar dropdown al enfocar (delegado para soportar recarga HTMX)
+    document.addEventListener('focusin', function (e) {
+        if (e.target && e.target.id === 'venta_cliente_search_input') {
+            const dropdown = document.getElementById('venta_cliente_search_dropdown');
+            if (dropdown) {
+                dropdown.style.display = 'block';
+                const options = dropdown.querySelectorAll('.venta-cliente-item-option');
+                options.forEach(opt => opt.style.display = 'block');
+                const noResults = dropdown.querySelector('.venta-cliente-no-results');
+                if (noResults) noResults.style.display = 'none';
+            }
+        }
+    });
 
-        if (!input || !dropdown) return;
+    // Filtrar al escribir (por nombre o teléfono, delegado)
+    document.addEventListener('input', function (e) {
+        if (e.target && e.target.id === 'venta_cliente_search_input') {
+            const dropdown = document.getElementById('venta_cliente_search_dropdown');
+            const hidden = document.getElementById('id_cliente');
+            if (dropdown && hidden) {
+                hidden.value = '0';
+                const query = e.target.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+                const options = dropdown.querySelectorAll('.venta-cliente-item-option');
+                const noResults = dropdown.querySelector('.venta-cliente-no-results');
+                let matches = 0;
 
-        // Mostrar dropdown al enfocar
-        input.addEventListener('focus', function () {
-            dropdown.style.display = 'block';
-            // Mostrar todos al abrir
-            options.forEach(opt => opt.style.display = 'block');
-            if (noResults) noResults.style.display = 'none';
-        });
+                options.forEach(opt => {
+                    const nombre = opt.getAttribute('data-nombre').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                    const cel    = opt.getAttribute('data-cel').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
-        // Filtrar al escribir (por nombre o teléfono)
-        input.addEventListener('input', function () {
-            hidden.value = '0';
-            const query = input.value.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
-            let matches = 0;
+                    if (nombre.includes(query) || cel.includes(query)) {
+                        opt.style.display = 'block';
+                        matches++;
+                    } else {
+                        opt.style.display = 'none';
+                    }
+                });
 
-            options.forEach(opt => {
-                const nombre = opt.getAttribute('data-nombre').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                const cel    = opt.getAttribute('data-cel').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                if (noResults) noResults.style.display = matches === 0 ? 'block' : 'none';
+            }
+        }
+    });
 
-                if (nombre.includes(query) || cel.includes(query)) {
-                    opt.style.display = 'block';
-                    matches++;
-                } else {
-                    opt.style.display = 'none';
-                }
-            });
-
-            if (noResults) noResults.style.display = matches === 0 ? 'block' : 'none';
-        });
-
-        // Seleccionar una opción
-        options.forEach(opt => {
-            opt.addEventListener('click', function () {
+    // Seleccionar una opción (delegado)
+    document.addEventListener('click', function (e) {
+        const opt = e.target.closest('.venta-cliente-item-option');
+        if (opt) {
+            const input = document.getElementById('venta_cliente_search_input');
+            const dropdown = document.getElementById('venta_cliente_search_dropdown');
+            const hidden = document.getElementById('id_cliente');
+            if (input && dropdown && hidden) {
                 hidden.value  = opt.getAttribute('data-id');
                 input.value   = opt.getAttribute('data-nombre');
                 dropdown.style.display = 'none';
-            });
-        });
+            }
+        }
+    });
 
-        // Cerrar al hacer clic fuera
-        document.addEventListener('click', function (e) {
+    // Cerrar al hacer clic fuera (delegado)
+    document.addEventListener('click', function (e) {
+        const input = document.getElementById('venta_cliente_search_input');
+        const dropdown = document.getElementById('venta_cliente_search_dropdown');
+        if (input && dropdown) {
             const container = input.closest('.searchable-select-container');
             if (container && !container.contains(e.target)) {
                 dropdown.style.display = 'none';
             }
-        });
-    })();
+        }
+    });
 
     let itemsVenta = [];
 
@@ -892,21 +905,20 @@ if (!empty($ventas)) {
         modal.show();
     }
 
-    // Elementos de búsqueda
-    const searchInputVentas = document.getElementById('search-ventas');
-    const btnClearSearchVentas = document.getElementById('btn-clear-search-ventas');
-
-    if (searchInputVentas) {
-        // Filtrar la tabla de ventas registradas localmente
-        searchInputVentas.addEventListener('input', function() {
-            const query = this.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+    // Filtrar la tabla de ventas registradas localmente (delegado para soportar recarga HTMX)
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.id === 'search-ventas') {
+            const query = e.target.value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
             const rows = document.querySelectorAll('#general tbody tr');
+            const btnClearSearchVentas = document.getElementById('btn-clear-search-ventas');
 
             // Mostrar u ocultar el botón "x" de borrar
-            if (query.length > 0) {
-                btnClearSearchVentas.style.display = 'block';
-            } else {
-                btnClearSearchVentas.style.display = 'none';
+            if (btnClearSearchVentas) {
+                if (query.length > 0) {
+                    btnClearSearchVentas.style.display = 'block';
+                } else {
+                    btnClearSearchVentas.style.display = 'none';
+                }
             }
 
             rows.forEach(row => {
@@ -923,20 +935,24 @@ if (!empty($ventas)) {
                     row.style.display = 'none';
                 }
             });
-        });
-    }
+        }
+    });
 
-    if (btnClearSearchVentas) {
-        // Acción para limpiar la búsqueda
-        btnClearSearchVentas.addEventListener('click', function() {
-            searchInputVentas.value = '';
-            btnClearSearchVentas.style.display = 'none';
-            
-            // Simular evento input para restaurar todos los registros
-            searchInputVentas.dispatchEvent(new Event('input'));
-            searchInputVentas.focus();
-        });
-    }
+    // Acción para limpiar la búsqueda (delegado)
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('#btn-clear-search-ventas');
+        if (btn) {
+            const searchInputVentas = document.getElementById('search-ventas');
+            if (searchInputVentas) {
+                searchInputVentas.value = '';
+                btn.style.display = 'none';
+                
+                // Simular evento input para restaurar todos los registros (con bubbles: true para que se propague al listener delegado)
+                searchInputVentas.dispatchEvent(new Event('input', { bubbles: true }));
+                searchInputVentas.focus();
+            }
+        }
+    });
 
     // Funciones para mostrar toasts flotantes dinámicamente
     function mostrarToastExito(message) {
@@ -1010,10 +1026,9 @@ if (!empty($ventas)) {
         calcularGranTotalForm();
     }
 
-    // Resetear lista al abrir el modal
-    const modalNuevaVentaEl = document.getElementById('modalNuevaVenta');
-    if (modalNuevaVentaEl) {
-        modalNuevaVentaEl.addEventListener('show.bs.modal', function () {
+    // Resetear lista al abrir el modal (delegado para soportar recarga HTMX)
+    document.addEventListener('show.bs.modal', function (event) {
+        if (event.target && event.target.id === 'modalNuevaVenta') {
             itemsVenta = [];
             renderListaProductos();
             
@@ -1030,8 +1045,8 @@ if (!empty($ventas)) {
             document.getElementById('precio_bea').value = '0.00';
             document.getElementById('pago_contado').checked = true;
             calcularGranTotalForm();
-        });
-    }
+        }
+    });
 
     // Manejar el cierre de modales y feedback al completar peticiones HTMX
     document.addEventListener("htmx:afterOnLoad", function (evt) {
