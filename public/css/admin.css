@@ -1051,3 +1051,51 @@
 #tabla-productos-compra {
     margin-bottom: 80px !important;
 }
+
+/* ==========================================================================
+   ESTILOS PREMIUM PARA LA PAGINACIÓN DEL PANEL DE ADMINISTRACIÓN
+   ========================================================================== */
+.pagination-premium {
+    gap: 6px;
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
+}
+
+.pagination-premium .page-item .page-link-premium {
+    background-color: #2a2e3d !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    color: #e2e8f0 !important;
+    padding: 0.6rem 0.95rem !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+}
+
+.pagination-premium .page-item.active .page-link-premium {
+    background-color: #ffc107 !important;
+    border-color: #ffc107 !important;
+    color: #1e293b !important;
+    box-shadow: 0 4px 10px rgba(255, 193, 7, 0.35) !important;
+}
+
+.pagination-premium .page-item .page-link-premium:hover:not(.active) {
+    background-color: #383d52 !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.pagination-premium .page-item.disabled .page-link-premium {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+    border-color: rgba(255, 255, 255, 0.05) !important;
+    color: rgba(255, 255, 255, 0.25) !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+}

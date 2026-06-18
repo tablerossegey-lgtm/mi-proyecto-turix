@@ -21,16 +21,23 @@ class AdminProductos extends BaseController
     public function index()
     {
         $q = $this->request->getVar('q');
-        $productos = $this->productoModel->obtenerTodosConConteoImagenes($q);
+        $productos = $this->productoModel->obtenerTodosConConteoImagenes($q)->paginate(15);
+        $pager = $this->productoModel->pager;
+
+        if ($q !== null && $q !== '') {
+            $pager->only(['q']);
+        }
+
         $categorias = $this->categoriaModel->orderBy('nombre', 'ASC')->findAll();
 
         $data = [
             'productos' => $productos,
+            'pager' => $pager,
             'categorias' => $categorias,
             'q' => $q
         ];
 
-        if ($this->request->getHeaderLine('HX-Request') && $this->request->getHeaderLine('HX-Target') === 'productos-tabla-body') {
+        if ($this->request->getHeaderLine('HX-Request') && $this->request->getHeaderLine('HX-Target') === 'productos-tabla-wrapper') {
             return view('admin_productos/_tabla_productos', $data);
         }
 

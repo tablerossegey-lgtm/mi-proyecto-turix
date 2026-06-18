@@ -109,9 +109,9 @@ class ProductoModel extends Model
      * @param string|null $termino
      * @return array
      */
-    public function obtenerTodosConConteoImagenes(?string $termino = null): array
+    public function obtenerTodosConConteoImagenes(?string $termino = null)
     {
-        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria, COUNT(t_inventario_imagenes.id) as total_imagenes, 
+        $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria, COUNT(t_inventario_imagenes.id) as total_imagenes, 
             (SELECT COALESCE(SUM(pe.cantidad), 0) FROM t_pedidos_encargados pe WHERE pe.id_producto = t_inventario.id AND pe.estado = \'Pendiente\') as total_encargos_pendientes,
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 1) AS stock_casa,
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 2) AS stock_oficina')
@@ -123,18 +123,18 @@ class ProductoModel extends Model
         if (!empty($termino)) {
             $palabras = array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($termino))));
             if (!empty($palabras)) {
-                $builder->groupStart()
+                $this->groupStart()
                             ->groupStart();
                                 foreach ($palabras as $palabra) {
-                                    $builder->like('t_inventario.descripcion', $palabra);
+                                    $this->like('t_inventario.descripcion', $palabra);
                                 }
-                $builder->groupEnd()
+                $this->groupEnd()
                             ->orLike('t_inventario.codigo_sku', $termino)
                         ->groupEnd();
             }
         }
 
-        return $builder->findAll();
+        return $this;
     }
 
     /**

@@ -23,7 +23,7 @@
     <!-- Buscador Premium -->
     <div class="card border-0 shadow-sm mb-4 admin-card">
         <div class="card-body p-4">
-            <form hx-post="<?= base_url('admin/productos') ?>" hx-target="#productos-tabla-body" hx-swap="innerHTML" class="m-0">
+            <form hx-post="<?= base_url('admin/productos') ?>" hx-target="#productos-tabla-wrapper" hx-swap="innerHTML" class="m-0">
                 <div class="input-group admin-search-group">
                     <span class="input-group-text admin-search-text">
                         <i class="fas fa-search"></i>
@@ -35,7 +35,7 @@
                            value="<?= esc($q ?? '') ?>"
                            hx-post="<?= base_url('admin/productos') ?>"
                            hx-trigger="input changed delay:300ms, search"
-                           hx-target="#productos-tabla-body"
+                           hx-target="#productos-tabla-wrapper"
                            hx-swap="innerHTML"
                            oninput="toggleLimpiarBtn(this.value)">
                     <button class="btn btn-warning px-4 fw-bold admin-search-btn" type="submit">Buscar</button>
@@ -44,7 +44,7 @@
                             type="button"
                             hx-post="<?= base_url('admin/productos') ?>"
                             hx-vals='{"q": ""}'
-                            hx-target="#productos-tabla-body"
+                            hx-target="#productos-tabla-wrapper"
                             hx-swap="innerHTML"
                             style="display: <?= !empty($q) ? 'flex' : 'none' ?>;"
                             onclick="document.querySelector('.admin-search-input').value = ''; this.style.display = 'none';">
@@ -97,26 +97,9 @@
         <?php endif; ?>
     </div>
 
-    <!-- Tabla de Productos -->
-    <div class="card border-0 shadow-sm admin-card">
-        <div class="table-responsive">
-            <table class="table table-hover align-middle mb-0 admin-table">
-                <thead class="text-muted admin-table-thead">
-                    <tr>
-                        <th class="ps-4 py-3 admin-table-th">Foto</th>
-                        <th class="py-3 admin-table-th">SKU</th>
-                        <th class="py-3 admin-table-th">Descripción</th>
-                        <th class="py-3 admin-table-th">Categoría</th>
-                        <th class="py-3 text-center admin-table-th">Imágenes Galería</th>
-                        <th class="py-3 text-center admin-table-th">Encargos Pendientes</th>
-                        <th class="py-3 text-end pe-4 admin-table-th">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="productos-tabla-body">
-                    <?= $this->include('admin_productos/_tabla_productos') ?>
-                </tbody>
-            </table>
-        </div>
+    <!-- Tabla de Productos Wrapper -->
+    <div class="card border-0 shadow-sm admin-card" id="productos-tabla-wrapper">
+        <?= $this->include('admin_productos/_tabla_productos') ?>
     </div>
 </div>
 
