@@ -68,6 +68,10 @@
                     ?>
                     <div class="col">
                         <div class="card h-100 card-producto novedad-card">
+                            <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
+                                <span class="badge bg-danger position-absolute" style="top: 15px; left: 15px; z-index: 10; font-size: 0.65rem; font-weight: bold; border-radius: 50px; padding: 4px 10px; letter-spacing: 0.5px;">PROMO</span>
+                            <?php endif; ?>
+
                             <span class="sku-badge"><?= esc($p['codigo_sku']) ?></span>
 
                             <div class="contenedor-foto">
@@ -88,8 +92,16 @@
                                     <?= esc($p['descripcion']) ?>
                                 </h6>
                                 <div class="precio-tag">
-                                    <span class="simbolo-moneda">$</span>
-                                    <?= number_format($p['precio'], 2) ?>
+                                    <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
+                                        <span class="simbolo-moneda">$</span>
+                                        <?= number_format($p['precio_promo'], 2) ?>
+                                        <span class="text-white-50 text-decoration-line-through ms-2 fs-6 fw-normal" style="font-size: 0.85rem;">
+                                            $<?= number_format($p['precio'], 2) ?>
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="simbolo-moneda">$</span>
+                                        <?= number_format($p['precio'], 2) ?>
+                                    <?php endif; ?>
                                 </div>
                                 <button class="btn btn-turix w-100 shadow-sm fw-bold" 
                                     data-bs-toggle="modal" 

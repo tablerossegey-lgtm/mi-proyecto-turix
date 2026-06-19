@@ -1,4 +1,9 @@
-
+<?php
+/**
+ * @var array $p
+ * @var array $imagenes_adicionales
+ */
+?>
 <!-- Botón de Cerrar Premium (X) -->
 <button type="button" 
         class="btn-close btn-close-white btn-close-premium shadow-none" 
@@ -104,9 +109,18 @@
                 </h3>
                 
                 <div class="mb-4 d-flex align-items-center gap-3">
-                    <span class="badge bg-warning text-dark px-3 py-2 fs-5 fw-bold shadow-sm price-badge-premium">
-                        $<?= number_format($p['precio'], 2) ?>
-                    </span>
+                    <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
+                        <span class="badge bg-danger text-white px-3 py-2 fs-5 fw-bold shadow-sm price-badge-premium" title="Precio de Promoción">
+                            $<?= number_format($p['precio_promo'], 2) ?>
+                        </span>
+                        <span class="text-white-50 text-decoration-line-through fs-6 ms-2">
+                            $<?= number_format($p['precio'], 2) ?>
+                        </span>
+                    <?php else: ?>
+                        <span class="badge bg-warning text-dark px-3 py-2 fs-5 fw-bold shadow-sm price-badge-premium">
+                            $<?= number_format($p['precio'], 2) ?>
+                        </span>
+                    <?php endif; ?>
                     <span class="text-white-50 stock-text-premium">
                         <?php if ((int)$p['stock'] === 0): ?>
                             | &nbsp;<span class="badge bg-danger text-white px-2.5 py-1.5 fw-bold badge-agotado-premium">Agotado</span>
@@ -151,9 +165,14 @@
 
             <!-- Botones de Acción -->
             <div class="d-grid gap-2 mt-3">
+                <?php 
+                $precio_agregar = (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']) 
+                    ? $p['precio_promo'] 
+                    : $p['precio'];
+                ?>
                 <button type="button" 
                         class="btn btn-warning text-dark fw-bold py-3 shadow d-flex align-items-center justify-content-center gap-2"
-                        onclick="agregarAlCarritoDetalle('<?= $p['id'] ?>', '<?= esc(addslashes($p['descripcion'])) ?>', '<?= $p['precio'] ?>', '<?= esc(addslashes($foto_final_src)) ?>', '<?= esc(addslashes($p['codigo_sku'] ?? '')) ?>', '<?= esc(addslashes($p['nombre_categoria'] ?? '')) ?>', <?= (int)($p['stock'] ?? 9999) ?>)">
+                        onclick="agregarAlCarritoDetalle('<?= $p['id'] ?>', '<?= esc(addslashes($p['descripcion'])) ?>', '<?= $precio_agregar ?>', '<?= esc(addslashes($foto_final_src)) ?>', '<?= esc(addslashes($p['codigo_sku'] ?? '')) ?>', '<?= esc(addslashes($p['nombre_categoria'] ?? '')) ?>', <?= (int)($p['stock'] ?? 9999) ?>)">
                     <i class="bi bi-cart-plus-fill fs-5"></i> Agregar al Carrito
                 </button>
                 <a href="https://wa.me/529995441466?text=Hola, me interesa el producto: <?= urlencode($p['descripcion']) ?>" 

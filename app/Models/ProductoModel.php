@@ -107,7 +107,7 @@ class ProductoModel extends Model
      * Obtiene todos los productos con el conteo de imágenes adicionales en galería y filtros de búsqueda
      *
      * @param string|null $termino
-     * @return array
+     * @return $this
      */
     public function obtenerTodosConConteoImagenes(?string $termino = null)
     {

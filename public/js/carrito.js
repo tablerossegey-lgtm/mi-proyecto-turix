@@ -51,7 +51,9 @@ function agregarAlCarritoRapido(producto) {
     const item = {
         id: parseInt(producto.id),
         descripcion: producto.descripcion,
-        precio: parseFloat(producto.precio),
+        precio: (producto.precio_promo && parseFloat(producto.precio_promo) > 0 && parseFloat(producto.precio_promo) < parseFloat(producto.precio)) 
+            ? parseFloat(producto.precio_promo) 
+            : parseFloat(producto.precio),
         foto: producto.foto_url || '',
         sku: producto.codigo_sku || '',
         nombre_categoria: producto.nombre_categoria || '',
