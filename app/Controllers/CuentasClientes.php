@@ -388,6 +388,14 @@ class CuentasClientes extends BaseController
 
         $this->recalcularEstatusCompras((int)$compra['idCliente']);
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $data = $this->obtenerDatosCliente($compra['idCliente']);
+            $this->response->setHeader('HX-Trigger', json_encode([
+                'mostrarToast' => ['message' => 'Estatus de pago actualizado con éxito.']
+            ]));
+            return view('cuentas_clientes/_tabla_compras', $data);
+        }
+
         // Recalcular saldo total del cliente para enviarlo de vuelta
         $compras = $this->cuentaClienteModel->obtenerComprasPorCliente($compra['idCliente']);
         
@@ -414,6 +422,7 @@ class CuentasClientes extends BaseController
         return $this->response->setJSON([
             'success' => true,
             'nuevoEstado' => $nuevoEstado,
+            'idCliente' => $compra['idCliente'],
             'totalPendiente' => number_format($totalPendiente, 2),
             'totalPagado' => number_format($abonadoActivo, 2),
             'totalCompras' => number_format($totalComprasActivas, 2)
@@ -734,11 +743,61 @@ class CuentasClientes extends BaseController
             }
         }
 
+        if ($this->request->getHeaderLine('HX-Request')) {
+            $data = $this->obtenerDatosCliente($compra['idCliente']);
+            $this->response->setHeader('HX-Trigger', json_encode([
+                'mostrarToast' => ['message' => 'Estado de entrega actualizado con éxito.']
+            ]));
+            return view('cuentas_clientes/_tabla_compras', $data);
+        }
+
         return $this->response->setJSON([
             'success' => true,
+            'idCliente' => (int)$compra['idCliente'],
             'nuevoEstado' => $nuevoEstado,
             'porEmpacar' => $porEmpacar,
             'porEntregar' => $porEntregar
         ]);
+    }
+
+    public function crearCliente()
+    {
+        $nombre = trim((string)$this->request->getPost('nombre'));
+        $cel = trim((string)$this->request->getPost('cel'));
+        $tipoCliente = trim((string)$this->request->getPost('tipoCliente')) ?: 'General';
+
+        if (empty($nombre)) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('El nombre del cliente es obligatorio.');
+            }
+            return redirect()->back()->withInput()->with('error', 'El nombre del cliente es obligatorio.');
+        }
+
+        // Verificar si ya existe un cliente con ese nombre
+        $existe = $this->clienteModel->where('nombre', $nombre)->first();
+        if ($existe) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->response->setStatusCode(400)->setBody('Ya existe un cliente registrado con ese nombre.');
+            }
+            return redirect()->back()->withInput()->with('error', 'Ya existe un cliente registrado con ese nombre.');
+        }
+
+        $datos = [
+            'nombre'      => $nombre,
+            'cel'         => $cel,
+            'tipoCliente' => $tipoCliente
+        ];
+
+        if ($this->clienteModel->insert($datos)) {
+            if ($this->request->getHeaderLine('HX-Request')) {
+                return $this->index();
+            }
+            return redirect()->to(base_url('admin/cuentas'))->with('success', 'Cliente registrado con éxito.');
+        }
+
+        if ($this->request->getHeaderLine('HX-Request')) {
+            return $this->response->setStatusCode(500)->setBody('No se pudo registrar el cliente.');
+        }
+        return redirect()->back()->withInput()->with('error', 'No se pudo registrar el cliente.');
     }
 }

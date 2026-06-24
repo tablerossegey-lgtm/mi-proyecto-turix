@@ -48,6 +48,7 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->post('cuentas/toggle/(:num)', 'CuentasClientes::toggleEstado/$1');
     $routes->post('cuentas/entrega/(:num)', 'CuentasClientes::actualizarEstatusEntrega/$1');
     $routes->post('cuentas/editar-cliente/(:num)', 'CuentasClientes::editarCliente/$1');
+    $routes->post('cuentas/crear-cliente', 'CuentasClientes::crearCliente');
     $routes->get('cuentas/buscar-productos', 'CuentasClientes::buscarProductosJson');
 
     // Rutas de Caja Chica

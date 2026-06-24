@@ -173,51 +173,65 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                             </td>
                             <td class="py-3 text-center">
                                 <div class="form-check form-switch form-switch-premium d-inline-block">
-                                    <input class="form-check-input" type="checkbox" role="switch" 
-                                           id="switch-estatus-<?= $c['idCompra'] ?>" 
-                                           <?= $c['estatusCompra'] == '1' ? 'checked' : '' ?>
-                                           onclick="toggleEstatusCompra(<?= $c['idCompra'] ?>)">
+                                     <input class="form-check-input" type="checkbox" role="switch" 
+                                            id="switch-estatus-<?= $c['idCompra'] ?>" 
+                                            <?= $c['estatusCompra'] == '1' ? 'checked' : '' ?>
+                                            hx-post="<?= base_url("admin/cuentas/toggle/" . $c['idCompra']) ?>"
+                                            hx-target="#compras-cliente-container"
+                                            hx-indicator="#loading-indicator">
                                 </div>
                                 <div class="mt-1">
-                                    <span class="badge <?= $c['estatusCompra'] == '1' ? 'bg-success' : 'bg-danger' ?> font-monospace" 
-                                          id="badge-estatus-<?= $c['idCompra'] ?>" style="font-size: 0.65rem;">
-                                        <?= $c['estatusCompra'] == '1' ? 'Pagado' : 'Pendiente' ?>
-                                    </span>
+                                     <span class="badge <?= $c['estatusCompra'] == '1' ? 'bg-success' : 'bg-danger' ?> font-monospace" 
+                                           id="badge-estatus-<?= $c['idCompra'] ?>" style="font-size: 0.65rem;">
+                                         <?= $c['estatusCompra'] == '1' ? 'Pagado' : 'Pendiente' ?>
+                                     </span>
                                 </div>
                             </td>
                             <td class="py-3 text-center">
                                 <div class="dropdown d-inline-block">
-                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-2.5 py-1 text-white border-secondary border-opacity-50" 
-                                            type="button" 
-                                            id="dropdownEntrega-<?= $c['idCompra'] ?>" 
-                                            data-bs-toggle="dropdown" 
-                                            aria-expanded="false"
-                                            style="font-size: 0.75rem; min-width: 105px;">
-                                        <?php if (($c['estatus_entrega'] ?? 0) == 0): ?>
-                                            <span class="text-danger"><i class="fas fa-box me-1"></i> Pendiente</span>
-                                        <?php elseif ($c['estatus_entrega'] == 1): ?>
-                                            <span class="text-info"><i class="fas fa-boxes me-1"></i> Empacado</span>
-                                        <?php else: ?>
-                                            <span class="text-success"><i class="fas fa-check-circle me-1"></i> Entregado</span>
-                                        <?php endif; ?>
-                                    </button>
-                                    <ul class="dropdown-menu dropdown-menu-dark shadow border-0 p-1" aria-labelledby="dropdownEntrega-<?= $c['idCompra'] ?>" style="font-size: 0.8rem; background-color: #1a2238;">
-                                        <li>
-                                            <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button" onclick="cambiarEstatusEntrega(<?= $c['idCompra'] ?>, 0)">
-                                                <span class="text-danger"><i class="fas fa-box"></i> Pendiente</span>
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button" onclick="cambiarEstatusEntrega(<?= $c['idCompra'] ?>, 1)">
-                                                <span class="text-info"><i class="fas fa-boxes"></i> Empacado</span>
-                                            </button>
-                                        </li>
-                                        <li>
-                                            <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button" onclick="cambiarEstatusEntrega(<?= $c['idCompra'] ?>, 2)">
-                                                <span class="text-success"><i class="fas fa-check-circle"></i> Entregado</span>
-                                            </button>
-                                        </li>
-                                    </ul>
+                                     <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-2.5 py-1 text-white border-secondary border-opacity-50" 
+                                             type="button" 
+                                             id="dropdownEntrega-<?= $c['idCompra'] ?>" 
+                                             data-bs-toggle="dropdown" 
+                                             aria-expanded="false"
+                                             style="font-size: 0.75rem; min-width: 105px;">
+                                         <?php if (($c['estatus_entrega'] ?? 0) == 0): ?>
+                                             <span class="text-danger"><i class="fas fa-box me-1"></i> Pendiente</span>
+                                         <?php elseif ($c['estatus_entrega'] == 1): ?>
+                                             <span class="text-info"><i class="fas fa-boxes me-1"></i> Empacado</span>
+                                         <?php else: ?>
+                                             <span class="text-success"><i class="fas fa-check-circle me-1"></i> Entregado</span>
+                                         <?php endif; ?>
+                                     </button>
+                                     <ul class="dropdown-menu dropdown-menu-dark shadow border-0 p-1" aria-labelledby="dropdownEntrega-<?= $c['idCompra'] ?>" style="font-size: 0.8rem; background-color: #1a2238;">
+                                         <li>
+                                             <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button"
+                                                     hx-post="<?= base_url("admin/cuentas/entrega/" . $c['idCompra']) ?>"
+                                                     hx-vals='{"estatus_entrega": 0}'
+                                                     hx-target="#compras-cliente-container"
+                                                     hx-indicator="#loading-indicator">
+                                                 <span class="text-danger"><i class="fas fa-box"></i> Pendiente</span>
+                                             </button>
+                                         </li>
+                                         <li>
+                                             <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button"
+                                                     hx-post="<?= base_url("admin/cuentas/entrega/" . $c['idCompra']) ?>"
+                                                     hx-vals='{"estatus_entrega": 1}'
+                                                     hx-target="#compras-cliente-container"
+                                                     hx-indicator="#loading-indicator">
+                                                 <span class="text-info"><i class="fas fa-boxes"></i> Empacado</span>
+                                             </button>
+                                         </li>
+                                         <li>
+                                             <button class="dropdown-item py-1.5 px-3 rounded d-flex align-items-center gap-2" type="button"
+                                                     hx-post="<?= base_url("admin/cuentas/entrega/" . $c['idCompra']) ?>"
+                                                     hx-vals='{"estatus_entrega": 2}'
+                                                     hx-target="#compras-cliente-container"
+                                                     hx-indicator="#loading-indicator">
+                                                 <span class="text-success"><i class="fas fa-check-circle"></i> Entregado</span>
+                                             </button>
+                                         </li>
+                                     </ul>
                                 </div>
                             </td>
                             <td class="py-3 text-end pe-4">

@@ -67,7 +67,12 @@
         <!-- Columna Izquierda: Buscador y Lista de Clientes -->
         <div class="col-12 col-lg-4 col-md-5">
             <div class="card border-0 shadow-sm admin-card p-3 mb-4">
-                <h5 class="fw-bold text-white mb-3"><i class="fas fa-users text-success me-2"></i> Clientes Fijos</h5>
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold text-white mb-0"><i class="fas fa-users text-success me-2"></i> Clientes Fijos</h5>
+                    <button type="button" class="btn btn-sm btn-success rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1" data-bs-toggle="modal" data-bs-target="#modalNuevoCliente">
+                        <i class="fas fa-user-plus"></i> Nuevo
+                    </button>
+                </div>
 
                 <!-- Buscador de Clientes -->
                 <form id="form-buscador-clientes" action="<?= base_url('admin/cuentas') ?>" method="GET" class="mb-3"
@@ -478,6 +483,65 @@
     </div>
 </div>
 
+<!-- MODAL: NUEVO CLIENTE -->
+<div class="modal fade" id="modalNuevoCliente" tabindex="-1" aria-labelledby="modalNuevoClienteLabel"
+    aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-encargo-content text-white"
+            style="border-radius: 20px; background-color: #121824; border: 1px solid rgba(255,255,255,0.15);">
+            <div class="modal-header modal-encargo-header py-3 px-4"
+                style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title fw-bold text-white" id="modalNuevoClienteLabel">
+                    <i class="fas fa-user-plus me-2 text-success"></i> Registrar Nuevo Cliente
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <form id="formNuevoCliente" action="<?= base_url('admin/cuentas/crear-cliente') ?>" method="POST"
+                  hx-post="<?= base_url('admin/cuentas/crear-cliente') ?>"
+                  hx-target="#lista-clientes"
+                  hx-select="#lista-clientes"
+                  hx-swap="outerHTML"
+                  onsubmit="mostrarSpinner(this, 'Registrando...')">
+                <?= csrf_field() ?>
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <!-- Nombre -->
+                        <div class="col-12">
+                            <label for="nuevo_cliente_nombre" class="form-label modal-encargo-label">Nombre Completo *</label>
+                            <input type="text" class="form-control modal-encargo-control text-white"
+                                id="nuevo_cliente_nombre" name="nombre" required placeholder="Ej: Juan Pérez">
+                        </div>
+
+                        <!-- Teléfono -->
+                        <div class="col-12">
+                            <label for="nuevo_cliente_cel" class="form-label modal-encargo-label">Teléfono de Contacto (WhatsApp)</label>
+                            <input type="tel" class="form-control modal-encargo-control text-white"
+                                id="nuevo_cliente_cel" name="cel" placeholder="Ej: 9991234567">
+                        </div>
+
+                        <!-- Tipo de Cliente -->
+                        <div class="col-12">
+                            <label for="nuevo_cliente_tipo" class="form-label modal-encargo-label">Tipo de Cliente / Etiqueta</label>
+                            <input type="text" class="form-control modal-encargo-control text-white"
+                                id="nuevo_cliente_tipo" name="tipoCliente" placeholder="Ej: General, Mayorista, Distribuidor, etc.">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer modal-encargo-footer d-flex gap-2"
+                    style="border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4"
+                        data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-4 fw-bold text-white hover-shadow">
+                        <i class="fas fa-save me-1"></i> Registrar Cliente
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL: EDITAR CLIENTE -->
 <div class="modal fade" id="modalEditarCliente" tabindex="-1" aria-labelledby="modalEditarClienteLabel"
     aria-hidden="true">
@@ -876,116 +940,11 @@
         modal.show();
     }
 
-    // Toggle de estatus de compra rápido con Javascript / Fetch
-    function toggleEstatusCompra(idCompra) {
-        fetch('<?= base_url("admin/cuentas/toggle") ?>/' + idCompra, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // 1. Recargar el contenido del historial del cliente (HTMX volverá a cargar la lista)
-                    // O podemos actualizar localmente los elementos de la tabla y los balances:
-                    const badge = document.getElementById('badge-estatus-' + idCompra);
-                    const switchInput = document.getElementById('switch-estatus-' + idCompra);
-                    const row = document.getElementById('compra-row-' + idCompra);
-
-                    if (data.nuevoEstado == '1') {
-                        if (badge) {
-                            badge.className = 'badge bg-success font-monospace';
-                            badge.innerText = 'Pagado';
-                        }
-                        if (row) {
-                            row.style.opacity = '0.75';
-                        }
-                    } else {
-                        if (badge) {
-                            badge.className = 'badge bg-danger font-monospace';
-                            badge.innerText = 'Pendiente';
-                        }
-                        if (row) {
-                            row.style.opacity = '1';
-                        }
-                    }
-
-                    // 2. Actualizar tarjetas de balance en la UI
-                    const lblPendiente = document.getElementById('lbl-total-pendiente');
-                    const lblPagado = document.getElementById('lbl-total-pagado');
-                    const lblTotal = document.getElementById('lbl-total-compras');
-
-                    if (lblPendiente) lblPendiente.innerText = '$' + data.totalPendiente;
-                    if (lblPagado) lblPagado.innerText = '$' + data.totalPagado;
-                    if (lblTotal) lblTotal.innerText = '$' + data.totalCompras;
-
-                    // 3. Actualizar badge del cliente en la barra lateral
-                    const idCliente = document.getElementById('modal_id_cliente').value;
-                    const sidebarBadge = document.getElementById('sidebar-debt-' + idCliente);
-                    if (sidebarBadge) {
-                        sidebarBadge.innerText = '$' + data.totalPendiente;
-                        if (parseFloat(data.totalPendiente.replace(/,/g, '')) > 0) {
-                            sidebarBadge.className = 'badge bg-danger rounded-pill fw-bold';
-                        } else {
-                            sidebarBadge.className = 'badge bg-secondary rounded-pill';
-                        }
-                    }
-                } else {
-                    alert('No se pudo cambiar el estado de la compra: ' + data.message);
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Ocurrió un error al procesar el cambio de estado.');
-            });
-    }
-
-    // Actualizar el estado de entrega del producto vía AJAX
-    function cambiarEstatusEntrega(idCompra, nuevoEstatus) {
-        const formData = new FormData();
-        formData.append('estatus_entrega', nuevoEstatus);
-
-        fetch('<?= base_url("admin/cuentas/entrega") ?>/' + idCompra, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    // 1. Actualizar el botón del dropdown de la fila
-                    const btn = document.getElementById('dropdownEntrega-' + idCompra);
-                    if (btn) {
-                        let html = '';
-                        if (data.nuevoEstado == 0) {
-                            html = '<span class="text-danger"><i class="fas fa-box me-1"></i> Pendiente</span>';
-                        } else if (data.nuevoEstado == 1) {
-                            html = '<span class="text-info"><i class="fas fa-boxes me-1"></i> Empacado</span>';
-                        } else {
-                            html = '<span class="text-success"><i class="fas fa-check-circle me-1"></i> Entregado</span>';
-                        }
-                        btn.innerHTML = html;
-                    }
-                    
-                    // 2. Actualizar contadores de la tarjeta de entrega
-                    const lblValPorEmpacar = document.getElementById('lbl-val-por-empacar');
-                    const lblValPorEntregar = document.getElementById('lbl-val-por-entregar');
-                    if (lblValPorEmpacar) lblValPorEmpacar.innerText = data.porEmpacar;
-                    if (lblValPorEntregar) lblValPorEntregar.innerText = data.porEntregar;
-
-                    mostrarToastExito('Estado de entrega actualizado.');
-                } else {
-                    alert('No se pudo cambiar el estado de entrega: ' + data.message);
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                alert('Ocurrió un error al procesar el cambio de estado de entrega.');
-            });
-    }
+    // Escuchar el evento de toast del servidor para mostrar las notificaciones de éxito/error
+    document.body.addEventListener('mostrarToast', function (evt) {
+        const message = evt.detail.message || 'Operación exitosa';
+        mostrarToastExito(message);
+    });
 
     // Buscador en vivo de clientes en la barra lateral
     function initCuentasClientes() {
@@ -1444,6 +1403,19 @@
                 successMessage = "Datos del cliente actualizados.";
                 btnRestoreHTML = '<i class="fas fa-save me-1"></i> Guardar Cambios';
                 btnRestoreSelector = '#formEditarCliente button[type="submit"]';
+            } else if (targetId === "formNuevoCliente") {
+                modalId = "modalNuevoCliente";
+                successMessage = "Cliente registrado con éxito.";
+                btnRestoreHTML = '<i class="fas fa-save me-1"></i> Registrar Cliente';
+                btnRestoreSelector = '#formNuevoCliente button[type="submit"]';
+                
+                // Limpiar campos del formulario
+                const nombreInput = document.getElementById("nuevo_cliente_nombre");
+                const celInput = document.getElementById("nuevo_cliente_cel");
+                const tipoInput = document.getElementById("nuevo_cliente_tipo");
+                if (nombreInput) nombreInput.value = "";
+                if (celInput) celInput.value = "";
+                if (tipoInput) tipoInput.value = "";
             }
 
             // Restaurar botón de submit (quitar spinner y re-habilitar)
@@ -1471,6 +1443,23 @@
         }
     });
 
+    // Escuchar errores de respuesta de HTMX
+    document.addEventListener("htmx:responseError", function (evt) {
+        const xhr = evt.detail.xhr;
+        const msg = xhr.responseText || "Ocurrió un error inesperado.";
+        mostrarToastError(msg);
+
+        // Restaurar botón de submit del formulario si aplica
+        const targetId = evt.detail.elt.id;
+        if (targetId === "formNuevoCliente") {
+            const btn = document.querySelector('#formNuevoCliente button[type="submit"]');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-save me-1"></i> Registrar Cliente';
+            }
+        }
+    });
+
     // Función para mostrar toasts flotantes dinámicamente
     function mostrarToastExito(message) {
         const container = document.querySelector(".toast-container");
@@ -1482,6 +1471,38 @@
                 <div class="d-flex">
                     <div class="toast-body d-flex align-items-center gap-2">
                        <i class="fas fa-check-circle text-success fs-5"></i>
+                       <div>${message}</div>
+                    </div>
+                    <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
+                </div>
+            </div>
+        `;
+
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = toastHtml.trim();
+        const toastEl = tempDiv.firstChild;
+        container.appendChild(toastEl);
+
+        const toastInstance = new bootstrap.Toast(toastEl);
+        toastInstance.show();
+
+        toastEl.addEventListener("hidden.bs.toast", () => {
+            toastEl.remove();
+        });
+    }
+
+    // Función para mostrar toasts flotantes dinámicamente de error
+    function mostrarToastError(message) {
+        const container = document.querySelector(".toast-container");
+        if (!container) return;
+
+        const toastHtml = `
+            <div class="toast align-items-center text-white bg-dark border-0 shadow-lg rounded-3 show"
+                role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="5000">
+                <div class="d-flex">
+                    <div class="toast-body d-flex align-items-center gap-2">
+                       <i class="fas fa-exclamation-circle text-danger fs-5"></i>
                        <div>${message}</div>
                     </div>
                     <button type="button" class="btn-close btn-close-white m-auto me-2" data-bs-dismiss="toast"
@@ -1563,13 +1584,12 @@
     window.calcularTotalEdit = calcularTotalEdit;
     window.abrirModalNuevaCompra = abrirModalNuevaCompra;
     window.abrirEditarCompra = abrirEditarCompra;
-    window.toggleEstatusCompra = toggleEstatusCompra;
     window.abrirModalEditarCliente = abrirModalEditarCliente;
     window.confirmarEliminarCompra = confirmarEliminarCompra;
     window.abrirModalRegistrarAbono = abrirModalRegistrarAbono;
     window.mostrarToastExito = mostrarToastExito;
+    window.mostrarToastError = mostrarToastError;
     window.copiarEstadoCuenta = copiarEstadoCuenta;
-    window.cambiarEstatusEntrega = cambiarEstatusEntrega;
 })();
 </script>
 <?= $this->endSection() ?>
