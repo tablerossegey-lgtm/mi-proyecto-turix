@@ -122,6 +122,24 @@
                     strpos($descLower, 'decoracion') !== false
                 ) {
                     $subcategoria = 'cumpleanos';
+                } elseif (
+                    strpos($descLower, 'padre') !== false ||
+                    strpos($descLower, 'papá') !== false ||
+                    strpos($descLower, 'papa') !== false
+                ) {
+                    $subcategoria = 'diadelpadre';
+                } elseif (
+                    strpos($descLower, 'halloween') !== false ||
+                    strpos($descLower, 'bruja') !== false ||
+                    strpos($descLower, 'calabaza') !== false ||
+                    strpos($descLower, 'fantasma') !== false ||
+                    strpos($descLower, 'terror') !== false ||
+                    strpos($descLower, 'esqueleto') !== false ||
+                    strpos($descLower, 'araña') !== false ||
+                    strpos($descLower, 'arana') !== false ||
+                    strpos($descLower, 'calavera') !== false
+                ) {
+                    $subcategoria = 'halloween';
                 }
             }
 

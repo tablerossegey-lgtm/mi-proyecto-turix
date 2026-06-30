@@ -77,6 +77,10 @@ if ($categoriaId) {
                         $emoji = '❤️ ';
                     } elseif (strpos($subLower, 'cumple') !== false || strpos($subLower, 'cumpleanos') !== false) {
                         $emoji = '🎂 ';
+                    } elseif (strpos($subLower, 'padre') !== false || strpos($subLower, 'papa') !== false) {
+                        $emoji = '👨 ';
+                    } elseif (strpos($subLower, 'halloween') !== false || strpos($subLower, 'calabaza') !== false || strpos($subLower, 'bruja') !== false || strpos($subLower, 'fantasma') !== false) {
+                        $emoji = '🎃 ';
                     }
                     ?>
                     <button type="button" class="btn btn-turix-filter rounded-pill px-4 py-2" data-filter="<?= $subCss ?>">

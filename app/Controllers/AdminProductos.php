@@ -562,6 +562,28 @@ class AdminProductos extends BaseController
         ) {
             return 'Cumpleaños';
         }
+
+        if (
+            strpos($descLower, 'padre') !== false ||
+            strpos($descLower, 'papá') !== false ||
+            strpos($descLower, 'papa') !== false
+        ) {
+            return 'Día del Padre';
+        }
+
+        if (
+            strpos($descLower, 'halloween') !== false ||
+            strpos($descLower, 'bruja') !== false ||
+            strpos($descLower, 'calabaza') !== false ||
+            strpos($descLower, 'fantasma') !== false ||
+            strpos($descLower, 'terror') !== false ||
+            strpos($descLower, 'esqueleto') !== false ||
+            strpos($descLower, 'araña') !== false ||
+            strpos($descLower, 'arana') !== false ||
+            strpos($descLower, 'calavera') !== false
+        ) {
+            return 'Halloween';
+        }
         
         return '';
     }
