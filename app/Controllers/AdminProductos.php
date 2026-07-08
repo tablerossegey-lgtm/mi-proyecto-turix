@@ -21,11 +21,20 @@ class AdminProductos extends BaseController
     public function index()
     {
         $q = $this->request->getVar('q');
-        $productos = $this->productoModel->obtenerTodosConConteoImagenes($q)->paginate(15);
+        $id_categoria = $this->request->getVar('id_categoria');
+        
+        $productos = $this->productoModel->obtenerTodosConConteoImagenes($q, $id_categoria)->paginate(15);
         $pager = $this->productoModel->pager;
 
+        $params = [];
         if ($q !== null && $q !== '') {
-            $pager->only(['q']);
+            $params['q'] = $q;
+        }
+        if ($id_categoria !== null && $id_categoria !== '') {
+            $params['id_categoria'] = $id_categoria;
+        }
+        if (!empty($params)) {
+            $pager->only(array_keys($params));
         }
 
         $categorias = $this->categoriaModel->orderBy('nombre', 'ASC')->findAll();
@@ -34,7 +43,8 @@ class AdminProductos extends BaseController
             'productos' => $productos,
             'pager' => $pager,
             'categorias' => $categorias,
-            'q' => $q
+            'q' => $q,
+            'id_categoria' => $id_categoria
         ];
 
         if ($this->request->getHeaderLine('HX-Request') && $this->request->getHeaderLine('HX-Target') === 'productos-tabla-wrapper') {

@@ -37,17 +37,35 @@
                            hx-trigger="input changed delay:300ms, search"
                            hx-target="#productos-tabla-wrapper"
                            hx-swap="innerHTML"
-                           oninput="toggleLimpiarBtn(this.value)">
+                           hx-include="closest form"
+                           oninput="updateLimpiarBtnState()">
+                    
+                    <select name="id_categoria" id="search-id-categoria"
+                            class="form-select admin-category-select"
+                            hx-post="<?= base_url('admin/productos') ?>"
+                            hx-trigger="change"
+                            hx-target="#productos-tabla-wrapper"
+                            hx-swap="innerHTML"
+                            hx-include="closest form"
+                            onchange="updateLimpiarBtnState()">
+                        <option value="">Todas las categorías</option>
+                        <?php foreach ($categorias as $cat): ?>
+                            <option value="<?= $cat['idCategoria'] ?>" <?= (isset($id_categoria) && $id_categoria == $cat['idCategoria']) ? 'selected' : '' ?>>
+                                <?= esc($cat['nombre']) ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+
                     <button class="btn btn-warning px-4 fw-bold admin-search-btn" type="submit">Buscar</button>
                     <button id="btn-limpiar-busqueda" 
                             class="btn btn-secondary px-3 d-flex align-items-center justify-content-center admin-search-btn" 
                             type="button"
                             hx-post="<?= base_url('admin/productos') ?>"
-                            hx-vals='{"q": ""}'
+                            hx-vals='{"q": "", "id_categoria": ""}'
                             hx-target="#productos-tabla-wrapper"
                             hx-swap="innerHTML"
-                            style="display: <?= !empty($q) ? 'flex' : 'none' ?>;"
-                            onclick="document.querySelector('.admin-search-input').value = ''; this.style.display = 'none';">
+                            style="display: <?= (!empty($q) || !empty($id_categoria)) ? 'flex' : 'none' ?>;"
+                            onclick="document.querySelector('.admin-search-input').value = ''; document.getElementById('search-id-categoria').value = ''; this.style.display = 'none';">
                         Limpiar
                     </button>
                 </div>
@@ -420,10 +438,14 @@
 (function() {
     document.body.classList.add('admin-body');
 
-    window.toggleLimpiarBtn = function(val) {
+    window.updateLimpiarBtnState = function() {
+        const qInput = document.querySelector('.admin-search-input');
+        const catSelect = document.getElementById('search-id-categoria');
         const btn = document.getElementById('btn-limpiar-busqueda');
         if (btn) {
-            btn.style.display = val.trim() !== '' ? 'flex' : 'none';
+            const qVal = qInput ? qInput.value.trim() : '';
+            const catVal = catSelect ? catSelect.value : '';
+            btn.style.display = (qVal !== '' || catVal !== '') ? 'flex' : 'none';
         }
     };
 
@@ -720,6 +742,8 @@
             dropdown.querySelector('.edit-categoria-search-no-results').style.display = 'none';
         });
     }
+
+    updateLimpiarBtnState();
 })();
 </script>
 <?= $this->endSection() ?>

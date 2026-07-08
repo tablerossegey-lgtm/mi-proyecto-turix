@@ -107,9 +107,10 @@ class ProductoModel extends Model
      * Obtiene todos los productos con el conteo de imágenes adicionales en galería y filtros de búsqueda
      *
      * @param string|null $termino
+     * @param int|string|null $categoriaId
      * @return $this
      */
-    public function obtenerTodosConConteoImagenes(?string $termino = null)
+    public function obtenerTodosConConteoImagenes(?string $termino = null, $categoriaId = null)
     {
         $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria, COUNT(t_inventario_imagenes.id) as total_imagenes, 
             (SELECT COALESCE(SUM(pe.cantidad), 0) FROM t_pedidos_encargados pe WHERE pe.id_producto = t_inventario.id AND pe.estado = \'Pendiente\') as total_encargos_pendientes,
@@ -119,6 +120,10 @@ class ProductoModel extends Model
             ->join('t_inventario_imagenes', 't_inventario_imagenes.id_producto = t_inventario.id', 'left')
             ->groupBy('t_inventario.id')
             ->orderBy('t_inventario.id', 'DESC');
+
+        if (!empty($categoriaId)) {
+            $this->where('t_inventario.id_categoria', $categoriaId);
+        }
 
         if (!empty($termino)) {
             $palabras = array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($termino))));
