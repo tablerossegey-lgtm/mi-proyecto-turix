@@ -142,6 +142,15 @@
                                             data-bs-toggle="modal" data-bs-target="#modalDetalle">
                                             <i class="fas fa-eye text-dark"></i>
                                         </button>
+                                        <!-- Editar Compra (vía HTMX) -->
+                                        <button type="button"
+                                            class="btn btn-info btn-sm d-flex align-items-center justify-content-center rounded-3 p-2"
+                                            title="Editar compra"
+                                            hx-get="<?= base_url('admin/compras/editar/' . $c['idCompraProveedor']) ?>"
+                                            hx-target="#contenido-modal-editar" hx-indicator="#loading-indicator"
+                                            data-bs-toggle="modal" data-bs-target="#modalEditar">
+                                            <i class="fas fa-edit text-white"></i>
+                                        </button>
                                         <!-- Eliminar Compra -->
                                         <button type="button"
                                             class="btn btn-danger btn-sm d-flex align-items-center justify-content-center rounded-3 p-2"
@@ -300,6 +309,19 @@
     </div>
 </div>
 
+<!-- MODAL: EDITAR COMPRA (HTMX TARGET) -->
+<div class="modal fade" id="modalEditar" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable" style="max-width: 95% !important; width: 1450px !important;">
+        <div class="modal-content border-0 shadow-lg" id="contenido-modal-editar"
+            style="background-color: #121824; color: #ffffff; border-radius: 20px; border: 1px solid rgba(255,255,255,0.1);">
+            <div class="p-5 text-center text-white">
+                <div class="spinner-border text-info" role="status"></div>
+                <p class="mt-2 mb-0">Cargando formulario de edición...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL: CONFIRMAR ELIMINACIÓN DE COMPRA -->
 <div class="modal fade" id="modalConfirmarEliminarCompra" tabindex="-1" aria-labelledby="modalConfElimCompraLabel"
     aria-hidden="true">
@@ -431,7 +453,7 @@
                                     <th style="width: 220px;">Nombre Artículo</th>
                                     <th class="text-center" style="width: 75px;">Cant.</th>
                                     <th class="text-end" style="width: 105px;">Costo Prov.</th>
-                                    <th class="text-center" style="width: 75px;">Margen %</th>
+                                    <th class="text-center" style="width: 95px;">Margen %</th>
                                     <th class="text-end" style="width: 105px;">Sugerido</th>
                                     <th class="text-end" style="width: 105px;">Venta Final</th>
                                     <th class="text-center" style="width: 170px;">Costo Prorrateado</th>
@@ -592,8 +614,10 @@
 
         // Escuchar antes de que ocurra el swap de HTMX para ocultar los modales y limpiar el body
         document.body.addEventListener('htmx:beforeSwap', function (evt) {
-            if (evt.detail.elt.id === 'formNuevaCompra' || evt.detail.elt.id === 'formConfirmarEliminarCompra') {
-                const modalId = evt.detail.elt.id === 'formNuevaCompra' ? 'modalNuevaCompra' : 'modalConfirmarEliminarCompra';
+            if (evt.detail.elt.id === 'formNuevaCompra' || evt.detail.elt.id === 'formConfirmarEliminarCompra' || evt.detail.elt.id === 'formEditarCompra') {
+                const modalId = evt.detail.elt.id === 'formNuevaCompra' 
+                    ? 'modalNuevaCompra' 
+                    : (evt.detail.elt.id === 'formEditarCompra' ? 'modalEditar' : 'modalConfirmarEliminarCompra');
                 const modalEl = document.getElementById(modalId);
                 if (modalEl && typeof bootstrap !== 'undefined') {
                     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);

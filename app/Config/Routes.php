@@ -66,5 +66,7 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->get('compras', 'ComprasProveedores::index');
     $routes->post('compras/crear', 'ComprasProveedores::crear');
     $routes->get('compras/detalle/(:num)', 'ComprasProveedores::detalle/$1');
+    $routes->get('compras/editar/(:num)', 'ComprasProveedores::editar/$1');
+    $routes->post('compras/actualizar/(:num)', 'ComprasProveedores::actualizar/$1');
     $routes->post('compras/eliminar/(:num)', 'ComprasProveedores::eliminar/$1');
 });
