@@ -23,7 +23,7 @@
     <!-- Buscador Premium -->
     <div class="card border-0 shadow-sm mb-4 admin-card">
         <div class="card-body p-4">
-            <form hx-post="<?= base_url('admin/productos') ?>" hx-target="#productos-tabla-wrapper" hx-swap="innerHTML" class="m-0">
+            <form hx-get="<?= base_url('admin/productos') ?>" hx-target="#productos-tabla-wrapper" hx-swap="innerHTML" class="m-0">
                 <div class="input-group admin-search-group">
                     <span class="input-group-text admin-search-text">
                         <i class="fas fa-search"></i>
@@ -33,7 +33,7 @@
                            placeholder="Buscar producto por SKU o descripción..." 
                            name="q" 
                            value="<?= esc($q ?? '') ?>"
-                           hx-post="<?= base_url('admin/productos') ?>"
+                           hx-get="<?= base_url('admin/productos') ?>"
                            hx-trigger="input changed delay:300ms, search"
                            hx-target="#productos-tabla-wrapper"
                            hx-swap="innerHTML"
@@ -42,7 +42,7 @@
                     
                     <select name="id_categoria" id="search-id-categoria"
                             class="form-select admin-category-select"
-                            hx-post="<?= base_url('admin/productos') ?>"
+                            hx-get="<?= base_url('admin/productos') ?>"
                             hx-trigger="change"
                             hx-target="#productos-tabla-wrapper"
                             hx-swap="innerHTML"
@@ -60,7 +60,7 @@
                     <button id="btn-limpiar-busqueda" 
                             class="btn btn-secondary px-3 d-flex align-items-center justify-content-center admin-search-btn" 
                             type="button"
-                            hx-post="<?= base_url('admin/productos') ?>"
+                            hx-get="<?= base_url('admin/productos') ?>"
                             hx-vals='{"q": "", "id_categoria": ""}'
                             hx-target="#productos-tabla-wrapper"
                             hx-swap="innerHTML"
