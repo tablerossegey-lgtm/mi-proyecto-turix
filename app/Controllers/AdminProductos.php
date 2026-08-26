@@ -488,12 +488,37 @@ class AdminProductos extends BaseController
     }
 
     /**
-     * Detecta si un producto de Festividades pertenece a Navidad o SanValentín
+     * Detecta si un producto de Festividades pertenece a Fiestas Patrias, Navidad, SanValentín, etc.
      * basándose en su descripción (mismo criterio del catálogo).
      */
     private function obtenerSubfolderFestividades(string $descripcion): string
     {
         $descLower = strtolower($descripcion);
+
+        if (
+            strpos($descLower, 'patrio') !== false || 
+            strpos($descLower, 'patria') !== false || 
+            strpos($descLower, 'patriótico') !== false || 
+            strpos($descLower, 'patriotico') !== false || 
+            strpos($descLower, 'patriótica') !== false || 
+            strpos($descLower, 'patriotica') !== false || 
+            strpos($descLower, 'independencia') !== false || 
+            strpos($descLower, 'septiembre') !== false || 
+            strpos($descLower, 'mexico') !== false || 
+            strpos($descLower, 'méxico') !== false || 
+            strpos($descLower, 'mexicano') !== false || 
+            strpos($descLower, 'mexicana') !== false || 
+            strpos($descLower, 'viva mex') !== false || 
+            strpos($descLower, 'tricolor') !== false || 
+            strpos($descLower, 'bandera') !== false ||
+            strpos($descLower, 'banderita') !== false ||
+            strpos($descLower, 'banderines') !== false ||
+            strpos($descLower, 'grito') !== false ||
+            strpos($descLower, 'rehilete') !== false
+        ) {
+            return 'Fiestas Patrias';
+        }
+
         if (
             strpos($descLower, 'navidad') !== false || 
             strpos($descLower, 'navideñ') !== false || 

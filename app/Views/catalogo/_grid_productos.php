@@ -50,6 +50,28 @@
             if ($subcategoria === 'otros') {
                 $descLower = strtolower($p['descripcion']);
                 if (
+                    strpos($descLower, 'patrio') !== false || 
+                    strpos($descLower, 'patria') !== false || 
+                    strpos($descLower, 'patriótico') !== false || 
+                    strpos($descLower, 'patriotico') !== false || 
+                    strpos($descLower, 'patriótica') !== false || 
+                    strpos($descLower, 'patriotica') !== false || 
+                    strpos($descLower, 'independencia') !== false || 
+                    strpos($descLower, 'septiembre') !== false || 
+                    strpos($descLower, 'mexico') !== false || 
+                    strpos($descLower, 'méxico') !== false || 
+                    strpos($descLower, 'mexicano') !== false || 
+                    strpos($descLower, 'mexicana') !== false || 
+                    strpos($descLower, 'viva mex') !== false || 
+                    strpos($descLower, 'tricolor') !== false || 
+                    strpos($descLower, 'bandera') !== false ||
+                    strpos($descLower, 'banderita') !== false ||
+                    strpos($descLower, 'banderines') !== false ||
+                    strpos($descLower, 'grito') !== false ||
+                    strpos($descLower, 'rehilete') !== false
+                ) {
+                    $subcategoria = 'fiestas patrias';
+                } elseif (
                     strpos($descLower, 'navidad') !== false || 
                     strpos($descLower, 'navideñ') !== false || 
                     strpos($descLower, 'navide') !== false || 

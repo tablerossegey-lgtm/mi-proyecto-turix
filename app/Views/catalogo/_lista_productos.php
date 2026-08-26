@@ -71,7 +71,9 @@ if ($categoriaId) {
                     // Emojis representativos
                     $emoji = '✨ ';
                     $subLower = strtolower($sub);
-                    if (strpos($subLower, 'navidad') !== false || strpos($subLower, 'navide') !== false) {
+                    if (strpos($subLower, 'patrio') !== false || strpos($subLower, 'patria') !== false || strpos($subLower, 'mexico') !== false || strpos($subLower, 'independencia') !== false || strpos($subLower, 'fiesta') !== false) {
+                        $emoji = '🇲🇽 ';
+                    } elseif (strpos($subLower, 'navidad') !== false || strpos($subLower, 'navide') !== false) {
                         $emoji = '🎄 ';
                     } elseif (strpos($subLower, 'valentin') !== false || strpos($subLower, 'amor') !== false) {
                         $emoji = '❤️ ';
