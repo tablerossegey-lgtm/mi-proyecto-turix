@@ -818,7 +818,7 @@
 
             <!-- Costo Proveedor -->
             <td>
-                <input type="number" step="0.01" class="form-control table-input-compact text-white text-end input-precio-proveedor" name="productos[${index}][precio_proveedor]" min="0" value="0.00" onkeyup="recalcularMontos()" onchange="recalcularMontos()" required>
+                <input type="number" step="0.0001" class="form-control table-input-compact text-white text-end input-precio-proveedor" name="productos[${index}][precio_proveedor]" min="0" value="0.00" onkeyup="recalcularMontos()" onchange="recalcularMontos()" required>
             </td>
 
             <!-- Margen -->

@@ -116,7 +116,7 @@
                                 <input type="number" class="form-control table-input-compact text-white text-center input-cantidad" name="productos[<?= $idx ?>][cantidad]" min="1" value="<?= $d['cantidad'] ?>" onkeyup="recalcularMontosEditar()" onchange="recalcularMontosEditar()" required>
                             </td>
                             <td>
-                                <input type="number" step="0.01" class="form-control table-input-compact text-white text-end input-precio-proveedor" name="productos[<?= $idx ?>][precio_proveedor]" min="0" value="<?= number_format($d['precio_proveedor'], 2, '.', '') ?>" onkeyup="recalcularMontosEditar()" onchange="recalcularMontosEditar()" required>
+                                <input type="number" step="0.0001" class="form-control table-input-compact text-white text-end input-precio-proveedor" name="productos[<?= $idx ?>][precio_proveedor]" min="0" value="<?= number_format($d['precio_proveedor'], 4, '.', '') ?>" onkeyup="recalcularMontosEditar()" onchange="recalcularMontosEditar()" required>
                             </td>
                             <td>
                                 <input type="number" step="0.1" class="form-control table-input-compact text-white text-center input-margen" name="productos[<?= $idx ?>][margen]" min="0" value="<?= number_format($d['margen'], 1, '.', '') ?>" onkeyup="recalcularMontosEditar()" onchange="recalcularMontosEditar()">
@@ -396,7 +396,7 @@
 
             <!-- Costo Proveedor -->
             <td>
-                <input type="number" step="0.01" class="form-control table-input-compact text-white text-end input-precio-proveedor" name="productos[${index}][precio_proveedor]" min="0" value="0.00" onkeyup="recalcularMontosEditar()" onchange="recalcularMontosEditar()" required>
+                <input type="number" step="0.0001" class="form-control table-input-compact text-white text-end input-precio-proveedor" name="productos[${index}][precio_proveedor]" min="0" value="0.00" onkeyup="recalcularMontosEditar()" onchange="recalcularMontosEditar()" required>
             </td>
 
             <!-- Margen -->
