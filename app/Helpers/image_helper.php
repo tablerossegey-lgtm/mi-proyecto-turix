@@ -105,3 +105,21 @@ if (!function_exists('obtener_ruta_categoria')) {
     }
 }
 
+if (!function_exists('es_video')) {
+    /**
+     * Determina si la ruta o nombre de archivo corresponde a un video.
+     *
+     * @param string|null $archivo
+     * @return bool
+     */
+    function es_video(?string $archivo): bool
+    {
+        if (empty($archivo)) {
+            return false;
+        }
+        $cleanPath = parse_url($archivo, PHP_URL_PATH) ?? $archivo;
+        return (bool) preg_match('/\.(mp4|webm|ogg)$/i', $cleanPath);
+    }
+}
+
+

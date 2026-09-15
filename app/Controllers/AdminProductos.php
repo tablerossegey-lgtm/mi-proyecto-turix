@@ -108,11 +108,15 @@ class AdminProductos extends BaseController
             $siguienteOrden = isset($maxOrdenRow['orden']) ? ((int)$maxOrdenRow['orden'] + 1) : 1;
 
             $uploadedCount = 0;
+            $allowedMimes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'video/mp4', 'video/quicktime'];
+            $allowedExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov'];
+
             foreach ($files['imagenes'] as $file) {
                 if ($file->isValid() && !$file->hasMoved()) {
-                    // Validar tipo de archivo (imagen)
                     $mimeType = $file->getMimeType();
-                    if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif'])) {
+                    $extension = strtolower($file->getClientExtension());
+
+                    if (in_array($mimeType, $allowedMimes) || in_array($extension, $allowedExtensions)) {
                         // Generar un nombre seguro y único
                         $newName = $file->getRandomName();
                         $file->move($uploadPath, $newName);
@@ -129,11 +133,11 @@ class AdminProductos extends BaseController
             }
 
             if ($uploadedCount > 0) {
-                return redirect()->back()->with('success', "Se cargaron {$uploadedCount} imágenes correctamente.");
+                return redirect()->back()->with('success', "Se guardaron {$uploadedCount} archivo(s) correctamente en la galería.");
             }
         }
 
-        return redirect()->back()->with('error', 'No se seleccionaron archivos de imagen válidos.');
+        return redirect()->back()->with('error', 'No se seleccionaron archivos válidos (formatos permitidos: JPG, PNG, MP4).');
     }
 
     public function eliminarImagen($id)

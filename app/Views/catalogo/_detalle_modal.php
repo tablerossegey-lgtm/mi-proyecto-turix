@@ -17,52 +17,119 @@
 <div class="modal-body p-4 p-md-5">
     <div class="row g-4 mt-1">
         <!-- Columna de la Imagen -->
+        <!-- Columna de Imagen / Video y Galería -->
         <div class="col-12 col-md-6">
-            <div class="product-image-container d-flex align-items-center justify-content-center p-4 rounded-4" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); min-height: 320px;">
+            <div class="product-image-container position-relative d-flex align-items-center justify-content-center p-3 rounded-4 overflow-hidden" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); min-height: 320px;">
                 <?php 
                 $foto_final_src = obtener_ruta_imagen($p['foto'] ?? '', $p['nombre_categoria'] ?? '');
+                $principalEsVideo = es_video($p['foto'] ?? '');
                 ?>
                 <img id="main-img" src="<?= $foto_final_src ?>" 
-                     class="img-fluid product-zoom" 
+                     class="img-fluid product-zoom <?= $principalEsVideo ? 'd-none' : '' ?>" 
                      alt="<?= esc($p['descripcion']) ?>"
                      onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
-                <div class="zoom-hint">
+
+                <video id="main-video" 
+                       src="<?= $principalEsVideo ? $foto_final_src : '' ?>" 
+                       controls 
+                       playsinline 
+                       class="w-100 rounded-3 <?= $principalEsVideo ? '' : 'd-none' ?>" 
+                       style="max-height: 360px; object-fit: contain; background: #000;"></video>
+
+                <div class="zoom-hint" id="zoom-hint" style="<?= $principalEsVideo ? 'display: none;' : '' ?>">
                     <i class="fas fa-search-plus"></i> Pasa el cursor para hacer zoom
                 </div>
             </div>
+
             <?php if (!empty($imagenes_adicionales)): ?>
             <div class="extra-images mt-3 d-flex flex-wrap gap-2 justify-content-center">
-                <!-- Miniatura de la foto principal -->
-                <img src="<?= $foto_final_src ?>" 
-                     class="img-thumbnail extra-thumb active" 
-                     alt="<?= esc($p['descripcion']) ?>" 
-                     onclick="changeMainImage(this)"
-                     onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
+                <!-- Miniatura de la foto/archivo principal -->
+                <div class="extra-thumb-wrapper position-relative">
+                    <?php if ($principalEsVideo): ?>
+                        <div class="img-thumbnail extra-thumb active d-flex align-items-center justify-content-center bg-black" 
+                             style="width: 58px; height: 58px; cursor: pointer;"
+                             data-type="video" 
+                             data-src="<?= $foto_final_src ?>" 
+                             onclick="changeMainMedia(this)">
+                            <i class="fas fa-play text-warning"></i>
+                        </div>
+                    <?php else: ?>
+                        <img src="<?= $foto_final_src ?>" 
+                             class="img-thumbnail extra-thumb active" 
+                             alt="<?= esc($p['descripcion']) ?>" 
+                             data-type="image" 
+                             data-src="<?= $foto_final_src ?>" 
+                             onclick="changeMainMedia(this)"
+                             onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
+                    <?php endif; ?>
+                </div>
                 
                 <?php foreach ($imagenes_adicionales as $img):
                     $foto_src = obtener_ruta_imagen($img['ruta_foto'] ?? '', $p['nombre_categoria'] ?? '');
+                    $itemEsVideo = es_video($img['ruta_foto'] ?? '');
                 ?>
-                    <img src="<?= $foto_src ?>" 
-                         class="img-thumbnail extra-thumb" 
-                         alt="<?= esc($p['descripcion']) ?>" 
-                         onclick="changeMainImage(this)"
-                         onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
+                    <div class="extra-thumb-wrapper position-relative">
+                        <?php if ($itemEsVideo): ?>
+                            <div class="img-thumbnail extra-thumb d-flex flex-column align-items-center justify-content-center bg-black" 
+                                 style="width: 58px; height: 58px; cursor: pointer; border-color: rgba(255,193,7,0.5);"
+                                 data-type="video" 
+                                 data-src="<?= $foto_src ?>" 
+                                 onclick="changeMainMedia(this)"
+                                 title="Ver video MP4">
+                                <i class="fas fa-play text-warning fs-6 mb-1"></i>
+                                <span class="badge bg-warning text-dark px-1 py-0" style="font-size: 8px;">MP4</span>
+                            </div>
+                        <?php else: ?>
+                            <img src="<?= $foto_src ?>" 
+                                 class="img-thumbnail extra-thumb" 
+                                 alt="<?= esc($p['descripcion']) ?>" 
+                                 data-type="image" 
+                                 data-src="<?= $foto_src ?>" 
+                                 onclick="changeMainMedia(this)"
+                                 onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
+                        <?php endif; ?>
+                    </div>
                 <?php endforeach; ?>
             </div>
             
             <script>
-                function changeMainImage(element) {
+                function changeMainMedia(element) {
+                    const type = element.getAttribute('data-type');
+                    const src = element.getAttribute('data-src');
                     const mainImg = document.getElementById('main-img');
-                    mainImg.style.opacity = '0';
-                    setTimeout(() => {
-                        mainImg.src = element.src;
-                        mainImg.style.opacity = '1';
-                    }, 150);
+                    const mainVideo = document.getElementById('main-video');
+                    const zoomHint = document.getElementById('zoom-hint');
 
                     document.querySelectorAll('.extra-thumb').forEach(thumb => {
                         thumb.classList.remove('active');
                     });
                     element.classList.add('active');
+
+                    if (type === 'video') {
+                        if (mainImg) mainImg.classList.add('d-none');
+                        if (zoomHint) zoomHint.style.display = 'none';
+                        if (mainVideo) {
+                            mainVideo.classList.remove('d-none');
+                            if (mainVideo.src !== src) {
+                                mainVideo.src = src;
+                            }
+                            mainVideo.play().catch(() => {});
+                        }
+                    } else {
+                        if (mainVideo) {
+                            mainVideo.pause();
+                            mainVideo.classList.add('d-none');
+                        }
+                        if (zoomHint) zoomHint.style.display = '';
+                        if (mainImg) {
+                            mainImg.classList.remove('d-none');
+                            mainImg.style.opacity = '0';
+                            setTimeout(() => {
+                                mainImg.src = src;
+                                mainImg.style.opacity = '1';
+                            }, 100);
+                        }
+                    }
                 }
             </script>
             <?php endif; ?>

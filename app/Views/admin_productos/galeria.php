@@ -142,20 +142,20 @@
         <div class="col-12 col-lg-8">
             <!-- Sección de Carga -->
             <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 admin-card">
-                <h5 class="fw-bold mb-3 admin-title"><i class="fas fa-cloud-upload-alt me-1 text-warning"></i> Cargar Imágenes Nuevas</h5>
+                <h5 class="fw-bold mb-3 admin-title"><i class="fas fa-cloud-upload-alt me-1 text-warning"></i> Cargar Imágenes y Videos</h5>
                 <form id="formSubirImagenes" action="<?= base_url('admin/productos/subir-imagen/' . $p['id']) ?>" method="POST" enctype="multipart/form-data" hx-boost="true">
                     <div class="drag-zone p-4 rounded-4 text-center d-flex flex-column align-items-center justify-content-center border-dashed admin-drag-zone">
-                        <input type="file" name="imagenes[]" id="fileInput" multiple accept="image/jpeg, image/png" class="d-none">
+                        <input type="file" name="imagenes[]" id="fileInput" multiple accept="image/jpeg, image/png, image/webp, video/mp4, video/quicktime" class="d-none">
                         <div class="mb-3 icon-container">
-                            <i class="fas fa-images fs-1 text-warning opacity-70"></i>
+                            <i class="fas fa-photo-video fs-1 text-warning opacity-70"></i>
                         </div>
                         <h6 class="fw-bold admin-title">Haz clic aquí para seleccionar archivos</h6>
-                        <p class="text-muted small mb-0">Formatos permitidos: JPG, JPEG, PNG. Puedes seleccionar múltiples fotos.</p>
+                        <p class="text-muted small mb-0">Formatos permitidos: JPG, JPEG, PNG, WEBP, MP4. Puedes seleccionar fotos o videos.</p>
                         <div id="fileList" class="mt-3 text-warning fw-semibold small w-100 text-center"></div>
                     </div>
                     <div class="d-grid mt-3">
                         <button type="submit" class="btn btn-warning py-3 fw-bold rounded-3 shadow hover-warning text-dark" id="uploadBtn" disabled>
-                            <i class="fas fa-upload me-1 text-dark"></i> Guardar Imágenes en Galería
+                            <i class="fas fa-upload me-1 text-dark"></i> Guardar Archivos en Galería
                         </button>
                     </div>
                 </form>
@@ -164,7 +164,7 @@
             <!-- Galería de Fotos Existentes -->
             <div class="card border-0 shadow-sm rounded-4 p-4 admin-card">
                 <h5 class="fw-bold mb-4 border-bottom pb-2 admin-title border-secondary-subtle">
-                    <i class="fas fa-images me-1 text-warning"></i> Imágenes de Galería Existentes
+                    <i class="fas fa-photo-video me-1 text-warning"></i> Archivos de Galería Existentes
                 </h5>
 
                 <?php if (!empty($imagenes_adicionales)): ?>
@@ -172,22 +172,34 @@
                         <?php foreach ($imagenes_adicionales as $img): ?>
                             <?php 
                                 $foto_src = obtener_ruta_imagen($img['ruta_foto'] ?? '', $p['nombre_categoria'] ?? '');
+                                $esVideo = es_video($img['ruta_foto'] ?? '');
                             ?>
                             <div class="col">
                                 <div class="card border-0 rounded-4 overflow-hidden position-relative bg-light shadow-sm gallery-card admin-gallery-card h-100">
-                                    <!-- Preview Image -->
-                                    <div class="ratio ratio-1x1 overflow-hidden admin-gallery-card-ratio">
-                                        <img src="<?= $foto_src ?>" 
-                                             class="img-fluid object-fit-contain" 
-                                             alt="Imagen adicional"
-                                             onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
+                                    <!-- Preview Image / Video -->
+                                    <div class="ratio ratio-1x1 overflow-hidden admin-gallery-card-ratio bg-black d-flex align-items-center justify-content-center position-relative">
+                                        <?php if ($esVideo): ?>
+                                            <video src="<?= $foto_src ?>" 
+                                                   class="w-100 h-100 object-fit-cover" 
+                                                   muted loop playsinline preload="metadata"
+                                                   onmouseover="this.play()" 
+                                                   onmouseout="this.pause()"></video>
+                                            <span class="badge bg-dark bg-opacity-75 text-warning position-absolute bottom-0 start-0 m-2 font-monospace px-2 py-1 shadow-sm" style="font-size: 0.72rem; pointer-events: none; z-index: 2;">
+                                                <i class="fas fa-play-circle me-1"></i> MP4
+                                            </span>
+                                        <?php else: ?>
+                                            <img src="<?= $foto_src ?>" 
+                                                 class="img-fluid object-fit-contain" 
+                                                 alt="Imagen adicional"
+                                                 onerror="this.src='<?= base_url('uploads/SinImagen.png') ?>'; this.onerror=null;">
+                                        <?php endif; ?>
                                     </div>
 
                                     <!-- Botón de Borrar (Floating Icon) -->
-                                    <div class="position-absolute top-0 end-0 p-2">
+                                    <div class="position-absolute top-0 end-0 p-2" style="z-index: 5;">
                                         <button type="button" 
                                                 class="btn btn-danger btn-sm rounded-circle d-flex align-items-center justify-content-center shadow admin-gallery-delete-btn" 
-                                                title="Eliminar esta foto"
+                                                title="<?= $esVideo ? 'Eliminar este video' : 'Eliminar esta foto' ?>"
                                                 onclick="confirmarEliminarImagen('<?= base_url('admin/productos/eliminar-imagen/' . $img['id']) ?>')">
                                             <i class="fas fa-trash-alt fs-6"></i>
                                         </button>
@@ -215,8 +227,8 @@
                         <div class="mb-3">
                             <i class="far fa-images fs-1 text-muted opacity-50"></i>
                         </div>
-                        <h6 class="fw-bold admin-title">No hay imágenes en la galería</h6>
-                        <p class="small mb-0">Sube imágenes usando el formulario superior para crear la galería.</p>
+                        <h6 class="fw-bold admin-title">No hay archivos en la galería</h6>
+                        <p class="small mb-0">Sube imágenes o videos usando el formulario superior para crear la galería.</p>
                     </div>
                 <?php endif; ?>
             </div>
@@ -347,8 +359,12 @@
         fileInput.addEventListener('change', (e) => {
             const files = e.target.files;
             if (files.length > 0) {
-                fileList.innerHTML = `<i class="fas fa-file-image me-1"></i> ${files.length} archivo(s) seleccionado(s):<br>` + 
-                                      Array.from(files).map(f => `<span class="text-secondary">• ${f.name}</span>`).join('<br>');
+                fileList.innerHTML = `<i class="fas fa-file-alt me-1"></i> ${files.length} archivo(s) seleccionado(s):<br>` + 
+                                      Array.from(files).map(f => {
+                                          const isVid = f.type.startsWith('video/') || f.name.match(/\.(mp4|mov)$/i);
+                                          const icon = isVid ? 'fa-video text-info' : 'fa-image text-warning';
+                                          return `<span class="text-secondary">• <i class="fas ${icon} me-1"></i> ${f.name}</span>`;
+                                      }).join('<br>');
                 uploadBtn.removeAttribute('disabled');
             } else {
                 fileList.innerHTML = '';
