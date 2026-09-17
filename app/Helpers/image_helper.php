@@ -38,8 +38,38 @@ if (!function_exists('obtener_ruta_imagen')) {
                         if ($file !== '.' && $file !== '..' && is_dir($dirPath . '/' . $file)) {
                             $pathSub = "uploads/{$categoriaFolder}/{$file}/" . $filename;
                             if (file_exists(FCPATH . $pathSub)) {
-                                    $rutaImagen = $pathSub;
+                                $rutaImagen = $pathSub;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            if ($rutaImagen === 'uploads/SinImagen.png') {
+                // 3. Buscar en Festividades/Halloween específicamente
+                if (file_exists(FCPATH . 'uploads/Festividades/Halloween/' . $filename)) {
+                    $rutaImagen = 'uploads/Festividades/Halloween/' . $filename;
+                } else {
+                    // 4. Buscar en cualquier otra subcarpeta de uploads
+                    $uploadsDir = FCPATH . 'uploads';
+                    if (is_dir($uploadsDir)) {
+                        $folders = scandir($uploadsDir);
+                        foreach ($folders as $folder) {
+                            if ($folder !== '.' && $folder !== '..' && is_dir($uploadsDir . '/' . $folder) && $folder !== $categoriaFolder) {
+                                if (file_exists($uploadsDir . '/' . $folder . '/' . $filename)) {
+                                    $rutaImagen = 'uploads/' . $folder . '/' . $filename;
                                     break;
+                                }
+                                $subDirs = scandir($uploadsDir . '/' . $folder);
+                                foreach ($subDirs as $sub) {
+                                    if ($sub !== '.' && $sub !== '..' && is_dir($uploadsDir . '/' . $folder . '/' . $sub)) {
+                                        if (file_exists($uploadsDir . '/' . $folder . '/' . $sub . '/' . $filename)) {
+                                            $rutaImagen = 'uploads/' . $folder . '/' . $sub . '/' . $filename;
+                                            break 2;
+                                        }
+                                    }
+                                }
                             }
                         }
                     }

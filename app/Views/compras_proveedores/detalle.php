@@ -89,10 +89,10 @@
                             <?= $d['cantidad'] ?>
                         </td>
                         <td class="py-3 text-end text-white-50 font-monospace">
-                            $<?= number_format($d['precio_proveedor'], 2) ?>
+                            $<?= number_format($d['precio_proveedor'], 3) ?>
                         </td>
                         <td class="py-3 text-end text-info font-monospace fw-bold">
-                            $<?= number_format($d['costo_real_unit'], 2) ?>
+                            $<?= number_format($d['costo_real_unit'], 3) ?>
                         </td>
                         <td class="py-3 text-end text-info font-monospace fw-bold">
                             $<?= number_format($d['costo_real_total'], 2) ?>

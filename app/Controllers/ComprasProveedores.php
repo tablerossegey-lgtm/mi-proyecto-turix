@@ -89,7 +89,7 @@ class ComprasProveedores extends BaseController
         $total_productos = 0;
         foreach ($items as $item) {
             $cantidad = intval($item['cantidad'] ?? 0);
-            $precio_proveedor = floatval($item['precio_proveedor'] ?? 0);
+            $precio_proveedor = round(floatval($item['precio_proveedor'] ?? 0), 3);
             if ($cantidad <= 0 || $precio_proveedor < 0) {
                 if ($this->request->getHeaderLine('HX-Request')) {
                     return $this->response->setStatusCode(400)->setBody('La cantidad debe ser mayor a 0 y el precio no puede ser negativo.');
@@ -132,11 +132,11 @@ class ComprasProveedores extends BaseController
         foreach ($items as $item) {
             $id_producto = !empty($item['id_producto']) ? intval($item['id_producto']) : null;
             $cantidad = intval($item['cantidad']);
-            $precio_proveedor = floatval($item['precio_proveedor']);
+            $precio_proveedor = round(floatval($item['precio_proveedor'] ?? 0), 3);
             $margen = isset($item['margen']) && $item['margen'] !== '' ? floatval($item['margen']) : 0.0;
 
             // Prorrateo de gastos
-            $costo_real_unit = $precio_proveedor * $factor_pedido;
+            $costo_real_unit = round($precio_proveedor * $factor_pedido, 3);
             $costo_real_total = $costo_real_unit * $cantidad;
 
             // Sugerido y Venta Final
@@ -365,7 +365,7 @@ class ComprasProveedores extends BaseController
         $total_productos = 0;
         foreach ($items as $item) {
             $cantidad = intval($item['cantidad'] ?? 0);
-            $precio_proveedor = floatval($item['precio_proveedor'] ?? 0);
+            $precio_proveedor = round(floatval($item['precio_proveedor'] ?? 0), 3);
             if ($cantidad <= 0 || $precio_proveedor < 0) {
                 if ($this->request->getHeaderLine('HX-Request')) {
                     return $this->response->setStatusCode(400)->setBody('La cantidad debe ser mayor a 0 y el precio no puede ser negativo.');
@@ -415,11 +415,11 @@ class ComprasProveedores extends BaseController
         foreach ($items as $item) {
             $id_producto = !empty($item['id_producto']) ? intval($item['id_producto']) : null;
             $cantidad = intval($item['cantidad']);
-            $precio_proveedor = floatval($item['precio_proveedor']);
+            $precio_proveedor = round(floatval($item['precio_proveedor'] ?? 0), 3);
             $margen = isset($item['margen']) && $item['margen'] !== '' ? floatval($item['margen']) : 0.0;
 
             // Prorrateo de gastos
-            $costo_real_unit = $precio_proveedor * $factor_pedido;
+            $costo_real_unit = round($precio_proveedor * $factor_pedido, 3);
             $costo_real_total = $costo_real_unit * $cantidad;
 
             // Sugerido y Venta Final

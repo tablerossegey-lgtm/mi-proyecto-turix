@@ -152,9 +152,12 @@
                     $subcategoria = 'diadelpadre';
                 } elseif (
                     strpos($descLower, 'halloween') !== false ||
+                    strpos($descLower, 'fantasma') !== false ||
+                    strpos($descLower, 'fantasmita') !== false ||
+                    strpos($descLower, 'fantasmas') !== false ||
+                    strpos($descLower, 'fantasmitas') !== false ||
                     strpos($descLower, 'bruja') !== false ||
                     strpos($descLower, 'calabaza') !== false ||
-                    strpos($descLower, 'fantasma') !== false ||
                     strpos($descLower, 'terror') !== false ||
                     strpos($descLower, 'esqueleto') !== false ||
                     strpos($descLower, 'araña') !== false ||

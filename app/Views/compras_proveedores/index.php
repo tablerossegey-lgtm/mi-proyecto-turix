@@ -452,7 +452,7 @@
                                     <th style="width: 160px;">SKU</th>
                                     <th style="width: 220px;">Nombre Artículo</th>
                                     <th class="text-center" style="width: 75px;">Cant.</th>
-                                    <th class="text-end" style="width: 105px;">Costo Prov.</th>
+                                    <th class="text-end" style="width: 110px;">Costo Prov.</th>
                                     <th class="text-center" style="width: 95px;">Margen %</th>
                                     <th class="text-end" style="width: 105px;">Sugerido</th>
                                     <th class="text-end" style="width: 105px;">Venta Final</th>
@@ -818,7 +818,7 @@
 
             <!-- Costo Proveedor -->
             <td>
-                <input type="number" step="0.0001" class="form-control table-input-compact text-white text-end input-precio-proveedor" name="productos[${index}][precio_proveedor]" min="0" value="0.00" onkeyup="recalcularMontos()" onchange="recalcularMontos()" required>
+                <input type="number" step="0.001" class="form-control table-input-compact text-white text-end input-precio-proveedor" name="productos[${index}][precio_proveedor]" min="0" value="0.000" placeholder="0.000" onkeyup="recalcularMontos()" onchange="recalcularMontos()" required>
             </td>
 
             <!-- Margen -->
@@ -839,7 +839,7 @@
             <!-- Costo Prorrateado -->
             <td class="text-center text-success small">
                 <div class="d-flex flex-column gap-0.5 justify-content-center align-items-center">
-                    <span style="font-size: 0.72rem; display: block; white-space: nowrap;">U: <strong class="text-success">$<span class="label-costo-real-unit">0.00</span></strong></span>
+                    <span style="font-size: 0.72rem; display: block; white-space: nowrap;">U: <strong class="text-success">$<span class="label-costo-real-unit">0.000</span></strong></span>
                     <span style="font-size: 0.72rem; display: block; white-space: nowrap;">T: <strong class="text-success">$<span class="label-costo-real-total">0.00</span></strong></span>
                 </div>
             </td>
@@ -935,7 +935,7 @@
                 const costo_real_total = costo_real_unit * qty;
                 const venta_sugerido = costo_real_unit * (1 + margen / 100);
 
-                row.querySelector('.label-costo-real-unit').innerText = costo_real_unit.toFixed(2);
+                row.querySelector('.label-costo-real-unit').innerText = costo_real_unit.toFixed(3);
                 row.querySelector('.label-costo-real-total').innerText = costo_real_total.toFixed(2);
                 row.querySelector('.input-venta-sugerido').value = '$' + venta_sugerido.toFixed(2);
 

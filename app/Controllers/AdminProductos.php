@@ -85,22 +85,6 @@ class AdminProductos extends BaseController
         $files = $this->request->getFiles();
 
         if (isset($files['imagenes'])) {
-            $categoriaFolder = isset($producto['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) : '';
-            $subfolder = '';
-            if (strtolower($categoriaFolder) === 'festividades') {
-                $subfolder = $this->obtenerSubfolderFestividades($producto['descripcion']);
-            }
-            
-            $uploadPath = FCPATH . 'uploads/' . $categoriaFolder;
-            if (!empty($subfolder)) {
-                $uploadPath .= '/' . $subfolder;
-            }
-
-            // Asegurar que exista el directorio
-            if (!is_dir($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
             // Obtener el orden máximo actual para este producto
             $maxOrdenRow = $this->inventarioImagenesModel->where('id_producto', $producto['id'])
                                                   ->selectMax('orden')
@@ -117,6 +101,13 @@ class AdminProductos extends BaseController
                     $extension = strtolower($file->getClientExtension());
 
                     if (in_array($mimeType, $allowedMimes) || in_array($extension, $allowedExtensions)) {
+                        // Determinar ruta de subida (si detecta fantasma/fantasmita va a Festividades/Halloween)
+                        $uploadPath = $this->determinarUploadPath($producto, $file->getClientName());
+
+                        if (!is_dir($uploadPath)) {
+                            mkdir($uploadPath, 0755, true);
+                        }
+
                         // Generar un nombre seguro y único
                         $newName = $file->getRandomName();
                         $file->move($uploadPath, $newName);
@@ -151,27 +142,27 @@ class AdminProductos extends BaseController
         $producto = $this->productoModel->obtenerPorIdConCategoria((int)$imagen['id_producto']);
 
         if ($producto) {
-            $categoriaFolder = isset($producto['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) : '';
-            $subfolder = '';
-            if (strtolower($categoriaFolder) === 'festividades') {
-                $subfolder = $this->obtenerSubfolderFestividades($producto['descripcion']);
-            }
-            
-            $filePath = FCPATH . 'uploads/' . $categoriaFolder;
-            if (!empty($subfolder)) {
-                $filePath .= '/' . $subfolder;
-            }
-            $filePath .= '/' . $imagen['ruta_foto'];
+            $uploadPath = $this->determinarUploadPath($producto, $imagen['ruta_foto']);
+            $filePath = $uploadPath . '/' . $imagen['ruta_foto'];
             
             // Eliminar archivo físico
             if (file_exists($filePath)) {
                 @unlink($filePath);
             }
+
+            // También verificar en Halloween directamente
+            $halloweenPath = FCPATH . 'uploads/Festividades/Halloween/' . $imagen['ruta_foto'];
+            if (file_exists($halloweenPath)) {
+                @unlink($halloweenPath);
+            }
             
             // Intentar borrar también del directorio raíz por si acaso
-            $rootPath = FCPATH . 'uploads/' . $categoriaFolder . '/' . $imagen['ruta_foto'];
-            if (file_exists($rootPath)) {
-                @unlink($rootPath);
+            $categoriaFolder = isset($producto['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) : '';
+            if (!empty($categoriaFolder)) {
+                $rootPath = FCPATH . 'uploads/' . $categoriaFolder . '/' . $imagen['ruta_foto'];
+                if (file_exists($rootPath)) {
+                    @unlink($rootPath);
+                }
             }
         }
 
@@ -194,20 +185,10 @@ class AdminProductos extends BaseController
         if ($file && $file->isValid() && !$file->hasMoved()) {
             // Validar tipo de archivo (imagen)
             $mimeType = $file->getMimeType();
-            if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif'])) {
-                // Obtener el nombre de la categoría del producto (para la carpeta)
-                $categoria = $this->productoModel->obtenerPorIdConCategoria((int)$id);
-                $categoriaFolder = isset($categoria['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($categoria['nombre_categoria']))) : '';
-                
-                $subfolder = '';
-                if (strtolower($categoriaFolder) === 'festividades') {
-                    $subfolder = $this->obtenerSubfolderFestividades($categoria['descripcion']);
-                }
-                
-                $uploadPath = FCPATH . 'uploads/' . $categoriaFolder;
-                if (!empty($subfolder)) {
-                    $uploadPath .= '/' . $subfolder;
-                }
+            if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+                // Obtener el producto con su categoría
+                $productoConCat = $this->productoModel->obtenerPorIdConCategoria((int)$id);
+                $uploadPath = $this->determinarUploadPath($productoConCat ?: $producto, $file->getClientName());
 
                 // Asegurar que exista el directorio
                 if (!is_dir($uploadPath)) {
@@ -227,9 +208,15 @@ class AdminProductos extends BaseController
                         if (file_exists($oldFilePath)) {
                             @unlink($oldFilePath);
                         }
-                        $rootOldPath = FCPATH . 'uploads/' . $categoriaFolder . '/' . $oldFoto;
-                        if (file_exists($rootOldPath)) {
-                            @unlink($rootOldPath);
+                        if (file_exists(FCPATH . 'uploads/Festividades/Halloween/' . $oldFoto)) {
+                            @unlink(FCPATH . 'uploads/Festividades/Halloween/' . $oldFoto);
+                        }
+                        $categoriaFolder = isset($productoConCat['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($productoConCat['nombre_categoria']))) : '';
+                        if (!empty($categoriaFolder)) {
+                            $rootOldPath = FCPATH . 'uploads/' . $categoriaFolder . '/' . $oldFoto;
+                            if (file_exists($rootOldPath)) {
+                                @unlink($rootOldPath);
+                            }
                         }
                     }
                 }
@@ -277,19 +264,14 @@ class AdminProductos extends BaseController
         $file = $this->request->getFile('foto_principal');
         if ($file && $file->isValid() && !$file->hasMoved()) {
             $mimeType = $file->getMimeType();
-            if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif'])) {
+            if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
                 $categoria = $this->categoriaModel->find($idCategoria);
-                $categoriaFolder = isset($categoria['nombre']) ? str_replace(' ', '', ucwords(strtolower($categoria['nombre']))) : '';
-                
-                $subfolder = '';
-                if (strtolower($categoriaFolder) === 'festividades') {
-                    $subfolder = $this->obtenerSubfolderFestividades($descripcion);
-                }
-                
-                $uploadPath = FCPATH . 'uploads/' . $categoriaFolder;
-                if (!empty($subfolder)) {
-                    $uploadPath .= '/' . $subfolder;
-                }
+                $prodTemp = [
+                    'descripcion' => $descripcion,
+                    'codigo_sku' => $sku,
+                    'nombre_categoria' => $categoria['nombre'] ?? ''
+                ];
+                $uploadPath = $this->determinarUploadPath($prodTemp, $file->getClientName());
 
                 if (!is_dir($uploadPath)) {
                     mkdir($uploadPath, 0755, true);
@@ -362,41 +344,32 @@ class AdminProductos extends BaseController
             }
         }
 
-        // Optimización: Reutilizar el nombre de la categoría antigua obtenido del JOIN inicial
-        $oldCategoriaFolder = isset($producto['nombre_categoria']) ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) : '';
-        $oldSubfolder = '';
-        if (strtolower($oldCategoriaFolder) === 'festividades') {
-            $oldSubfolder = $this->obtenerSubfolderFestividades($producto['descripcion']);
-        }
-
-        // Optimización: Si la categoría no ha cambiado, reutilizamos el nombre de la carpeta
-        if ($idCategoria == $oldIdCategoria) {
-            $newCategoriaFolder = $oldCategoriaFolder;
-        } else {
-            $newCategoria = $this->categoriaModel->find($idCategoria);
-            $newCategoriaFolder = isset($newCategoria['nombre']) ? str_replace(' ', '', ucwords(strtolower($newCategoria['nombre']))) : '';
-        }
-
-        $newSubfolder = '';
-        if (strtolower($newCategoriaFolder) === 'festividades') {
-            $newSubfolder = $this->obtenerSubfolderFestividades($descripcion);
-        }
-
         // Procesar foto principal
         $fotoName = $producto['foto'];
         $file = $this->request->getFile('foto_principal');
         $hasNewFile = ($file && $file->isValid() && !$file->hasMoved());
 
+        $categoriaNombre = $producto['nombre_categoria'] ?? '';
+        if ($idCategoria != $oldIdCategoria) {
+            $catRow = $this->categoriaModel->find($idCategoria);
+            if ($catRow) {
+                $categoriaNombre = $catRow['nombre'] ?? '';
+            }
+        }
+
+        $oldUploadPath = $this->determinarUploadPath($producto);
+        $prodNew = [
+            'descripcion'      => $descripcion,
+            'codigo_sku'       => $sku,
+            'nombre_categoria' => $categoriaNombre
+        ];
+        $newUploadPath = $this->determinarUploadPath($prodNew, $hasNewFile ? $file->getClientName() : null);
+
         if ($hasNewFile) {
             $mimeType = $file->getMimeType();
-            if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif'])) {
-                $uploadPath = FCPATH . 'uploads/' . $newCategoriaFolder;
-                if (!empty($newSubfolder)) {
-                    $uploadPath .= '/' . $newSubfolder;
-                }
-
-                if (!is_dir($uploadPath)) {
-                    mkdir($uploadPath, 0755, true);
+            if (in_array($mimeType, ['image/jpeg', 'image/png', 'image/gif', 'image/webp'])) {
+                if (!is_dir($newUploadPath)) {
+                    mkdir($newUploadPath, 0755, true);
                 }
 
                 // Eliminar foto anterior si existía localmente y no es la por defecto
@@ -404,41 +377,30 @@ class AdminProductos extends BaseController
                 if (!empty($oldFoto)) {
                     $isUrl = (strpos($oldFoto, 'http://') === 0 || strpos($oldFoto, 'https://') === 0);
                     if (!$isUrl && $oldFoto !== 'SinImagen.png') {
-                        $oldFilePath = FCPATH . 'uploads/' . $oldCategoriaFolder;
-                        if (!empty($oldSubfolder)) {
-                            $oldFilePath .= '/' . $oldSubfolder;
+                        $oldFileFullPath = $oldUploadPath . '/' . $oldFoto;
+                        if (file_exists($oldFileFullPath)) {
+                            @unlink($oldFileFullPath);
                         }
-                        $oldFilePath .= '/' . $oldFoto;
-                        
-                        if (file_exists($oldFilePath)) {
-                            @unlink($oldFilePath);
+                        if (file_exists(FCPATH . 'uploads/Festividades/Halloween/' . $oldFoto)) {
+                            @unlink(FCPATH . 'uploads/Festividades/Halloween/' . $oldFoto);
                         }
                     }
                 }
 
                 $fotoName = 'principal_' . $file->getRandomName();
-                $file->move($uploadPath, $fotoName);
+                $file->move($newUploadPath, $fotoName);
             }
         } else {
-            // Si la categoría o el subfolder cambiaron y ya tiene foto, mover la foto física
-            if (($idCategoria != $oldIdCategoria || $newSubfolder !== $oldSubfolder) && !empty($fotoName)) {
+            // Si la ruta calculada cambió y ya tiene foto, mover la foto física
+            if ($newUploadPath !== $oldUploadPath && !empty($fotoName)) {
                 $isUrl = (strpos($fotoName, 'http://') === 0 || strpos($fotoName, 'https://') === 0);
                 if (!$isUrl && $fotoName !== 'SinImagen.png') {
-                    $oldFilePath = FCPATH . 'uploads/' . $oldCategoriaFolder;
-                    if (!empty($oldSubfolder)) {
-                        $oldFilePath .= '/' . $oldSubfolder;
-                    }
-                    $oldFileFullPath = $oldFilePath . '/' . $fotoName;
-
-                    $newFilePath = FCPATH . 'uploads/' . $newCategoriaFolder;
-                    if (!empty($newSubfolder)) {
-                        $newFilePath .= '/' . $newSubfolder;
-                    }
-                    $newFileFullPath = $newFilePath . '/' . $fotoName;
+                    $oldFileFullPath = $oldUploadPath . '/' . $fotoName;
+                    $newFileFullPath = $newUploadPath . '/' . $fotoName;
 
                     if (file_exists($oldFileFullPath)) {
-                        if (!is_dir($newFilePath)) {
-                            mkdir($newFilePath, 0755, true);
+                        if (!is_dir($newUploadPath)) {
+                            mkdir($newUploadPath, 0755, true);
                         }
                         @rename($oldFileFullPath, $newFileFullPath);
                     }
@@ -492,12 +454,78 @@ class AdminProductos extends BaseController
     }
 
     /**
+     * Determina la carpeta de subida para las fotos de un producto.
+     * Si detecta la palabra "fantasma" o "fantasmita" (en descripción, SKU o nombre de archivo),
+     * o si pertenece a Halloween, siempre devuelve la carpeta 'Festividades/Halloween'.
+     */
+    private function determinarUploadPath(array $producto, ?string $clientFilename = null): string
+    {
+        $desc = $producto['descripcion'] ?? '';
+        $sku = $producto['codigo_sku'] ?? '';
+        $categoriaFolder = isset($producto['nombre_categoria']) 
+            ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) 
+            : '';
+
+        $textos = strtolower($desc . ' ' . $sku . ' ' . ($clientFilename ?? ''));
+
+        // Detección prioritaria: si detecta fantasma o fantasmita
+        if (
+            strpos($textos, 'fantasma') !== false ||
+            strpos($textos, 'fantasmita') !== false ||
+            strpos($textos, 'fantasmas') !== false ||
+            strpos($textos, 'fantasmitas') !== false
+        ) {
+            return FCPATH . 'uploads/Festividades/Halloween';
+        }
+
+        // Si la categoría es Festividades, resolver subcarpeta
+        if (strtolower($categoriaFolder) === 'festividades') {
+            $subfolder = $this->obtenerSubfolderFestividades($desc);
+            $path = FCPATH . 'uploads/Festividades';
+            if (!empty($subfolder)) {
+                $path .= '/' . $subfolder;
+            }
+            return $path;
+        }
+
+        // Si no es categoría Festividades pero en el texto se detecta Halloween, calabaza, bruja, etc.
+        if (
+            strpos($textos, 'halloween') !== false ||
+            strpos($textos, 'calabaza') !== false ||
+            strpos($textos, 'bruja') !== false
+        ) {
+            return FCPATH . 'uploads/Festividades/Halloween';
+        }
+
+        $baseFolder = !empty($categoriaFolder) ? $categoriaFolder : 'SinCategoria';
+        return FCPATH . 'uploads/' . $baseFolder;
+    }
+
+    /**
      * Detecta si un producto de Festividades pertenece a Fiestas Patrias, Navidad, SanValentín, etc.
      * basándose en su descripción (mismo criterio del catálogo).
      */
     private function obtenerSubfolderFestividades(string $descripcion): string
     {
         $descLower = strtolower($descripcion);
+
+        // 1. Halloween tiene prioridad alta (especialmente fantasma / fantasmita)
+        if (
+            strpos($descLower, 'halloween') !== false ||
+            strpos($descLower, 'fantasma') !== false ||
+            strpos($descLower, 'fantasmita') !== false ||
+            strpos($descLower, 'fantasmas') !== false ||
+            strpos($descLower, 'fantasmitas') !== false ||
+            strpos($descLower, 'bruja') !== false ||
+            strpos($descLower, 'calabaza') !== false ||
+            strpos($descLower, 'terror') !== false ||
+            strpos($descLower, 'esqueleto') !== false ||
+            strpos($descLower, 'araña') !== false ||
+            strpos($descLower, 'arana') !== false ||
+            strpos($descLower, 'calavera') !== false
+        ) {
+            return 'Halloween';
+        }
 
         if (
             strpos($descLower, 'patrio') !== false || 
@@ -608,20 +636,6 @@ class AdminProductos extends BaseController
             strpos($descLower, 'papa') !== false
         ) {
             return 'Día del Padre';
-        }
-
-        if (
-            strpos($descLower, 'halloween') !== false ||
-            strpos($descLower, 'bruja') !== false ||
-            strpos($descLower, 'calabaza') !== false ||
-            strpos($descLower, 'fantasma') !== false ||
-            strpos($descLower, 'terror') !== false ||
-            strpos($descLower, 'esqueleto') !== false ||
-            strpos($descLower, 'araña') !== false ||
-            strpos($descLower, 'arana') !== false ||
-            strpos($descLower, 'calavera') !== false
-        ) {
-            return 'Halloween';
         }
         
         return '';

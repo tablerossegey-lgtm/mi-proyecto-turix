@@ -81,7 +81,7 @@ if ($categoriaId) {
                         $emoji = '🎂 ';
                     } elseif (strpos($subLower, 'padre') !== false || strpos($subLower, 'papa') !== false) {
                         $emoji = '👨 ';
-                    } elseif (strpos($subLower, 'halloween') !== false || strpos($subLower, 'calabaza') !== false || strpos($subLower, 'bruja') !== false || strpos($subLower, 'fantasma') !== false) {
+                    } elseif (strpos($subLower, 'halloween') !== false || strpos($subLower, 'calabaza') !== false || strpos($subLower, 'bruja') !== false || strpos($subLower, 'fantasma') !== false || strpos($subLower, 'fantasmita') !== false || strpos($subLower, 'fantasmas') !== false || strpos($subLower, 'fantasmitas') !== false) {
                         $emoji = '🎃 ';
                     }
                     ?>
