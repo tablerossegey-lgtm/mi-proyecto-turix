@@ -152,4 +152,122 @@ if (!function_exists('es_video')) {
     }
 }
 
+if (!function_exists('producto_promo_activa')) {
+    /**
+     * Determina si la promoción/precio especial de un producto está actualmente activa según la fecha de hoy.
+     *
+     * Reglas:
+     * - Debe tener un precio_promo > 0 y menor que el precio normal.
+     * - Si tiene fecha_inicio_promo, hoy debe ser >= fecha_inicio_promo.
+     * - Si tiene fecha_fin_promo, hoy debe ser <= fecha_fin_promo.
+     *
+     * @param array $producto
+     * @return bool
+     */
+    function producto_promo_activa(array $producto): bool
+    {
+        $precio = (float)($producto['precio'] ?? 0);
+        $precioPromo = (float)($producto['precio_promo'] ?? 0);
+
+        if ($precioPromo <= 0 || $precioPromo >= $precio) {
+            return false;
+        }
+
+        $hoy = date('Y-m-d');
+        $inicio = !empty($producto['fecha_inicio_promo']) ? trim(substr($producto['fecha_inicio_promo'], 0, 10)) : null;
+        $fin = !empty($producto['fecha_fin_promo']) ? trim(substr($producto['fecha_fin_promo'], 0, 10)) : null;
+
+        if ($inicio && $hoy < $inicio) {
+            return false;
+        }
+
+        if ($fin && $hoy > $fin) {
+            return false;
+        }
+
+        return true;
+    }
+}
+
+if (!function_exists('preparar_producto_para_cliente')) {
+    /**
+     * Ajusta el producto para el catálogo público.
+     * Si la promoción NO está activa (aún no empieza o ya venció):
+     * - precio_promo se establece en 0.00
+     * - en_promo se establece en false
+     * De este modo, el cliente NO puede ver el precio especial en HTML, JS, ni DevTools antes del inicio.
+     *
+     * @param array $producto
+     * @return array
+     */
+    function preparar_producto_para_cliente(array &$producto): array
+    {
+        $promoActiva = producto_promo_activa($producto);
+        $producto['en_promo'] = $promoActiva;
+        if (!$promoActiva) {
+            $producto['precio_promo'] = 0.00;
+        }
+        return $producto;
+    }
+}
+
+if (!function_exists('obtener_estado_promo_admin')) {
+    /**
+     * Devuelve el estado descriptivo de la promoción para el panel de administración.
+     *
+     * @param array $producto
+     * @return array|null
+     */
+    function obtener_estado_promo_admin(array $producto): ?array
+    {
+        $precio = (float)($producto['precio'] ?? 0);
+        $precioPromo = (float)($producto['precio_promo'] ?? 0);
+
+        if ($precioPromo <= 0 || $precioPromo >= $precio) {
+            return null;
+        }
+
+        $hoy = date('Y-m-d');
+        $inicio = !empty($producto['fecha_inicio_promo']) ? trim(substr($producto['fecha_inicio_promo'], 0, 10)) : null;
+        $fin = !empty($producto['fecha_fin_promo']) ? trim(substr($producto['fecha_fin_promo'], 0, 10)) : null;
+
+        $fmtInicio = $inicio ? date('d/m/Y', strtotime($inicio)) : null;
+        $fmtFin = $fin ? date('d/m/Y', strtotime($fin)) : null;
+
+        if ($inicio && $hoy < $inicio) {
+            return [
+                'estado' => 'programada',
+                'texto'  => "Programada: $" . number_format($precioPromo, 2) . " (inicia {$fmtInicio}" . ($fmtFin ? " al {$fmtFin}" : "") . ")",
+                'badge'  => 'bg-info text-dark',
+                'icono'  => 'fa-calendar-alt'
+            ];
+        }
+
+        if ($fin && $hoy > $fin) {
+            return [
+                'estado' => 'finalizada',
+                'texto'  => "Finalizada: $" . number_format($precioPromo, 2) . " (venció {$fmtFin})",
+                'badge'  => 'bg-secondary text-white',
+                'icono'  => 'fa-calendar-times'
+            ];
+        }
+
+        $rango = "";
+        if ($inicio && $fin) {
+            $rango = " ({$fmtInicio} al {$fmtFin})";
+        } elseif ($fin) {
+            $rango = " (hasta {$fmtFin})";
+        } elseif ($inicio) {
+            $rango = " (desde {$fmtInicio})";
+        }
+
+        return [
+            'estado' => 'activa',
+            'texto'  => "OFERTA: $" . number_format($precioPromo, 2) . $rango,
+            'badge'  => 'bg-danger text-white',
+            'icono'  => 'fa-tag'
+        ];
+    }
+}
+
 

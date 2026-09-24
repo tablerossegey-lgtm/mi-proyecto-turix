@@ -9,7 +9,7 @@ class ProductoModel extends Model
     protected $table = 't_inventario';
     protected $primaryKey = 'id';
     protected $returnType = 'array';
-    protected $allowedFields = ['codigo_sku', 'descripcion', 'id_categoria', 'precio', 'stock', 'foto', 'masDetalle', 'precio_promo'];
+    protected $allowedFields = ['codigo_sku', 'descripcion', 'id_categoria', 'precio', 'stock', 'foto', 'masDetalle', 'precio_promo', 'fecha_inicio_promo', 'fecha_fin_promo'];
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
 

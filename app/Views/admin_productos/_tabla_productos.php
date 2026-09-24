@@ -33,7 +33,16 @@
                         </td>
                         <td class="py-3">
                             <div class="fw-semibold admin-product-title"><?= esc($p['descripcion']) ?></div>
-                            <div class="text-white-50 small mt-1">ID: <?= $p['id'] ?> | Precio: <strong class="text-warning">$<?= number_format($p['precio'], 2) ?></strong> | Stock: <strong class="text-info"><?= $p['stock'] ?> pzs</strong> <span class="opacity-75">(Casa: <?= $p['stock_casa'] ?>, Oficina: <?= $p['stock_oficina'] ?>)</span></div>
+                            <div class="text-white-50 small mt-1 d-flex flex-wrap align-items-center gap-1">
+                                <span>ID: <?= $p['id'] ?> | Precio: <strong class="text-warning">$<?= number_format($p['precio'], 2) ?></strong> | Stock: <strong class="text-info"><?= $p['stock'] ?> pzs</strong> <span class="opacity-75">(Casa: <?= $p['stock_casa'] ?>, Oficina: <?= $p['stock_oficina'] ?>)</span></span>
+                                <?php 
+                                    $promoStatus = obtener_estado_promo_admin($p);
+                                    if ($promoStatus): ?>
+                                        <span class="badge <?= $promoStatus['badge'] ?> px-2 py-0.5 rounded-pill fw-bold shadow-sm" style="font-size: 0.72rem;">
+                                            <i class="fas <?= $promoStatus['icono'] ?> me-1"></i> <?= esc($promoStatus['texto']) ?>
+                                        </span>
+                                <?php endif; ?>
+                            </div>
                         </td>
                         <td class="py-3">
                             <span class="text-white-50 fw-medium"><?= esc($p['nombre_categoria'] ?: 'Sin Categoría') ?></span>
@@ -82,16 +91,18 @@
                                         class="btn btn-warning btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-warning text-dark" 
                                         title="Editar datos de producto"
                                         data-producto="<?= htmlspecialchars(json_encode([
-                                            'id'          => $p['id'],
-                                            'codigo_sku'  => $p['codigo_sku'],
-                                            'descripcion' => $p['descripcion'],
-                                            'precio'      => $p['precio'],
-                                            'precio_promo'=> $p['precio_promo'] ?? '0.00',
-                                            'stock'       => $p['stock'],
-                                            'stock_casa'  => $p['stock_casa'],
-                                            'stock_oficina'=> $p['stock_oficina'],
-                                            'id_categoria'=> $p['id_categoria'],
-                                            'masDetalle'  => $p['masDetalle'] ?? '',
+                                            'id'                 => $p['id'],
+                                            'codigo_sku'         => $p['codigo_sku'],
+                                            'descripcion'        => $p['descripcion'],
+                                            'precio'             => $p['precio'],
+                                            'precio_promo'       => $p['precio_promo'] ?? '0.00',
+                                            'fecha_inicio_promo' => $p['fecha_inicio_promo'] ?? '',
+                                            'fecha_fin_promo'    => $p['fecha_fin_promo'] ?? '',
+                                            'stock'              => $p['stock'],
+                                            'stock_casa'         => $p['stock_casa'],
+                                            'stock_oficina'      => $p['stock_oficina'],
+                                            'id_categoria'       => $p['id_categoria'],
+                                            'masDetalle'         => $p['masDetalle'] ?? '',
                                         ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT), ENT_QUOTES, 'UTF-8') ?>"
                                         onclick="window.abrirEditarProducto(JSON.parse(this.dataset.producto))">  
                                     <i class="fas fa-edit text-dark"></i> Editar

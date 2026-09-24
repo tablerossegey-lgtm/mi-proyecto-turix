@@ -240,6 +240,8 @@ class AdminProductos extends BaseController
         $idCategoria = $this->request->getPost('id_categoria');
         $precio = $this->request->getPost('precio');
         $precioPromo = $this->request->getPost('precio_promo') ?: 0.00;
+        $fechaInicioPromo = !empty($this->request->getPost('fecha_inicio_promo')) ? $this->request->getPost('fecha_inicio_promo') : null;
+        $fechaFinPromo = !empty($this->request->getPost('fecha_fin_promo')) ? $this->request->getPost('fecha_fin_promo') : null;
         $stockCasaPost = $this->request->getPost('stock_casa');
         $stockOficinaPost = $this->request->getPost('stock_oficina');
         $masDetalle = $this->request->getPost('masDetalle') ?: null;
@@ -289,6 +291,8 @@ class AdminProductos extends BaseController
             'id_categoria' => $idCategoria,
             'precio'       => $precio,
             'precio_promo' => $precioPromo,
+            'fecha_inicio_promo' => $fechaInicioPromo,
+            'fecha_fin_promo'    => $fechaFinPromo,
             'stock'        => $stock,
             'foto'         => $fotoName,
             'masDetalle'   => $masDetalle
@@ -321,6 +325,8 @@ class AdminProductos extends BaseController
         $idCategoria = $this->request->getPost('id_categoria');
         $precio = $this->request->getPost('precio');
         $precioPromo = $this->request->getPost('precio_promo') ?: 0.00;
+        $fechaInicioPromo = !empty($this->request->getPost('fecha_inicio_promo')) ? $this->request->getPost('fecha_inicio_promo') : null;
+        $fechaFinPromo = !empty($this->request->getPost('fecha_fin_promo')) ? $this->request->getPost('fecha_fin_promo') : null;
         $stockCasaPost = $this->request->getPost('stock_casa');
         $stockOficinaPost = $this->request->getPost('stock_oficina');
         $masDetalle = $this->request->getPost('masDetalle') ?: null;
@@ -415,6 +421,8 @@ class AdminProductos extends BaseController
             'id_categoria' => $idCategoria,
             'precio'       => $precio,
             'precio_promo' => $precioPromo,
+            'fecha_inicio_promo' => $fechaInicioPromo,
+            'fecha_fin_promo'    => $fechaFinPromo,
             'stock'        => $stock,
             'foto'         => $fotoName,
             'masDetalle'   => $masDetalle

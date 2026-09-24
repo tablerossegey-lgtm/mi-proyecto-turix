@@ -3,6 +3,7 @@
  * @var array $p
  * @var array $imagenes_adicionales
  */
+preparar_producto_para_cliente($p);
 ?>
 <!-- Botón de Cerrar Premium (X) -->
 <button type="button" 
@@ -177,12 +178,13 @@
                 
                 <div class="mb-4 d-flex align-items-center gap-3">
                     <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
-                        <span class="badge bg-danger text-white px-3 py-2 fs-5 fw-bold shadow-sm price-badge-premium" title="Precio de Promoción">
+                        <span class="badge bg-danger text-white px-3 py-2 fs-5 fw-bold shadow-sm price-badge-premium" title="Precio Especial / Oferta">
                             $<?= number_format($p['precio_promo'], 2) ?>
                         </span>
                         <span class="text-white-50 text-decoration-line-through fs-6 ms-2">
                             $<?= number_format($p['precio'], 2) ?>
                         </span>
+                        <span class="badge bg-danger text-white px-2 py-1 rounded-pill fw-bold ms-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">OFERTA</span>
                     <?php else: ?>
                         <span class="badge bg-warning text-dark px-3 py-2 fs-5 fw-bold shadow-sm price-badge-premium">
                             $<?= number_format($p['precio'], 2) ?>

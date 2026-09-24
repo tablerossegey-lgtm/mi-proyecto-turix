@@ -1,6 +1,7 @@
 <?php if (!empty($productos)): ?>
     <?php foreach ($productos as $index => $p): ?>
         <?php 
+            preparar_producto_para_cliente($p);
             $foto = $p['foto'] ?? '';
             $isUrl = (strpos($foto, 'http://') === 0 || strpos($foto, 'https://') === 0);
             $subcategoria = 'otros'; // Por defecto
@@ -180,7 +181,7 @@
             <div class="card h-100 card-producto">
                 
                 <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
-                    <span class="badge bg-danger position-absolute" style="top: 15px; left: 15px; z-index: 10; font-size: 0.65rem; font-weight: bold; border-radius: 50px; padding: 4px 10px; letter-spacing: 0.5px;">PROMO</span>
+                    <span class="badge bg-danger position-absolute" style="top: 15px; left: 15px; z-index: 10; font-size: 0.65rem; font-weight: bold; border-radius: 50px; padding: 4px 10px; letter-spacing: 0.5px;">OFERTA</span>
                 <?php endif; ?>
 
                 <span class="sku-badge"><?= esc($p['codigo_sku']) ?></span>

@@ -208,7 +208,7 @@
 
                             <!-- Precio Promoción -->
                             <div class="col-12 col-md-6 col-lg-3">
-                                <label for="precio_promo" class="form-label text-white-50 small fw-semibold">Precio de Promoción ($)</label>
+                                <label for="precio_promo" class="form-label text-white-50 small fw-semibold">Precio Especial / Oferta ($)</label>
                                 <input type="number" 
                                        step="0.01" 
                                        min="0" 
@@ -216,6 +216,29 @@
                                        id="precio_promo" 
                                        name="precio_promo" 
                                        placeholder="0.00">
+                            </div>
+
+                            <!-- Fechas de Promoción Programada -->
+                            <div class="col-12 col-md-6">
+                                <label for="fecha_inicio_promo" class="form-label text-white-50 small fw-semibold">
+                                    <i class="fas fa-calendar-plus text-warning me-1"></i> Fecha Inicio Oferta (Opcional)
+                                </label>
+                                <input type="date" 
+                                       class="form-control text-white" 
+                                       id="fecha_inicio_promo" 
+                                       name="fecha_inicio_promo">
+                                <small class="text-white-50" style="font-size: 0.73rem;">Antes de esta fecha, el cliente solo verá el precio normal.</small>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="fecha_fin_promo" class="form-label text-white-50 small fw-semibold">
+                                    <i class="fas fa-calendar-check text-warning me-1"></i> Fecha Fin Oferta (Opcional)
+                                </label>
+                                <input type="date" 
+                                       class="form-control text-white" 
+                                       id="fecha_fin_promo" 
+                                       name="fecha_fin_promo">
+                                <small class="text-white-50" style="font-size: 0.73rem;">Al terminar esta fecha, vuelve automáticamente al precio normal.</small>
                             </div>
 
                             <!-- Stock Casa -->
@@ -364,7 +387,7 @@
 
                             <!-- Precio Promoción -->
                             <div class="col-12 col-md-6 col-lg-3">
-                                <label for="edit_precio_promo" class="form-label text-white-50 small fw-semibold">Precio de Promoción ($)</label>
+                                <label for="edit_precio_promo" class="form-label text-white-50 small fw-semibold">Precio Especial / Oferta ($)</label>
                                 <input type="number" 
                                        step="0.01" 
                                        min="0" 
@@ -372,6 +395,29 @@
                                        id="edit_precio_promo" 
                                        name="precio_promo" 
                                        placeholder="0.00">
+                            </div>
+
+                            <!-- Fechas de Promoción Programada -->
+                            <div class="col-12 col-md-6">
+                                <label for="edit_fecha_inicio_promo" class="form-label text-white-50 small fw-semibold">
+                                    <i class="fas fa-calendar-plus text-warning me-1"></i> Fecha Inicio Oferta (Opcional)
+                                </label>
+                                <input type="date" 
+                                       class="form-control text-white" 
+                                       id="edit_fecha_inicio_promo" 
+                                       name="fecha_inicio_promo">
+                                <small class="text-white-50" style="font-size: 0.73rem;">Antes de esta fecha, el cliente solo verá el precio normal.</small>
+                            </div>
+
+                            <div class="col-12 col-md-6">
+                                <label for="edit_fecha_fin_promo" class="form-label text-white-50 small fw-semibold">
+                                    <i class="fas fa-calendar-check text-warning me-1"></i> Fecha Fin Oferta (Opcional)
+                                </label>
+                                <input type="date" 
+                                       class="form-control text-white" 
+                                       id="edit_fecha_fin_promo" 
+                                       name="fecha_fin_promo">
+                                <small class="text-white-50" style="font-size: 0.73rem;">Al terminar esta fecha, vuelve automáticamente al precio normal.</small>
                             </div>
 
                             <!-- Stock Casa -->
@@ -554,6 +600,8 @@
         document.getElementById('edit_descripcion').value = producto.descripcion;
         document.getElementById('edit_precio').value = producto.precio;
         document.getElementById('edit_precio_promo').value = producto.precio_promo || '0.00';
+        document.getElementById('edit_fecha_inicio_promo').value = producto.fecha_inicio_promo ? producto.fecha_inicio_promo.substring(0, 10) : '';
+        document.getElementById('edit_fecha_fin_promo').value = producto.fecha_fin_promo ? producto.fecha_fin_promo.substring(0, 10) : '';
         document.getElementById('edit_stock_casa').value = producto.stock_casa !== undefined ? producto.stock_casa : 0;
         document.getElementById('edit_stock_oficina').value = producto.stock_oficina !== undefined ? producto.stock_oficina : 0;
         document.getElementById('edit_masDetalle').value = producto.masDetalle || '';
@@ -717,6 +765,8 @@
     if (modalNuevoEl) {
         modalNuevoEl.addEventListener('show.bs.modal', function () {
             document.getElementById('id_categoria').value = '';
+            document.getElementById('fecha_inicio_promo').value = '';
+            document.getElementById('fecha_fin_promo').value = '';
             const searchInput = document.getElementById('categoria_search_input');
             searchInput.value = '';
             
@@ -732,6 +782,8 @@
     if (modalEditarEl) {
         modalEditarEl.addEventListener('hidden.bs.modal', function () {
             document.getElementById('edit_id_categoria').value = '';
+            document.getElementById('edit_fecha_inicio_promo').value = '';
+            document.getElementById('edit_fecha_fin_promo').value = '';
             const searchInput = document.getElementById('edit_categoria_search_input');
             searchInput.value = '';
             
