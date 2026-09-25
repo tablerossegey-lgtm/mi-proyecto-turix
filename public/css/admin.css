@@ -1130,3 +1130,25 @@
     background-color: #ffffff !important;
     color: #1e293b !important;
 }
+
+/* ==========================================================================
+   GRILLA DE ACCIONES 2X2 (EVITA DESBORDE Y SCROLLBAR HORIZONTAL)
+   ========================================================================== */
+.admin-actions-grid {
+    display: inline-grid;
+    grid-template-columns: repeat(2, 96px);
+    gap: 6px;
+    vertical-align: middle;
+}
+
+.admin-actions-grid .btn {
+    font-size: 0.8rem !important;
+    padding: 0.35rem 0.4rem !important;
+    white-space: nowrap !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 0.35rem !important;
+    width: 100% !important;
+    line-height: 1.25 !important;
+}

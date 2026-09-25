@@ -8,7 +8,7 @@
                 <th class="py-3 admin-table-th">Categoría</th>
                 <th class="py-3 text-center admin-table-th">Imágenes Galería</th>
                 <th class="py-3 text-center admin-table-th">Encargos Pendientes</th>
-                <th class="py-3 text-end pe-4 admin-table-th">Acciones</th>
+                <th class="py-3 text-end pe-4 admin-table-th" style="min-width: 215px;">Acciones</th>
             </tr>
         </thead>
         <tbody id="productos-tabla-body">
@@ -70,14 +70,15 @@
                             <?php endif; ?>
                         </td>
                         <td class="py-3 text-end pe-4">
-                            <div class="d-inline-flex gap-2">
+                            <div class="admin-actions-grid">
                                 <a href="<?= base_url('admin/encargos?nuevo_encargo_producto_id=' . $p['id']) ?>" 
                                    hx-boost="true"
-                                   class="btn btn-outline-info btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-info-btn">
+                                   class="btn btn-outline-info btn-sm fw-bold rounded-2 shadow-sm hover-info-btn"
+                                   title="Crear encargo">
                                     <i class="fas fa-cart-plus"></i> Encargar
                                 </a>
                                 <button type="button" 
-                                        class="btn btn-outline-success btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm btn-copiar-producto-admin" 
+                                        class="btn btn-outline-success btn-sm fw-bold rounded-2 shadow-sm btn-copiar-producto-admin" 
                                         title="Copiar info para WhatsApp"
                                         onclick="copiarInfoProducto(<?= htmlspecialchars(json_encode([
                                             'descripcion' => $p['descripcion'],
@@ -88,7 +89,7 @@
                                     <i class="bi bi-clipboard"></i> Copiar
                                 </button>
                                 <button type="button" 
-                                        class="btn btn-warning btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm hover-warning text-dark" 
+                                        class="btn btn-warning btn-sm fw-bold rounded-2 shadow-sm hover-warning text-dark" 
                                         title="Editar datos de producto"
                                         data-producto="<?= htmlspecialchars(json_encode([
                                             'id'                 => $p['id'],
@@ -109,7 +110,8 @@
                                 </button>
                                 <a href="<?= base_url('admin/productos/galeria/' . $p['id']) ?>" 
                                    hx-boost="true"
-                                   class="btn btn-outline-light btn-sm fw-bold px-3 py-2 d-inline-flex align-items-center gap-1.5 rounded-3 shadow-sm">
+                                   class="btn btn-outline-light btn-sm fw-bold rounded-2 shadow-sm"
+                                   title="Administrar galería">
                                     <i class="fas fa-photo-video"></i> Galerías
                                 </a>
                             </div>
