@@ -38,13 +38,15 @@ class AdminProductos extends BaseController
         }
 
         $categorias = $this->categoriaModel->orderBy('nombre', 'ASC')->findAll();
+        $configVentaEspecial = obtener_config_venta_especial();
 
         $data = [
-            'productos' => $productos,
-            'pager' => $pager,
-            'categorias' => $categorias,
-            'q' => $q,
-            'id_categoria' => $id_categoria
+            'productos'            => $productos,
+            'pager'                => $pager,
+            'categorias'           => $categorias,
+            'config_venta_especial' => $configVentaEspecial,
+            'q'                    => $q,
+            'id_categoria'         => $id_categoria
         ];
 
         if ($this->request->getHeaderLine('HX-Request') && $this->request->getHeaderLine('HX-Target') === 'productos-tabla-wrapper') {
@@ -459,6 +461,28 @@ class AdminProductos extends BaseController
         }
 
         return redirect()->back()->with('error', 'El número de orden debe ser mayor o igual a 1.');
+    }
+
+    /**
+     * Guarda la configuración de visibilidad y rango de fechas de la Venta Especial en la portada.
+     */
+    public function guardarConfigVentaEspecial()
+    {
+        $mostrarHome = (bool)$this->request->getPost('mostrar_home');
+        $fechaInicio = !empty($this->request->getPost('fecha_inicio_home')) ? $this->request->getPost('fecha_inicio_home') : null;
+        $fechaFin = !empty($this->request->getPost('fecha_fin_home')) ? $this->request->getPost('fecha_fin_home') : null;
+
+        $config = [
+            'mostrar_home' => $mostrarHome,
+            'fecha_inicio' => $fechaInicio,
+            'fecha_fin'    => $fechaFin
+        ];
+
+        if (guardar_config_venta_especial($config)) {
+            return redirect()->to(base_url('admin/productos'))->with('success', 'Configuración de Venta Especial en Portada actualizada correctamente.');
+        }
+
+        return redirect()->back()->with('error', 'Ocurrió un error al guardar la configuración.');
     }
 
     /**

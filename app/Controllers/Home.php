@@ -17,11 +17,18 @@ class Home extends BaseController
                                    ->limit(5)
                                    ->findAll();
 
+        // Productos destacados en Venta Especial (condicionado a las fechas configuradas para la portada)
+        $ofertas = [];
+        if (debe_mostrar_venta_especial_home()) {
+            $ofertas = $productoModel->obtenerProductosOferta(true, 6);
+        }
+
         // Categorías que tienen al menos un producto asociado, ordenadas alfabéticamente
         $categorias = $categoriaModel->obtenerCategoriasConProductos();
 
         $data = [
             'novedades'  => $novedades,
+            'ofertas'    => $ofertas,
             'categorias' => $categorias,
             'titulo'     => 'Inicio'
         ];

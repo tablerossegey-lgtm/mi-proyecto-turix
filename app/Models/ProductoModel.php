@@ -38,6 +38,77 @@ class ProductoModel extends Model
     }
 
     /**
+     * Obtiene los productos con precio promoción/especial para la Venta Especial (incluye ofertas programadas)
+     */
+    public function obtenerProductosOferta(bool $soloConStock = true, ?int $limit = null)
+    {
+        $hoy = date('Y-m-d');
+        
+        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria,
+            (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 1) AS stock_casa,
+            (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 2) AS stock_oficina')
+            ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
+            ->where('t_inventario.precio_promo >', 0)
+            ->where('t_inventario.precio_promo < t_inventario.precio', null, false)
+            ->groupStart()
+                ->where('t_inventario.fecha_fin_promo IS NULL')
+                ->orWhere('t_inventario.fecha_fin_promo >=', $hoy)
+            ->groupEnd();
+
+        if ($soloConStock) {
+            $builder->where('t_inventario.stock !=', 0);
+        }
+
+        $builder->orderBy('(t_inventario.precio - t_inventario.precio_promo)', 'DESC')
+                ->orderBy('t_inventario.id', 'DESC');
+
+        if ($limit) {
+            $builder->limit($limit);
+        }
+
+        return $builder->findAll();
+    }
+
+    /**
+     * Busca productos con precio promoción/especial por término (incluye ofertas programadas)
+     */
+    public function buscarProductosOferta(string $termino, bool $soloConStock = true)
+    {
+        $hoy = date('Y-m-d');
+        
+        $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria,
+            (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 1) AS stock_casa,
+            (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 2) AS stock_oficina')
+            ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
+            ->where('t_inventario.precio_promo >', 0)
+            ->where('t_inventario.precio_promo < t_inventario.precio', null, false)
+            ->groupStart()
+                ->where('t_inventario.fecha_fin_promo IS NULL')
+                ->orWhere('t_inventario.fecha_fin_promo >=', $hoy)
+            ->groupEnd();
+
+        if (!empty($termino)) {
+            $palabras = array_filter(explode(' ', preg_replace('/\s+/', ' ', trim($termino))));
+            if (!empty($palabras)) {
+                $builder->groupStart()
+                            ->groupStart();
+                                foreach ($palabras as $palabra) {
+                                    $builder->like('t_inventario.descripcion', $palabra);
+                                }
+                $builder->groupEnd()
+                            ->orLike('t_inventario.codigo_sku', $termino)
+                        ->groupEnd();
+            }
+        }
+
+        if ($soloConStock) {
+            $builder->where('t_inventario.stock !=', 0);
+        }
+
+        return $builder->orderBy('t_inventario.id', 'DESC')->findAll();
+    }
+
+    /**
      * Obtiene los productos filtrados por una categoría específica, junto con su nombre de categoría
      */
     public function obtenerPorCategoria(int $categoriaId, bool $soloConStock = false)

@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= base_url('css/estilos.css') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/estilos.css?v=1.2') ?>">
     <?= $this->renderSection('styles') ?>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon_turix.ico') ?>">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -27,7 +27,7 @@
             }
         }
 
-        (function() {
+        (function () {
             // Delegación de eventos para modalDetalle al ocultarse
             document.addEventListener('hidden.bs.modal', function (e) {
                 if (e.target.id === 'modalDetalle') {
@@ -66,7 +66,7 @@
             });
 
             // Limpiar estados de Bootstrap (dropdowns, collapses y modales) antes del swap de HTMX
-            document.addEventListener('htmx:beforeSwap', function(e) {
+            document.addEventListener('htmx:beforeSwap', function (e) {
                 if (typeof bootstrap !== 'undefined') {
                     // 1. Cerrar dropdowns abiertos
                     const openDropdowns = document.querySelectorAll('.dropdown-toggle.show');
@@ -102,7 +102,7 @@
                         document.body.classList.remove('modal-open');
                         document.body.style.overflow = '';
                         document.body.style.paddingRight = '';
-                        
+
                         const backdrops = document.querySelectorAll('.modal-backdrop');
                         backdrops.forEach(el => el.remove());
                     }
@@ -110,7 +110,7 @@
             });
 
             // Sincronizar clases de body y contador tras transiciones de HTMX
-            document.addEventListener('htmx:afterSwap', function(e) {
+            document.addEventListener('htmx:afterSwap', function (e) {
                 if (typeof actualizarContadorCart === 'function') {
                     actualizarContadorCart();
                 }
@@ -130,7 +130,7 @@
                         document.body.style.paddingRight = '';
                         document.documentElement.style.overflow = '';
                         document.documentElement.style.paddingRight = '';
-                        
+
                         const backdrops = document.querySelectorAll('.modal-backdrop');
                         backdrops.forEach(el => el.remove());
                     }
@@ -163,11 +163,8 @@
 
             <!-- Botón del Carrito para Móvil/Tableta (se muestra a la izquierda del menú hamburguesa) -->
             <div class="d-flex align-items-center ms-auto me-3 d-lg-none">
-                <a class="position-relative mobile-cart-btn" 
-                   href="#" 
-                   data-bs-toggle="modal" 
-                   data-bs-target="#modalCarrito" 
-                   onclick="renderCarritoModal()">
+                <a class="position-relative mobile-cart-btn" href="#" data-bs-toggle="modal"
+                    data-bs-target="#modalCarrito" onclick="renderCarritoModal()">
                     <i class="bi bi-cart3 fs-4"></i>
                     <span class="cart-badge" style="display: none; top: -6px; right: -8px;">0</span>
                 </a>
@@ -183,15 +180,23 @@
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0 align-items-lg-center ms-lg-3 gap-lg-2">
                     <li class="nav-item">
                         <a class="nav-link <?= (url_is('') || url_is('/')) ? 'active fw-bold text-warning' : 'text-white-50' ?>"
-                            id="nav-link-inicio"
-                            href="<?= base_url() ?>">
+                            id="nav-link-inicio" href="<?= base_url() ?>">
                             <i class="bi bi-house me-1"></i> Inicio
                         </a>
                     </li>
+                    <?php if (debe_mostrar_venta_especial_home()): ?>
                     <li class="nav-item">
-                        <a class="nav-link <?= (url_is('catalogo') || strpos(current_url(), 'catalogo') !== false) ? 'active fw-bold text-warning' : 'text-white-50' ?>"
-                            id="nav-link-catalogo"
-                            href="<?= base_url('catalogo') ?>">
+                        <a class="nav-link <?= (url_is('venta-especial') || url_is('catalogo/ofertas')) ? 'active fw-bold text-danger' : 'text-white-50' ?>"
+                            id="nav-link-venta-especial" href="<?= base_url('venta-especial') ?>">
+                            <i class="bi bi-rocket-takeoff text-danger me-1"></i> Venta Especial
+                            <span class="badge bg-danger rounded-pill ms-1 animate-pulse"
+                                style="font-size: 0.65rem; padding: 2px 7px;">OFERTAS</span>
+                        </a>
+                    </li>
+                    <?php endif; ?>
+                    <li class="nav-item">
+                        <a class="nav-link <?= ((url_is('catalogo') || strpos(current_url(), 'catalogo') !== false) && !url_is('catalogo/ofertas')) ? 'active fw-bold text-warning' : 'text-white-50' ?>"
+                            id="nav-link-catalogo" href="<?= base_url('catalogo') ?>">
                             <i class="bi bi-bag me-1"></i> Catálogo
                         </a>
                     </li>
@@ -217,43 +222,37 @@
                                 aria-labelledby="adminDropdown">
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-gallery"
-                                        id="admin-item-gallery"
-                                        href="<?= base_url('admin/productos') ?>">
+                                        id="admin-item-gallery" href="<?= base_url('admin/productos') ?>">
                                         <i class="bi bi-images"></i> Panel Galería
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-orders"
-                                        id="admin-item-orders"
-                                        href="<?= base_url('admin/encargos') ?>">
+                                        id="admin-item-orders" href="<?= base_url('admin/encargos') ?>">
                                         <i class="bi bi-card-list"></i> Pedidos Encargados
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-accounts"
-                                        id="admin-item-accounts"
-                                        href="<?= base_url('admin/cuentas') ?>">
+                                        id="admin-item-accounts" href="<?= base_url('admin/cuentas') ?>">
                                         <i class="bi bi-wallet2"></i> Cuentas Clientes
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-caja"
-                                        id="admin-item-caja"
-                                        href="<?= base_url('admin/caja') ?>">
+                                        id="admin-item-caja" href="<?= base_url('admin/caja') ?>">
                                         <i class="bi bi-cash-coin"></i> Consultar mi Caja
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-semillas"
-                                        id="admin-item-semillas"
-                                        href="<?= base_url('admin/semillas') ?>">
+                                        id="admin-item-semillas" href="<?= base_url('admin/semillas') ?>">
                                         <i class="bi bi-tree"></i> Venta Snacks
                                     </a>
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-compras"
-                                        id="admin-item-compras"
-                                        href="<?= base_url('admin/compras') ?>">
+                                        id="admin-item-compras" href="<?= base_url('admin/compras') ?>">
                                         <i class="bi bi-cart-check"></i> Compras Proveedores
                                     </a>
                                 </li>
@@ -262,9 +261,7 @@
                                 </li>
                                 <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-logout"
-                                        id="admin-item-logout"
-                                        href="<?= base_url('logout') ?>"
-                                        hx-boost="false">
+                                        id="admin-item-logout" href="<?= base_url('logout') ?>" hx-boost="false">
                                         <i class="bi bi-box-arrow-right"></i> Salir
                                     </a>
                                 </li>

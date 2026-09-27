@@ -154,12 +154,12 @@ if (!function_exists('es_video')) {
 
 if (!function_exists('producto_promo_activa')) {
     /**
-     * Determina si la promoción/precio especial de un producto está actualmente activa según la fecha de hoy.
+     * Determina si la promoción/precio especial de un producto es válida para mostrar al cliente.
      *
      * Reglas:
      * - Debe tener un precio_promo > 0 y menor que el precio normal.
-     * - Si tiene fecha_inicio_promo, hoy debe ser >= fecha_inicio_promo.
      * - Si tiene fecha_fin_promo, hoy debe ser <= fecha_fin_promo.
+     * (Permite mostrar la oferta aunque la fecha_inicio_promo sea futura para cuando se comparte la liga anticipadamente).
      *
      * @param array $producto
      * @return bool
@@ -174,12 +174,7 @@ if (!function_exists('producto_promo_activa')) {
         }
 
         $hoy = date('Y-m-d');
-        $inicio = !empty($producto['fecha_inicio_promo']) ? trim(substr($producto['fecha_inicio_promo'], 0, 10)) : null;
         $fin = !empty($producto['fecha_fin_promo']) ? trim(substr($producto['fecha_fin_promo'], 0, 10)) : null;
-
-        if ($inicio && $hoy < $inicio) {
-            return false;
-        }
 
         if ($fin && $hoy > $fin) {
             return false;
@@ -192,19 +187,21 @@ if (!function_exists('producto_promo_activa')) {
 if (!function_exists('preparar_producto_para_cliente')) {
     /**
      * Ajusta el producto para el catálogo público.
-     * Si la promoción NO está activa (aún no empieza o ya venció):
-     * - precio_promo se establece en 0.00
-     * - en_promo se establece en false
-     * De este modo, el cliente NO puede ver el precio especial en HTML, JS, ni DevTools antes del inicio.
+     * Detecta si la oferta está programada para iniciar en una fecha futura.
      *
      * @param array $producto
      * @return array
      */
     function preparar_producto_para_cliente(array &$producto): array
     {
-        $promoActiva = producto_promo_activa($producto);
-        $producto['en_promo'] = $promoActiva;
-        if (!$promoActiva) {
+        $promoValida = producto_promo_activa($producto);
+        $producto['en_promo'] = $promoValida;
+        
+        $hoy = date('Y-m-d');
+        $inicio = !empty($producto['fecha_inicio_promo']) ? trim(substr($producto['fecha_inicio_promo'], 0, 10)) : null;
+        $producto['es_proximamente'] = ($inicio && $hoy < $inicio);
+
+        if (!$promoValida) {
             $producto['precio_promo'] = 0.00;
         }
         return $producto;
@@ -267,6 +264,76 @@ if (!function_exists('obtener_estado_promo_admin')) {
             'badge'  => 'bg-danger text-white',
             'icono'  => 'fa-tag'
         ];
+    }
+}
+
+if (!function_exists('obtener_config_venta_especial')) {
+    /**
+     * Obtiene la configuración guardada para la sección de Venta Especial en la portada.
+     *
+     * @return array
+     */
+    function obtener_config_venta_especial(): array
+    {
+        $filePath = WRITEPATH . 'config_venta_especial.json';
+        $defaultConfig = [
+            'mostrar_home' => true,
+            'fecha_inicio' => '2026-10-03',
+            'fecha_fin'    => '2026-10-04'
+        ];
+
+        if (!file_exists($filePath)) {
+            @file_put_contents($filePath, json_encode($defaultConfig, JSON_PRETTY_PRINT));
+            return $defaultConfig;
+        }
+
+        $content = @file_get_contents($filePath);
+        $data = json_decode($content, true);
+        return is_array($data) ? array_merge($defaultConfig, $data) : $defaultConfig;
+    }
+}
+
+if (!function_exists('guardar_config_venta_especial')) {
+    /**
+     * Guarda la configuración de la Venta Especial.
+     *
+     * @param array $config
+     * @return bool
+     */
+    function guardar_config_venta_especial(array $config): bool
+    {
+        $filePath = WRITEPATH . 'config_venta_especial.json';
+        return (bool)@file_put_contents($filePath, json_encode($config, JSON_PRETTY_PRINT));
+    }
+}
+
+if (!function_exists('debe_mostrar_venta_especial_home')) {
+    /**
+     * Determina si la sección Venta Especial debe mostrarse en la portada (Home).
+     *
+     * @return bool
+     */
+    function debe_mostrar_venta_especial_home(): bool
+    {
+        $config = obtener_config_venta_especial();
+
+        if (empty($config['mostrar_home'])) {
+            return false;
+        }
+
+        $hoy = date('Y-m-d');
+        $inicio = !empty($config['fecha_inicio']) ? trim($config['fecha_inicio']) : null;
+        $fin = !empty($config['fecha_fin']) ? trim($config['fecha_fin']) : null;
+
+        if ($inicio && $hoy < $inicio) {
+            return false;
+        }
+
+        if ($fin && $hoy > $fin) {
+            return false;
+        }
+
+        return true;
     }
 }
 

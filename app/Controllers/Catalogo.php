@@ -77,6 +77,42 @@ class Catalogo extends BaseController
         return view('catalogo/_grid_productos', ['productos' => $productos]);
     }
 
+    /**
+     * Muestra la sección Venta Especial (Productos con precio promoción / especial)
+     */
+    public function ventaEspecial()
+    {
+        $productos = $this->productoModel->obtenerProductosOferta(true);
+
+        $data = [
+            'productos' => $productos,
+            'titulo'    => 'Venta Especial - Productos en Oferta',
+            'es_ofertas' => true
+        ];
+
+        if ($this->request->getHeaderLine('HX-Request') && !$this->request->getHeaderLine('HX-Boosted')) {
+            return view('catalogo/_lista_productos', $data);
+        }
+
+        return view('catalogo/venta_especial', $data);
+    }
+
+    /**
+     * Endpoint para la búsqueda en vivo vía HTMX en Venta Especial
+     */
+    public function buscarOfertas()
+    {
+        $termino = $this->request->getPost('q');
+        
+        if (empty(trim((string)$termino))) {
+            $productos = $this->productoModel->obtenerProductosOferta(true);
+        } else {
+            $productos = $this->productoModel->buscarProductosOferta((string)$termino, true);
+        }
+
+        return view('catalogo/_grid_productos', ['productos' => $productos]);
+    }
+
     public function detalle($id)
     {
         $producto = $this->productoModel->obtenerPorIdConCategoria((int)$id);

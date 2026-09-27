@@ -8,9 +8,12 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home::index');
 $routes->get('catalogo', 'Catalogo::index');
+$routes->get('venta-especial', 'Catalogo::ventaEspecial');
+$routes->get('catalogo/ofertas', 'Catalogo::ventaEspecial');
 $routes->get('categorias', 'Categorias::index');
 $routes->get('catalogo/categoria/(:num)', 'Catalogo::porCategoria/$1');
 $routes->post('catalogo/buscar', 'Catalogo::buscar');
+$routes->post('catalogo/buscar-ofertas', 'Catalogo::buscarOfertas');
 $routes->post('catalogo/buscar/(:num)', 'Catalogo::buscar/$1');
 $routes->get('catalogo/detalle/(:num)', 'Catalogo::detalle/$1');
 
@@ -24,6 +27,7 @@ $routes->get('autologin', 'AuthController::autologin');
 $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->get('productos', 'AdminProductos::index');
     $routes->post('productos', 'AdminProductos::index');
+    $routes->post('productos/config-venta-especial', 'AdminProductos::guardarConfigVentaEspecial');
     $routes->post('productos/crear', 'AdminProductos::crear');
     $routes->post('productos/editar/(:num)', 'AdminProductos::editar/$1');
     $routes->get('productos/galeria/(:num)', 'AdminProductos::galeria/$1');

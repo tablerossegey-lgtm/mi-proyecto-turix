@@ -181,7 +181,16 @@
             <div class="card h-100 card-producto">
                 
                 <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
-                    <span class="badge bg-danger position-absolute" style="top: 15px; left: 15px; z-index: 10; font-size: 0.65rem; font-weight: bold; border-radius: 50px; padding: 4px 10px; letter-spacing: 0.5px;">OFERTA</span>
+                    <?php $pct = round((($p['precio'] - $p['precio_promo']) / $p['precio']) * 100); ?>
+                    <?php if (!empty($p['es_proximamente']) && !empty($p['fecha_inicio_promo'])): ?>
+                        <span class="badge bg-warning text-dark position-absolute shadow-sm" style="top: 15px; left: 15px; z-index: 10; font-size: 0.63rem; font-weight: 800; border-radius: 50px; padding: 4px 8px; letter-spacing: 0.3px;">
+                            <i class="bi bi-clock-history me-1"></i> INICIA <?= date('d/m', strtotime($p['fecha_inicio_promo'])) ?> (-<?= $pct ?>%)
+                        </span>
+                    <?php else: ?>
+                        <span class="badge bg-danger position-absolute shadow-sm" style="top: 15px; left: 15px; z-index: 10; font-size: 0.68rem; font-weight: 800; border-radius: 50px; padding: 4px 9px; letter-spacing: 0.5px;">
+                            <?= $pct > 0 ? "-{$pct}% OFF" : "OFERTA" ?>
+                        </span>
+                    <?php endif; ?>
                 <?php endif; ?>
 
                 <span class="sku-badge"><?= esc($p['codigo_sku']) ?></span>

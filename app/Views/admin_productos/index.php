@@ -10,7 +10,10 @@
             <p class="text-muted mb-0">Gestiona las imágenes adicionales y de galería para todo tu catálogo de productos.</p>
             <div class="admin-subtitle-line"></div>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-danger rounded-pill px-3.5 fw-bold d-inline-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#modalConfigVentaEspecial">
+                <i class="fas fa-rocket text-danger"></i> Config. Venta Especial
+            </button>
             <button type="button" class="btn btn-warning rounded-pill px-4 fw-bold hover-warning text-dark d-inline-flex align-items-center gap-2" data-bs-toggle="modal" data-bs-target="#modalNuevoProducto">
                 <i class="fas fa-plus text-dark"></i> Nuevo Producto
             </button>
@@ -621,10 +624,59 @@
         // Limpiar el campo file
         document.getElementById('edit_foto_principal').value = '';
 
-        modal.show();
-    };
+    </div>
 
-    // Deshabilitar botón de guardar y mostrar spinner al enviar el formulario para evitar doble submit (validando categoría)
+    <!-- Modal Configuración Venta Especial (Fechas en Portada) -->
+    <div class="modal fade" id="modalConfigVentaEspecial" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+                <div class="modal-header bg-dark text-white p-4" style="border-radius: 20px 20px 0 0;">
+                    <h5 class="modal-title fw-bold d-flex align-items-center gap-2">
+                        <i class="fas fa-rocket text-danger"></i> Configuración Venta Especial (Portada)
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="<?= base_url('admin/productos/config-venta-especial') ?>" method="POST" onsubmit="mostrarSpinner(this, 'Guardando...')">
+                    <?= csrf_field() ?>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-info border-0 rounded-3 mb-4 small">
+                            <i class="fas fa-info-circle me-1"></i> Configura el rango de fechas en las que deseas que el bloque de <strong>Venta Especial</strong> aparezca de forma automática en la página principal (Inicio).
+                        </div>
+
+                        <?php 
+                            $cfgVE = $config_venta_especial ?? obtener_config_venta_especial();
+                        ?>
+
+                        <div class="form-check form-switch mb-4 fs-6">
+                            <input class="form-check-input" type="checkbox" role="switch" id="mostrar_home_switch" name="mostrar_home" value="1" <?= !empty($cfgVE['mostrar_home']) ? 'checked' : '' ?>>
+                            <label class="form-check-label fw-bold ms-2" for="mostrar_home_switch">
+                                Mostrar sección Venta Especial en Portada (Inicio)
+                            </label>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label for="config_fecha_inicio" class="form-label fw-semibold small text-muted">Fecha de Inicio en Portada</label>
+                                <input type="date" class="form-control rounded-3" id="config_fecha_inicio" name="fecha_inicio_home" value="<?= esc($cfgVE['fecha_inicio'] ?? '') ?>">
+                            </div>
+                            <div class="col-6">
+                                <label for="config_fecha_fin" class="form-label fw-semibold small text-muted">Fecha de Término en Portada</label>
+                                <input type="date" class="form-control rounded-3" id="config_fecha_fin" name="fecha_fin_home" value="<?= esc($cfgVE['fecha_fin'] ?? '') ?>">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer p-4 border-top-0 d-flex justify-content-between">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                            <i class="fas fa-save me-1"></i> Guardar Configuración
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
     const formNuevo = document.getElementById('formNuevoProducto');
     if (formNuevo) {
         formNuevo.addEventListener('submit', function(e) {
