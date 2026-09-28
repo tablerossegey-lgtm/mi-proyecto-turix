@@ -1,7 +1,7 @@
 <?php if (!empty($productos)): ?>
     <?php foreach ($productos as $index => $p): ?>
         <?php 
-            preparar_producto_para_cliente($p);
+            preparar_producto_para_cliente($p, !empty($es_ofertas));
             $foto = $p['foto'] ?? '';
             $isUrl = (strpos($foto, 'http://') === 0 || strpos($foto, 'https://') === 0);
             $subcategoria = 'otros'; // Por defecto
@@ -227,7 +227,7 @@
                     <button class="btn btn-turix w-100 shadow-sm fw-bold" 
                         data-bs-toggle="modal" 
                         data-bs-target="#modalDetalle"
-                        hx-get="<?= base_url('catalogo/detalle/' . $p['id']) ?>" 
+                        hx-get="<?= base_url('catalogo/detalle/' . $p['id'] . (!empty($es_ofertas) ? '?oferta=1' : '')) ?>" 
                         hx-target="#contenido-modal">
                         Ver Detalles <i class="bi bi-zoom-in ms-1"></i>
                     </button>

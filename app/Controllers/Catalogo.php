@@ -82,11 +82,11 @@ class Catalogo extends BaseController
      */
     public function ventaEspecial()
     {
-        $productos = $this->productoModel->obtenerProductosOferta(true);
+        $productos = $this->productoModel->obtenerProductosOferta(true, null, true);
 
         $data = [
-            'productos' => $productos,
-            'titulo'    => 'Venta Especial - Productos en Oferta',
+            'productos'  => $productos,
+            'titulo'     => 'Venta Especial - Productos en Oferta',
             'es_ofertas' => true
         ];
 
@@ -105,12 +105,15 @@ class Catalogo extends BaseController
         $termino = $this->request->getPost('q');
         
         if (empty(trim((string)$termino))) {
-            $productos = $this->productoModel->obtenerProductosOferta(true);
+            $productos = $this->productoModel->obtenerProductosOferta(true, null, true);
         } else {
-            $productos = $this->productoModel->buscarProductosOferta((string)$termino, true);
+            $productos = $this->productoModel->buscarProductosOferta((string)$termino, true, true);
         }
 
-        return view('catalogo/_grid_productos', ['productos' => $productos]);
+        return view('catalogo/_grid_productos', [
+            'productos'  => $productos,
+            'es_ofertas' => true
+        ]);
     }
 
     public function detalle($id)
@@ -125,8 +128,11 @@ class Catalogo extends BaseController
         $inventarioImagenesModel = new \App\Models\InventarioImagenesModel();
         $imagenesAdicionales = $inventarioImagenesModel->obtenerPorProducto((int)$producto['id']);
 
+        $esOfertas = (bool)$this->request->getGet('oferta');
+
         $data['p'] = $producto;
         $data['imagenes_adicionales'] = $imagenesAdicionales;
+        $data['es_ofertas'] = $esOfertas;
         return view('catalogo/_detalle_modal', $data);
     }
 }

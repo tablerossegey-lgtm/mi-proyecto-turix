@@ -154,17 +154,20 @@ if (!function_exists('es_video')) {
 
 if (!function_exists('producto_promo_activa')) {
     /**
-     * Determina si la promoción/precio especial de un producto es válida para mostrar al cliente.
+     * Determina si la promoción/precio especial de un producto está actualmente activa según la fecha de hoy.
+     * Si $permitirProgramadas es true (por ejemplo en la ruta exclusiva de Venta Especial/Preventa),
+     * se permite que aplique aunque la fecha_inicio_promo sea futura.
      *
      * Reglas:
      * - Debe tener un precio_promo > 0 y menor que el precio normal.
+     * - Si $permitirProgramadas es false y tiene fecha_inicio_promo, hoy debe ser >= fecha_inicio_promo.
      * - Si tiene fecha_fin_promo, hoy debe ser <= fecha_fin_promo.
-     * (Permite mostrar la oferta aunque la fecha_inicio_promo sea futura para cuando se comparte la liga anticipadamente).
      *
      * @param array $producto
+     * @param bool $permitirProgramadas
      * @return bool
      */
-    function producto_promo_activa(array $producto): bool
+    function producto_promo_activa(array $producto, bool $permitirProgramadas = false): bool
     {
         $precio = (float)($producto['precio'] ?? 0);
         $precioPromo = (float)($producto['precio_promo'] ?? 0);
@@ -174,7 +177,12 @@ if (!function_exists('producto_promo_activa')) {
         }
 
         $hoy = date('Y-m-d');
+        $inicio = !empty($producto['fecha_inicio_promo']) ? trim(substr($producto['fecha_inicio_promo'], 0, 10)) : null;
         $fin = !empty($producto['fecha_fin_promo']) ? trim(substr($producto['fecha_fin_promo'], 0, 10)) : null;
+
+        if (!$permitirProgramadas && $inicio && $hoy < $inicio) {
+            return false;
+        }
 
         if ($fin && $hoy > $fin) {
             return false;
@@ -186,22 +194,26 @@ if (!function_exists('producto_promo_activa')) {
 
 if (!function_exists('preparar_producto_para_cliente')) {
     /**
-     * Ajusta el producto para el catálogo público.
-     * Detecta si la oferta está programada para iniciar en una fecha futura.
+     * Ajusta el producto para el catálogo público o la preventa.
+     * Si la promoción NO está activa (aún no empieza o ya venció según las fechas configuradas):
+     * - precio_promo se establece en 0.00
+     * - en_promo se establece en false
+     * Si $permitirProgramadas es true (por ejemplo en /venta-especial), se mantiene el precio promocional para preventa.
      *
      * @param array $producto
+     * @param bool $permitirProgramadas
      * @return array
      */
-    function preparar_producto_para_cliente(array &$producto): array
+    function preparar_producto_para_cliente(array &$producto, bool $permitirProgramadas = false): array
     {
-        $promoValida = producto_promo_activa($producto);
-        $producto['en_promo'] = $promoValida;
-        
+        $promoActiva = producto_promo_activa($producto, $permitirProgramadas);
+        $producto['en_promo'] = $promoActiva;
+
         $hoy = date('Y-m-d');
         $inicio = !empty($producto['fecha_inicio_promo']) ? trim(substr($producto['fecha_inicio_promo'], 0, 10)) : null;
         $producto['es_proximamente'] = ($inicio && $hoy < $inicio);
 
-        if (!$promoValida) {
+        if (!$promoActiva) {
             $producto['precio_promo'] = 0.00;
         }
         return $producto;
@@ -288,7 +300,13 @@ if (!function_exists('obtener_config_venta_especial')) {
         }
 
         $content = @file_get_contents($filePath);
-        $data = json_decode($content, true);
+        if ($content !== false) {
+            // Eliminar BOM de UTF-8 si existe (común al editar en Windows/Notepad/VSCode)
+            $content = preg_replace('/^\xEF\xBB\xBF/', '', trim((string)$content));
+            $data = json_decode($content, true);
+        } else {
+            $data = null;
+        }
         return is_array($data) ? array_merge($defaultConfig, $data) : $defaultConfig;
     }
 }

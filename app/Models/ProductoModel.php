@@ -40,7 +40,7 @@ class ProductoModel extends Model
     /**
      * Obtiene los productos con precio promoción/especial para la Venta Especial (incluye ofertas programadas)
      */
-    public function obtenerProductosOferta(bool $soloConStock = true, ?int $limit = null)
+    public function obtenerProductosOferta(bool $soloConStock = true, ?int $limit = null, bool $incluirProgramadas = true)
     {
         $hoy = date('Y-m-d');
         
@@ -49,8 +49,16 @@ class ProductoModel extends Model
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 2) AS stock_oficina')
             ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
             ->where('t_inventario.precio_promo >', 0)
-            ->where('t_inventario.precio_promo < t_inventario.precio', null, false)
-            ->groupStart()
+            ->where('t_inventario.precio_promo < t_inventario.precio', null, false);
+
+        if (!$incluirProgramadas) {
+            $builder->groupStart()
+                ->where('t_inventario.fecha_inicio_promo IS NULL')
+                ->orWhere('t_inventario.fecha_inicio_promo <=', $hoy)
+            ->groupEnd();
+        }
+
+        $builder->groupStart()
                 ->where('t_inventario.fecha_fin_promo IS NULL')
                 ->orWhere('t_inventario.fecha_fin_promo >=', $hoy)
             ->groupEnd();
@@ -72,7 +80,7 @@ class ProductoModel extends Model
     /**
      * Busca productos con precio promoción/especial por término (incluye ofertas programadas)
      */
-    public function buscarProductosOferta(string $termino, bool $soloConStock = true)
+    public function buscarProductosOferta(string $termino, bool $soloConStock = true, bool $incluirProgramadas = true)
     {
         $hoy = date('Y-m-d');
         
@@ -81,8 +89,16 @@ class ProductoModel extends Model
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 2) AS stock_oficina')
             ->join('t_categorias', 't_categorias.idCategoria = t_inventario.id_categoria', 'left')
             ->where('t_inventario.precio_promo >', 0)
-            ->where('t_inventario.precio_promo < t_inventario.precio', null, false)
-            ->groupStart()
+            ->where('t_inventario.precio_promo < t_inventario.precio', null, false);
+
+        if (!$incluirProgramadas) {
+            $builder->groupStart()
+                ->where('t_inventario.fecha_inicio_promo IS NULL')
+                ->orWhere('t_inventario.fecha_inicio_promo <=', $hoy)
+            ->groupEnd();
+        }
+
+        $builder->groupStart()
                 ->where('t_inventario.fecha_fin_promo IS NULL')
                 ->orWhere('t_inventario.fecha_fin_promo >=', $hoy)
             ->groupEnd();

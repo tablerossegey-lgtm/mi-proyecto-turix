@@ -3,7 +3,7 @@
  * @var array $p
  * @var array $imagenes_adicionales
  */
-preparar_producto_para_cliente($p);
+preparar_producto_para_cliente($p, !empty($es_ofertas));
 ?>
 <!-- Botón de Cerrar Premium (X) -->
 <button type="button" 
@@ -165,40 +165,52 @@ preparar_producto_para_cliente($p);
         <!-- Columna de Detalles del Producto -->
         <div class="col-12 col-md-6 d-flex flex-column justify-content-between">
             <div>
-                <!-- SKU Badge -->
-                <div class="mb-3">
+                <!-- SKU Badge y Estado de Stock -->
+                <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                     <span class="sku-premium-badge text-uppercase">
                         SKU: <?= esc($p['codigo_sku']) ?>
                     </span>
+                    <div>
+                        <?php if ((int)$p['stock'] === 0): ?>
+                            <span class="badge bg-danger text-white px-3 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1" style="border-radius: 8px; font-size: 0.78rem;">
+                                <i class="bi bi-x-circle-fill"></i> Agotado
+                            </span>
+                        <?php elseif ((int)$p['stock'] === 1): ?>
+                            <span class="badge bg-warning text-dark px-3 py-1.5 fw-bold shadow-sm d-inline-flex align-items-center gap-1" style="border-radius: 8px; font-size: 0.78rem;">
+                                <i class="bi bi-exclamation-triangle-fill"></i> ¡Solo 1 disponible!
+                            </span>
+                        <?php else: ?>
+                            <span class="badge text-white px-3 py-1.5 fw-semibold shadow-sm d-inline-flex align-items-center gap-1.5" style="background: rgba(16, 185, 129, 0.16); border: 1px solid rgba(16, 185, 129, 0.45); border-radius: 8px; font-size: 0.78rem;">
+                                <i class="bi bi-box-seam" style="color: #34d399;"></i> Stock: <strong style="color: #6ee7b7;"><?= $p['stock'] ?></strong> pzas
+                            </span>
+                        <?php endif; ?>
+                    </div>
                 </div>
                 
                 <h3 class="text-white fw-bold mb-3 product-detail-title">
                     <?= esc($p['descripcion']) ?>
                 </h3>
                 
-                <div class="mb-4 d-flex align-items-center gap-3">
+                <div class="mb-4 d-flex align-items-center flex-wrap gap-2 gap-md-3">
                     <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
                         <span class="badge bg-danger text-white px-3 py-2 fs-5 fw-bold shadow-sm price-badge-premium" title="Precio Especial / Oferta">
                             $<?= number_format($p['precio_promo'], 2) ?>
                         </span>
-                        <span class="text-white-50 text-decoration-line-through fs-6 ms-2">
+                        <span class="text-white-50 text-decoration-line-through fs-6 ms-1">
                             $<?= number_format($p['precio'], 2) ?>
                         </span>
-                        <span class="badge bg-danger text-white px-2 py-1 rounded-pill fw-bold ms-1" style="font-size: 0.72rem; letter-spacing: 0.5px;">OFERTA</span>
+                        <?php if (!empty($p['es_proximamente']) && !empty($p['fecha_inicio_promo'])): ?>
+                            <span class="badge bg-warning text-dark px-2.5 py-1.5 rounded-pill fw-bold" style="font-size: 0.72rem; letter-spacing: 0.4px;">
+                                <i class="bi bi-clock-history me-1"></i> INICIA <?= date('d/m', strtotime($p['fecha_inicio_promo'])) ?>
+                            </span>
+                        <?php else: ?>
+                            <span class="badge bg-danger text-white px-2.5 py-1.5 rounded-pill fw-bold" style="font-size: 0.72rem; letter-spacing: 0.5px;">OFERTA</span>
+                        <?php endif; ?>
                     <?php else: ?>
                         <span class="badge bg-warning text-dark px-3 py-2 fs-5 fw-bold shadow-sm price-badge-premium">
                             $<?= number_format($p['precio'], 2) ?>
                         </span>
                     <?php endif; ?>
-                    <span class="text-white-50 stock-text-premium">
-                        <?php if ((int)$p['stock'] === 0): ?>
-                            | &nbsp;<span class="badge bg-danger text-white px-2.5 py-1.5 fw-bold badge-agotado-premium">Agotado</span>
-                        <?php elseif ((int)$p['stock'] === 1): ?>
-                            | &nbsp;Stock: <strong class="text-white">1</strong> pza
-                        <?php else: ?>
-                            | &nbsp;Stock: <strong class="text-white"><?= $p['stock'] ?></strong> pzas
-                        <?php endif; ?>
-                    </span>
                 </div>
 
                 <div class="text-white-50 mb-4">
@@ -219,7 +231,7 @@ preparar_producto_para_cliente($p);
             </div>
 
             <!-- Selector de Cantidad -->
-            <div class="mb-4 d-flex align-items-center gap-3">
+            <div class="mb-4 d-flex align-items-center flex-wrap gap-3">
                 <span class="text-white-50 fw-semibold small">Cantidad:</span>
                 <div class="cant-selector">
                     <button class="cant-btn" type="button" onclick="const input = document.getElementById('detalle-cantidad-input'); if(parseInt(input.value) > 1) input.value = parseInt(input.value) - 1;">
@@ -230,6 +242,9 @@ preparar_producto_para_cliente($p);
                         <i class="bi bi-plus"></i>
                     </button>
                 </div>
+                <span class="text-white-50 small">
+                    (<?= (int)$p['stock'] ?> <?= (int)$p['stock'] === 1 ? 'disponible' : 'disponibles' ?>)
+                </span>
             </div>
 
             <!-- Botones de Acción -->

@@ -17,10 +17,12 @@ class Home extends BaseController
                                    ->limit(5)
                                    ->findAll();
 
-        // Productos destacados en Venta Especial (condicionado a las fechas configuradas para la portada)
+        // Debug temporal
+        // dd(debe_mostrar_venta_especial_home(), obtener_config_venta_especial(), date('Y-m-d'));
+        $debeMostrar = debe_mostrar_venta_especial_home();
         $ofertas = [];
-        if (debe_mostrar_venta_especial_home()) {
-            $ofertas = $productoModel->obtenerProductosOferta(true, 6);
+        if ($debeMostrar) {
+            $ofertas = $productoModel->obtenerProductosOferta(true, 6, true);
         }
 
         // Categorías que tienen al menos un producto asociado, ordenadas alfabéticamente

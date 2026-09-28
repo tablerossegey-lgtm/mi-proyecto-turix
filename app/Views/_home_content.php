@@ -42,23 +42,25 @@
         <div class="row g-4 row-cols-2 row-cols-md-3 row-cols-lg-6">
             <?php foreach ($ofertas as $p): ?>
                 <?php 
-                    preparar_producto_para_cliente($p);
+                    preparar_producto_para_cliente($p, true);
                     $srcUrl = obtener_ruta_imagen($p['foto'] ?? '', $p['nombre_categoria'] ?? '');
                     $p['foto_url'] = $srcUrl;
-                    $descuentoPorcentaje = ($p['precio'] > 0) ? round((($p['precio'] - $p['precio_promo']) / $p['precio']) * 100) : 0;
+                    $descuentoPorcentaje = ($p['precio'] > 0 && !empty($p['precio_promo'])) ? round((($p['precio'] - $p['precio_promo']) / $p['precio']) * 100) : 0;
                 ?>
                 <div class="col">
                     <div class="card h-100 card-producto novedad-card border-danger border-opacity-50">
-                        <?php if (!empty($p['es_proximamente']) && !empty($p['fecha_inicio_promo'])): ?>
-                            <span class="badge bg-warning text-dark position-absolute shadow-sm" style="top: 12px; left: 12px; z-index: 10; font-size: 0.63rem; font-weight: 800; border-radius: 50px; padding: 4px 8px; letter-spacing: 0.3px;">
-                                <i class="bi bi-clock-history me-1"></i> INICIA <?= date('d/m', strtotime($p['fecha_inicio_promo'])) ?> (-<?= $descuentoPorcentaje ?>%)
-                            </span>
-                        <?php elseif ($descuentoPorcentaje > 0): ?>
-                            <span class="badge bg-danger position-absolute shadow-sm" style="top: 12px; left: 12px; z-index: 10; font-size: 0.68rem; font-weight: 800; border-radius: 50px; padding: 4px 9px; letter-spacing: 0.5px;">
-                                -<?= $descuentoPorcentaje ?>% OFF
-                            </span>
-                        <?php else: ?>
-                            <span class="badge bg-danger position-absolute shadow-sm" style="top: 12px; left: 12px; z-index: 10; font-size: 0.65rem; font-weight: bold; border-radius: 50px; padding: 4px 10px;">OFERTA</span>
+                        <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
+                            <?php if (!empty($p['es_proximamente']) && !empty($p['fecha_inicio_promo'])): ?>
+                                <span class="badge bg-warning text-dark position-absolute shadow-sm" style="top: 12px; left: 12px; z-index: 10; font-size: 0.63rem; font-weight: 800; border-radius: 50px; padding: 4px 8px; letter-spacing: 0.3px;">
+                                    <i class="bi bi-clock-history me-1"></i> INICIA <?= date('d/m', strtotime($p['fecha_inicio_promo'])) ?> (-<?= $descuentoPorcentaje ?>%)
+                                </span>
+                            <?php elseif ($descuentoPorcentaje > 0): ?>
+                                <span class="badge bg-danger position-absolute shadow-sm" style="top: 12px; left: 12px; z-index: 10; font-size: 0.68rem; font-weight: 800; border-radius: 50px; padding: 4px 9px; letter-spacing: 0.5px;">
+                                    -<?= $descuentoPorcentaje ?>% OFF
+                                </span>
+                            <?php else: ?>
+                                <span class="badge bg-danger position-absolute shadow-sm" style="top: 12px; left: 12px; z-index: 10; font-size: 0.65rem; font-weight: bold; border-radius: 50px; padding: 4px 10px;">OFERTA</span>
+                            <?php endif; ?>
                         <?php endif; ?>
 
                         <span class="sku-badge"><?= esc($p['codigo_sku']) ?></span>
@@ -81,16 +83,21 @@
                                 <?= esc($p['descripcion']) ?>
                             </h6>
                             <div class="precio-tag">
-                                <span class="simbolo-moneda">$</span>
-                                <?= number_format($p['precio_promo'], 2) ?>
-                                <span class="text-white-50 text-decoration-line-through ms-2 fs-6 fw-normal" style="font-size: 0.8rem;">
-                                    $<?= number_format($p['precio'], 2) ?>
-                                </span>
+                                <?php if (isset($p['precio_promo']) && $p['precio_promo'] > 0 && $p['precio_promo'] < $p['precio']): ?>
+                                    <span class="simbolo-moneda">$</span>
+                                    <?= number_format($p['precio_promo'], 2) ?>
+                                    <span class="text-white-50 text-decoration-line-through ms-2 fs-6 fw-normal" style="font-size: 0.8rem;">
+                                        $<?= number_format($p['precio'], 2) ?>
+                                    </span>
+                                <?php else: ?>
+                                    <span class="simbolo-moneda">$</span>
+                                    <?= number_format($p['precio'], 2) ?>
+                                <?php endif; ?>
                             </div>
                             <button class="btn btn-turix w-100 shadow-sm fw-bold" 
                                 data-bs-toggle="modal" 
                                 data-bs-target="#modalDetalle"
-                                hx-get="<?= base_url('catalogo/detalle/' . $p['id']) ?>" 
+                                hx-get="<?= base_url('catalogo/detalle/' . $p['id'] . '?oferta=1') ?>" 
                                 hx-target="#contenido-modal">
                                 Ver Detalles <i class="bi bi-zoom-in ms-1"></i>
                             </button>

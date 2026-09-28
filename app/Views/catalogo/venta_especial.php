@@ -18,7 +18,7 @@
                 </p>
                 <div class="d-flex flex-wrap gap-2 gap-md-3 align-items-center">
                     <span class="d-inline-flex align-items-center gap-2 bg-dark bg-opacity-60 text-warning px-3 py-2 rounded-pill border border-warning border-opacity-25 small fw-semibold">
-                        <i class="bi bi-fire text-danger fs-5"></i> Ofertas Activas Hoy
+                        <i class="bi bi-fire text-danger fs-5"></i> Ofertas y Preventa Exclusiva
                     </span>
                     <span class="d-inline-flex align-items-center gap-2 bg-dark bg-opacity-60 text-light px-3 py-2 rounded-pill border border-secondary border-opacity-25 small">
                         <i class="bi bi-shield-check text-success fs-5"></i> Pedidos por WhatsApp
