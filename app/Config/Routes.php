@@ -60,6 +60,12 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->post('caja/crear', 'CajaChica::crear');
     $routes->post('caja/eliminar/(:num)', 'CajaChica::eliminar/$1');
 
+    // Rutas de Fondos de Ahorro
+    $routes->get('fondos', 'FondosAhorro::index');
+    $routes->post('fondos/aportar', 'FondosAhorro::registrarAportacion');
+    $routes->post('fondos/configurar', 'FondosAhorro::guardarConfiguracion');
+    $routes->get('fondos/eliminar/(:num)', 'FondosAhorro::eliminarAportacion/$1');
+
     // Rutas de Ventas de Semillas y Repelente
     $routes->get('semillas', 'VentasSemillas::index');
     $routes->post('semillas/crear', 'VentasSemillas::crear');

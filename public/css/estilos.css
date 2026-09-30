@@ -1031,11 +1031,29 @@ footer .text-muted {
 }
 
 .custom-admin-dropdown .admin-item-accounts {
-    color: #198754 !important; /* green success */
+    color: #3b82f6 !important; /* royal blue accounts */
 }
 .custom-admin-dropdown .admin-item-accounts:hover {
-    background: rgba(25, 135, 84, 0.1) !important;
-    border-left-color: #198754;
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-left-color: #3b82f6;
+    transform: translateX(3px);
+}
+
+.custom-admin-dropdown .admin-item-caja {
+    color: #20c997 !important; /* teal / menta caja */
+}
+.custom-admin-dropdown .admin-item-caja:hover {
+    background: rgba(32, 201, 151, 0.1) !important;
+    border-left-color: #20c997;
+    transform: translateX(3px);
+}
+
+.custom-admin-dropdown .admin-item-fondos {
+    color: #e83e8c !important; /* pink / rose alcancía de ahorro */
+}
+.custom-admin-dropdown .admin-item-fondos:hover {
+    background: rgba(232, 62, 140, 0.1) !important;
+    border-left-color: #e83e8c;
     transform: translateX(3px);
 }
 
@@ -1045,6 +1063,15 @@ footer .text-muted {
 .custom-admin-dropdown .admin-item-semillas:hover {
     background: rgba(253, 126, 20, 0.1) !important;
     border-left-color: #fd7e14;
+    transform: translateX(3px);
+}
+
+.custom-admin-dropdown .admin-item-compras {
+    color: #a855f7 !important; /* purple / morado compras */
+}
+.custom-admin-dropdown .admin-item-compras:hover {
+    background: rgba(168, 85, 247, 0.1) !important;
+    border-left-color: #a855f7;
     transform: translateX(3px);
 }
 

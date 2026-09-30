@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= base_url('css/estilos.css?v=1.2') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/estilos.css?v=1.4') ?>">
     <?= $this->renderSection('styles') ?>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon_turix.ico') ?>">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -242,6 +242,12 @@
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-caja"
                                         id="admin-item-caja" href="<?= base_url('admin/caja') ?>">
                                         <i class="bi bi-cash-coin"></i> Consultar mi Caja
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-fondos"
+                                        id="admin-item-fondos" href="<?= base_url('admin/fondos') ?>">
+                                        <i class="bi bi-piggy-bank"></i> Fondos de Ahorro
                                     </a>
                                 </li>
                                 <li>
