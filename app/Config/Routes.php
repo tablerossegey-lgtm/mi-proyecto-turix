@@ -63,6 +63,7 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     // Rutas de Fondos de Ahorro
     $routes->get('fondos', 'FondosAhorro::index');
     $routes->post('fondos/aportar', 'FondosAhorro::registrarAportacion');
+    $routes->post('fondos/aportar-extraordinaria', 'FondosAhorro::registrarAportacionExtraordinaria');
     $routes->post('fondos/configurar', 'FondosAhorro::guardarConfiguracion');
     $routes->get('fondos/eliminar/(:num)', 'FondosAhorro::eliminarAportacion/$1');
 

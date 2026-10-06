@@ -1151,4 +1151,30 @@
     gap: 0.35rem !important;
     width: 100% !important;
     line-height: 1.25 !important;
-}
+}
+
+/* ==========================================================================
+   BOTÓN APORTACIÓN EXTRAORDINARIA (FONDOS DE AHORRO)
+   ========================================================================== */
+.btn-extraordinaria {
+    background-color: #1f222b !important;
+    color: #ffc107 !important;
+    border: 1.5px solid #ffc107 !important;
+    transition: all 0.25s ease-in-out !important;
+}
+
+.btn-extraordinaria i {
+    color: #ffc107 !important;
+    transition: color 0.25s ease-in-out !important;
+}
+
+.btn-extraordinaria:hover {
+    background-color: #ffc107 !important;
+    color: #1f222b !important;
+    border-color: #ffc107 !important;
+    box-shadow: 0 4px 15px rgba(255, 193, 7, 0.35) !important;
+}
+
+.btn-extraordinaria:hover i {
+    color: #1f222b !important;
+}

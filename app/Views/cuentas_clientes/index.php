@@ -341,13 +341,13 @@
                     <h6 class="fw-bold mb-2"><i class="fas fa-list me-1 text-warning"></i> Productos agregados a esta
                         compra</h6>
                     <div class="table-responsive rounded border border-secondary border-opacity-25 mb-3">
-                        <table class="table table-hover align-middle mb-0" style="background-color: rgba(0,0,0,0.15);">
-                            <thead class="text-white-50 small" style="background-color: rgba(255,255,255,0.02);">
+                        <table class="table table-dark table-hover align-middle mb-0" style="--bs-table-bg: rgba(0, 0, 0, 0.25); --bs-table-hover-bg: rgba(255, 255, 255, 0.04); border-color: rgba(255, 255, 255, 0.08);">
+                            <thead class="text-white-50 small" style="background-color: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
                                 <tr>
-                                    <th class="ps-3 py-2">Producto / Detalle</th>
-                                    <th class="py-2 text-center" style="width: 100px;">Cant.</th>
-                                    <th class="py-2 text-end" style="width: 120px;">Precio U.</th>
-                                    <th class="py-2 text-end" style="width: 120px;">Subtotal</th>
+                                    <th class="ps-3 py-2 text-white-50">Producto / Detalle</th>
+                                    <th class="py-2 text-center text-white-50" style="width: 100px;">Cant.</th>
+                                    <th class="py-2 text-end text-white-50" style="width: 120px;">Precio U.</th>
+                                    <th class="py-2 text-end text-white-50" style="width: 120px;">Subtotal</th>
                                     <th class="py-2 text-center" style="width: 80px;"></th>
                                 </tr>
                             </thead>
@@ -793,11 +793,11 @@
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td class="ps-3 py-2">
-                    <div class="fw-semibold" style="font-size: 0.9rem;">${prod.desc_producto}</div>
-                    ${prod.id_inventario > 0 ? `<small class="text-success" style="font-size: 0.75rem;"><i class="bi bi-box-seam me-1"></i>Inventario${prod.descontar_stock ? ' (Descuenta Stock)' : ''}</small>` : '<small class="text-white-50" style="font-size: 0.75rem;"><i class="bi bi-pen me-1"></i>Formato Libre</small>'}
+                    <div class="fw-semibold text-white" style="font-size: 0.9rem;">${prod.desc_producto}</div>
+                    ${prod.id_inventario > 0 ? `<small class="text-success" style="font-size: 0.75rem;"><i class="bi bi-box-seam me-1"></i>Inventario${prod.descontar_stock ? ' (Descuenta Stock)' : ''}</small>` : '<small class="text-info" style="font-size: 0.75rem;"><i class="bi bi-pen me-1"></i>Formato Libre</small>'}
                 </td>
-                <td class="py-2 text-center fw-semibold">${prod.cantidad}</td>
-                <td class="py-2 text-end text-white-50">$${prod.precio_unit.toFixed(2)}</td>
+                <td class="py-2 text-center fw-semibold text-white">${prod.cantidad}</td>
+                <td class="py-2 text-end text-white fw-medium">$${prod.precio_unit.toFixed(2)}</td>
                 <td class="py-2 text-end fw-bold text-success">$${subtotal.toFixed(2)}</td>
                 <td class="py-2 text-center">
                     <button type="button" class="btn btn-outline-danger btn-sm border-0 p-1" onclick="eliminarProductoLista(${index})">

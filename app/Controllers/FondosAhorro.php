@@ -44,6 +44,14 @@ class FondosAhorro extends BaseController
         $mesActual = (int)($this->request->getGet('mes') ?: date('n'));
         $anioActual = (int)($this->request->getGet('anio') ?: date('Y'));
 
+        // Determinar estado temporal del periodo
+        $periodoActualSistema = (int)date('Y') * 100 + (int)date('n');
+        $periodoSeleccionado   = $anioActual * 100 + $mesActual;
+
+        $esMesEnCurso       = ($periodoSeleccionado === $periodoActualSistema);
+        $esMesPasadoCerrado = ($periodoSeleccionado < $periodoActualSistema);
+        $esMesFuturo        = ($periodoSeleccionado > $periodoActualSistema);
+
         // Rango de fechas del mes seleccionado
         $fechaInicio = sprintf('%04d-%02d-01', $anioActual, $mesActual);
         $fechaFin    = date('Y-m-t', strtotime($fechaInicio));
@@ -70,7 +78,7 @@ class FondosAhorro extends BaseController
             $aportacionSugerida = round($balanceNeto * ($porcentaje / 100), 2);
         }
 
-        // 5. Verificar si ya se registró la aportación de este mes
+        // 5. Verificar si ya se registró la aportación mensual de este mes
         $aportacionRegistrada = $this->aportacionModel
             ->where('id_fondo', $fondoActual['id'])
             ->where('anio', $anioActual)
@@ -88,6 +96,9 @@ class FondosAhorro extends BaseController
 
         $ultimaAportacion = $this->aportacionModel->getUltimaAportacion($fondoActual['id']);
         $historial        = $this->aportacionModel->getHistorial($fondoActual['id']);
+
+        // 7. Calcular saldo disponible de Caja Chica para transferencias internas
+        $saldoDisponibleCaja = $this->obtenerSaldoDisponibleCaja();
 
         // Nombres de los meses en español para la vista
         $meses = [
@@ -117,7 +128,11 @@ class FondosAhorro extends BaseController
             'metaMonto'            => $metaMonto,
             'progresoMeta'         => $progresoMeta,
             'ultimaAportacion'     => $ultimaAportacion,
-            'historial'            => $historial
+            'historial'            => $historial,
+            'saldoDisponibleCaja'  => $saldoDisponibleCaja,
+            'esMesEnCurso'         => $esMesEnCurso,
+            'esMesPasadoCerrado'   => $esMesPasadoCerrado,
+            'esMesFuturo'          => $esMesFuturo,
         ];
 
         return view('fondos/index', $data);
@@ -139,7 +154,15 @@ class FondosAhorro extends BaseController
             return redirect()->back()->with('error', 'El fondo especificado no existe.');
         }
 
-        // Validar si ya existe
+        // Validar que el mes ya haya terminado
+        $periodoActualSistema = (int)date('Y') * 100 + (int)date('n');
+        $periodoSeleccionado   = $anio * 100 + $mes;
+        if ($periodoSeleccionado >= $periodoActualSistema) {
+            return redirect()->to(base_url("admin/fondos?fondo={$idFondo}&mes={$mes}&anio={$anio}"))
+                             ->with('error', 'El mes aún está en curso. La aportación mensual podrá registrarse una vez finalizado el periodo.');
+        }
+
+        // Validar si ya existe aportación mensual registrada
         if ($this->aportacionModel->existeAportacionMes($idFondo, $anio, $mes, 'Mensual')) {
             return redirect()->to(base_url("admin/fondos?fondo={$idFondo}&mes={$mes}&anio={$anio}"))
                              ->with('error', 'Ya se encuentra registrada la aportación mensual para este periodo.');
@@ -147,6 +170,13 @@ class FondosAhorro extends BaseController
 
         if ($monto <= 0) {
             return redirect()->back()->with('error', 'El monto a aportar debe ser mayor a 0.');
+        }
+
+        // Validar que haya saldo suficiente disponible en Caja Chica
+        $saldoDisponible = $this->obtenerSaldoDisponibleCaja();
+        if ($monto > $saldoDisponible) {
+            return redirect()->to(base_url("admin/fondos?fondo={$idFondo}&mes={$mes}&anio={$anio}"))
+                             ->with('error', 'El monto de la aportación ($' . number_format($monto, 2) . ') supera el saldo disponible en Caja Chica ($' . number_format($saldoDisponible, 2) . ').');
         }
 
         // Recalcular balance real del mes para almacenar como evidencia histórica
@@ -177,13 +207,70 @@ class FondosAhorro extends BaseController
             'notas'               => !empty($notas) ? $notas : 'Aportación mensual correspondiente al periodo ' . sprintf('%02d/%04d', $mes, $anio)
         ];
 
-        try {
-            $this->aportacionModel->insert($datosAportacion);
-            return redirect()->to(base_url("admin/fondos?fondo={$idFondo}&mes={$mes}&anio={$anio}"))
-                             ->with('success', '¡Aportación registrada con éxito al fondo ' . esc($fondo['nombre']) . '!');
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Ocurrió un error al registrar la aportación: ' . $e->getMessage());
+        $db->transStart();
+        $this->aportacionModel->insert($datosAportacion);
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Ocurrió un error al registrar la aportación mensual en base de datos.');
         }
+
+        return redirect()->to(base_url("admin/fondos?fondo={$idFondo}&mes={$mes}&anio={$anio}"))
+                         ->with('success', '¡Aportación mensual registrada con éxito al fondo ' . esc($fondo['nombre']) . '!');
+    }
+
+    /**
+     * Registrar aportación extraordinaria al fondo
+     */
+    public function registrarAportacionExtraordinaria()
+    {
+        $idFondo       = (int)$this->request->getPost('id_fondo');
+        $monto         = (float)$this->request->getPost('monto_aportado');
+        $fechaRegistro = $this->request->getPost('fecha_registro') ?: date('Y-m-d');
+        $notas         = trim($this->request->getPost('notas') ?? '');
+
+        $fondo = $this->fondoModel->find($idFondo);
+        if (!$fondo) {
+            return redirect()->back()->with('error', 'El fondo especificado no existe.');
+        }
+
+        if ($monto <= 0) {
+            return redirect()->back()->with('error', 'El monto a aportar debe ser mayor a 0.');
+        }
+
+        // Validar saldo disponible en Caja Chica
+        $saldoDisponible = $this->obtenerSaldoDisponibleCaja();
+        if ($monto > $saldoDisponible) {
+            return redirect()->back()->with('error', 'El monto de la aportación ($' . number_format($monto, 2) . ') supera el saldo disponible en Caja Chica ($' . number_format($saldoDisponible, 2) . ').');
+        }
+
+        $anio = (int)date('Y', strtotime($fechaRegistro));
+        $mes  = (int)date('n', strtotime($fechaRegistro));
+
+        $datosAportacion = [
+            'id_fondo'            => $idFondo,
+            'anio'                => $anio,
+            'mes'                 => $mes,
+            'balance_caja'        => 0.00,
+            'porcentaje_aplicado' => 0.00,
+            'monto_sugerido'      => 0.00,
+            'monto_aportado'      => $monto,
+            'tipo_aportacion'     => 'Extraordinaria',
+            'fecha_registro'      => $fechaRegistro,
+            'notas'               => !empty($notas) ? $notas : 'Aportación extraordinaria voluntaria'
+        ];
+
+        $db = \Config\Database::connect();
+        $db->transStart();
+        $this->aportacionModel->insert($datosAportacion);
+        $db->transComplete();
+
+        if ($db->transStatus() === false) {
+            return redirect()->back()->with('error', 'Ocurrió un error al registrar la aportación extraordinaria.');
+        }
+
+        return redirect()->to(base_url("admin/fondos?fondo={$idFondo}&mes={$mes}&anio={$anio}"))
+                         ->with('success', '¡Aportación extraordinaria de $' . number_format($monto, 2) . ' registrada con éxito al fondo ' . esc($fondo['nombre']) . '!');
     }
 
     /**
@@ -230,5 +317,22 @@ class FondosAhorro extends BaseController
 
         return redirect()->to(base_url("admin/fondos?fondo={$idFondo}"))
                          ->with('success', 'Aportación eliminada correctamente.');
+    }
+
+    /**
+     * Obtiene el dinero disponible de Caja Chica para transferencias internas a Fondos
+     */
+    private function obtenerSaldoDisponibleCaja(): float
+    {
+        $db = \Config\Database::connect();
+        $queryCaja = $db->query("
+            SELECT (IFNULL(SUM(IF(tipo = 'Ingreso', monto, 0)), 0) - IFNULL(SUM(IF(tipo = 'Egreso', monto, 0)), 0)) AS saldo_caja
+            FROM t_caja_chica
+        ")->getRowArray();
+
+        $saldoCaja = (float)($queryCaja['saldo_caja'] ?? 0);
+        $totalEnFondos = $this->aportacionModel->getTotalAportadoGlobal();
+
+        return max(0, $saldoCaja - $totalEnFondos);
     }
 }

@@ -149,7 +149,7 @@ class CuentasClientes extends BaseController
 
             // Si es pagado, registrar un único abono por el total acumulado
             if ($estatusCompra == '1') {
-                $this->registrarPagoCaja($idCliente, $totalCompraAcumulado);
+                $this->registrarPagoCaja($idCliente, $totalCompraAcumulado, $fechaCompra);
             }
 
             $db->transComplete();
@@ -258,7 +258,7 @@ class CuentasClientes extends BaseController
 
         if ($this->cuentaClienteModel->insert($nuevaCompra)) {
             if ($estatusCompra == '1') {
-                $this->registrarPagoCaja($idCliente, $totalProduc);
+                $this->registrarPagoCaja($idCliente, $totalProduc, $fechaCompra);
             }
             $this->recalcularEstatusCompras($idCliente);
             return redirect()->to(base_url('admin/cuentas'))->with('success', 'Compra registrada con éxito.');
@@ -318,7 +318,7 @@ class CuentasClientes extends BaseController
 
         // Si cambió de Pendiente a Pagado, registrar pago
         if ($compra['estatusCompra'] == '0' && $estatusCompra == '1') {
-            $this->registrarPagoCaja($compra['idCliente'], $totalProduc);
+            $this->registrarPagoCaja($compra['idCliente'], $totalProduc, $fechaCompra);
         }
 
         $this->recalcularEstatusCompras((int)$compra['idCliente']);
@@ -383,7 +383,7 @@ class CuentasClientes extends BaseController
             ->update(['estatus_pago' => $nuevoEstado == '1' ? 'Pagado' : 'Pendiente']);
 
         if ($nuevoEstado == '1') {
-            $this->registrarPagoCaja($compra['idCliente'], $compra['totalProduc']);
+            $this->registrarPagoCaja($compra['idCliente'], $compra['totalProduc'], $compra['fechaCompra']);
         }
 
         $this->recalcularEstatusCompras((int)$compra['idCliente']);
@@ -627,23 +627,24 @@ class CuentasClientes extends BaseController
         }
     }
 
-    private function registrarPagoCaja($idCliente, $monto)
+    private function registrarPagoCaja($idCliente, $monto, $fecha = null)
     {
         $db = \Config\Database::connect();
         $cliente = $this->clienteModel->find($idCliente);
         $nombreCliente = $cliente ? $cliente['nombre'] : 'Desconocido';
+        $fechaPago = !empty($fecha) ? $fecha : date('Y-m-d');
 
         // Insertar abono
         $db->table('t_abono_cliente')->insert([
             'idCliente'  => $idCliente,
-            'fechaAbono' => date('Y-m-d'),
+            'fechaAbono' => $fechaPago,
             'abono'      => $monto,
             'idCompra'   => 0
         ]);
 
         // Insertar en caja chica
         $db->table('t_caja_chica')->insert([
-            'fecha'       => date('Y-m-d'),
+            'fecha'       => $fechaPago,
             'descripcion' => 'Abono de cliente: ' . $nombreCliente,
             'monto'       => $monto,
             'tipo'        => 'Ingreso'

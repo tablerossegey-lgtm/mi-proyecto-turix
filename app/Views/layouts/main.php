@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= base_url('css/estilos.css?v=1.4') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/estilos.css?v=1.6') ?>">
     <?= $this->renderSection('styles') ?>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon_turix.ico') ?>">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>

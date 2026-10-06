@@ -1031,16 +1031,16 @@ footer .text-muted {
 }
 
 .custom-admin-dropdown .admin-item-accounts {
-    color: #3b82f6 !important; /* royal blue accounts */
+    color: #ec4899 !important; /* vibrant rose/fuchsia */
 }
 .custom-admin-dropdown .admin-item-accounts:hover {
-    background: rgba(59, 130, 246, 0.1) !important;
-    border-left-color: #3b82f6;
+    background: rgba(236, 72, 153, 0.1) !important;
+    border-left-color: #ec4899;
     transform: translateX(3px);
 }
 
 .custom-admin-dropdown .admin-item-caja {
-    color: #20c997 !important; /* teal / menta caja */
+    color: #20c997 !important; /* teal / cash */
 }
 .custom-admin-dropdown .admin-item-caja:hover {
     background: rgba(32, 201, 151, 0.1) !important;
@@ -1049,11 +1049,11 @@ footer .text-muted {
 }
 
 .custom-admin-dropdown .admin-item-fondos {
-    color: #e83e8c !important; /* pink / rose alcancía de ahorro */
+    color: #a855f7 !important; /* purple / savings */
 }
 .custom-admin-dropdown .admin-item-fondos:hover {
-    background: rgba(232, 62, 140, 0.1) !important;
-    border-left-color: #e83e8c;
+    background: rgba(168, 85, 247, 0.1) !important;
+    border-left-color: #a855f7;
     transform: translateX(3px);
 }
 
@@ -1067,11 +1067,11 @@ footer .text-muted {
 }
 
 .custom-admin-dropdown .admin-item-compras {
-    color: #a855f7 !important; /* purple / morado compras */
+    color: #3b82f6 !important; /* blue / suppliers */
 }
 .custom-admin-dropdown .admin-item-compras:hover {
-    background: rgba(168, 85, 247, 0.1) !important;
-    border-left-color: #a855f7;
+    background: rgba(59, 130, 246, 0.1) !important;
+    border-left-color: #3b82f6;
     transform: translateX(3px);
 }
 
@@ -1335,4 +1335,3 @@ footer .text-muted {
 .font-outfit {
     font-family: 'Outfit', sans-serif;
 }
-

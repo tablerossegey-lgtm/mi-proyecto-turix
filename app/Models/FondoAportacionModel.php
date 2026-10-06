@@ -64,13 +64,23 @@ class FondoAportacionModel extends Model
     }
 
     /**
+     * Obtener el total aportado global en todos los fondos
+     */
+    public function getTotalAportadoGlobal(): float
+    {
+        $builder = $this->builder();
+        $builder->selectSum('monto_aportado', 'total');
+        $result = $builder->get()->getRowArray();
+        return (float)($result['total'] ?? 0);
+    }
+
+    /**
      * Obtener el historial completo con cálculo de saldo acumulado histórico
      */
     public function getHistorial(int $idFondo): array
     {
         $aportaciones = $this->where('id_fondo', $idFondo)
-                             ->orderBy('anio', 'ASC')
-                             ->orderBy('mes', 'ASC')
+                             ->orderBy('fecha_registro', 'ASC')
                              ->orderBy('id', 'ASC')
                              ->findAll();
 
