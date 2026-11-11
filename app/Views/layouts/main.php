@@ -200,6 +200,13 @@
                             <i class="bi bi-bag me-1"></i> Catálogo
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link <?= (url_is('frazadas') || strpos(current_url(), 'frazadas') !== false) ? 'active fw-bold text-warning' : 'text-white-50' ?>"
+                            id="nav-link-frazadas" href="<?= base_url('frazadas') ?>">
+                            <i class="bi bi-grid-3x3-gap me-1"></i> Frazadas
+                            <span class="badge bg-warning text-dark rounded-pill ms-1" style="font-size: 0.65rem; padding: 2px 6px;">230+</span>
+                        </a>
+                    </li>
                     <li class="nav-item d-none d-lg-block">
                         <a class="nav-link text-white-50 nav-cart-btn" href="#" data-bs-toggle="modal"
                             data-bs-target="#modalCarrito" onclick="renderCarritoModal()">

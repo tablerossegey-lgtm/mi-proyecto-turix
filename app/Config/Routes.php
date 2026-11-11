@@ -17,6 +17,10 @@ $routes->post('catalogo/buscar-ofertas', 'Catalogo::buscarOfertas');
 $routes->post('catalogo/buscar/(:num)', 'Catalogo::buscar/$1');
 $routes->get('catalogo/detalle/(:num)', 'Catalogo::detalle/$1');
 
+// Catálogo Especial de Frazadas por Encargo
+$routes->get('frazadas', 'Frazadas::index');
+$routes->post('frazadas/buscar', 'Frazadas::buscar');
+
 // Rutas de Autenticación
 $routes->get('login', 'AuthController::index');
 $routes->post('login', 'AuthController::login');
