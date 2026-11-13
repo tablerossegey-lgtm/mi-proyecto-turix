@@ -142,6 +142,25 @@
                         </div>
                     </div>
                 <?php endforeach; ?>
+
+                <!-- Tarjeta Especial: Frazadas por Encargo -->
+                <div class="col">
+                    <div class="cat-grid-card h-100 position-relative shadow-sm"
+                        onclick="window.location.href='<?= base_url('frazadas') ?>'"
+                        style="cursor: pointer; border: 1.5px solid rgba(255, 193, 7, 0.45);">
+                        <span class="badge bg-warning text-dark position-absolute shadow-sm" 
+                              style="top: 10px; right: 10px; z-index: 5; font-size: 0.65rem; font-weight: 800; border-radius: 50px;">
+                            230+ MODELOS
+                        </span>
+                        <div class="cat-grid-img-wrapper">
+                            <img src="<?= base_url('images/categorias/Frazadas.jpg') ?>" alt="Frazadas por Encargo" class="cat-grid-img"
+                                onerror="this.src='<?= base_url('images/categorias/SinCategoria.jpg') ?>';">
+                        </div>
+                        <div class="cat-grid-body">
+                            <h6 class="cat-grid-title">Frazadas por Encargo</h6>
+                        </div>
+                    </div>
+                </div>
             </div>
         <?php else: ?>
             <div class="alert alert-light border-0 shadow-sm text-center py-5 rounded-4">
