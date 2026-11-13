@@ -17,11 +17,18 @@ class Catalogo extends BaseController
 
     public function index()
     {
-        $productos = $this->productoModel->obtenerTodosConCategoria(true);
+        $busqueda = trim((string)$this->request->getGet('q'));
+
+        if (!empty($busqueda)) {
+            $productos = $this->productoModel->buscarProductos($busqueda, null, true);
+        } else {
+            $productos = $this->productoModel->obtenerTodosConCategoria(true);
+        }
 
         $data = [
             'productos' => $productos,
-            'titulo' => 'Catálogo de Productos'
+            'titulo'    => !empty($busqueda) ? 'Búsqueda: "' . esc($busqueda) . '"' : 'Catálogo de Productos',
+            'busqueda'  => $busqueda
         ];
 
         if ($this->request->getHeaderLine('HX-Request') && !$this->request->getHeaderLine('HX-Boosted')) {
@@ -33,8 +40,13 @@ class Catalogo extends BaseController
 
     public function porCategoria(int $categoriaId)
     {
-        // Filtramos productos por categoría y obtenemos el nombre de la categoría usando el Modelo (solo con stock)
-        $productos = $this->productoModel->obtenerPorCategoria($categoriaId, true);
+        $busqueda = trim((string)$this->request->getGet('q'));
+
+        if (!empty($busqueda)) {
+            $productos = $this->productoModel->buscarProductos($busqueda, $categoriaId, true);
+        } else {
+            $productos = $this->productoModel->obtenerPorCategoria($categoriaId, true);
+        }
 
         // Obtenemos el nombre de la categoría para mostrarlo en el título usando su Modelo (MVC)
         $categoriaModel = new \App\Models\CategoriaModel();
@@ -42,9 +54,10 @@ class Catalogo extends BaseController
         $nombreCategoria = $categoria ? ' > ' . $categoria['nombre'] : '';
 
         $data = [
-            'productos' => $productos,
-            'titulo' => 'Productos' . $nombreCategoria,
-            'categoria_id' => $categoriaId // Pasamos el ID para la barra de búsqueda
+            'productos'    => $productos,
+            'titulo'       => 'Productos' . $nombreCategoria . (!empty($busqueda) ? ' ("' . esc($busqueda) . '")' : ''),
+            'categoria_id' => $categoriaId, // Pasamos el ID para la barra de búsqueda
+            'busqueda'     => $busqueda
         ];
 
         // Retornamos una vista parcial para usar con HTMX o la vista completa con layout si se recarga la página
@@ -60,7 +73,7 @@ class Catalogo extends BaseController
      */
     public function buscar($categoriaId = null)
     {
-        $termino = $this->request->getPost('q');
+        $termino = $this->request->getPost('q') ?? $this->request->getGet('q');
         
         // Si no hay término, simplemente regresamos los productos normales (solo con stock)
         if (empty(trim((string)$termino))) {
@@ -82,12 +95,19 @@ class Catalogo extends BaseController
      */
     public function ventaEspecial()
     {
-        $productos = $this->productoModel->obtenerProductosOferta(true, null, true);
+        $busqueda = trim((string)$this->request->getGet('q'));
+
+        if (!empty($busqueda)) {
+            $productos = $this->productoModel->buscarProductosOferta($busqueda, true, true);
+        } else {
+            $productos = $this->productoModel->obtenerProductosOferta(true, null, true);
+        }
 
         $data = [
             'productos'  => $productos,
-            'titulo'     => 'Venta Especial - Productos en Oferta',
-            'es_ofertas' => true
+            'titulo'     => 'Venta Especial - Productos en Oferta' . (!empty($busqueda) ? ' ("' . esc($busqueda) . '")' : ''),
+            'es_ofertas' => true,
+            'busqueda'   => $busqueda
         ];
 
         if ($this->request->getHeaderLine('HX-Request') && !$this->request->getHeaderLine('HX-Boosted')) {
@@ -102,7 +122,7 @@ class Catalogo extends BaseController
      */
     public function buscarOfertas()
     {
-        $termino = $this->request->getPost('q');
+        $termino = $this->request->getPost('q') ?? $this->request->getGet('q');
         
         if (empty(trim((string)$termino))) {
             $productos = $this->productoModel->obtenerProductosOferta(true, null, true);

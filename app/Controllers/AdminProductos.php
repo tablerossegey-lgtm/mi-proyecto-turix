@@ -392,6 +392,13 @@ class AdminProductos extends BaseController
                         if (file_exists(FCPATH . 'uploads/Festividades/Halloween/' . $oldFoto)) {
                             @unlink(FCPATH . 'uploads/Festividades/Halloween/' . $oldFoto);
                         }
+                        if (!empty($categoriaNombre)) {
+                            $catFolder = str_replace(' ', '', ucwords(strtolower($categoriaNombre)));
+                            $rootOldPath = FCPATH . 'uploads/' . $catFolder . '/' . $oldFoto;
+                            if (file_exists($rootOldPath)) {
+                                @unlink($rootOldPath);
+                            }
+                        }
                     }
                 }
 
@@ -486,9 +493,69 @@ class AdminProductos extends BaseController
     }
 
     /**
+     * Normaliza un texto convirtiéndolo a minúsculas y removiendo acentos diacríticos.
+     */
+    private function normalizarTexto(string $texto): string
+    {
+        $texto = mb_strtolower($texto, 'UTF-8');
+        return str_replace(
+            ['á', 'é', 'í', 'ó', 'ú', 'ü', 'ñ'],
+            ['a', 'e', 'i', 'o', 'u', 'u', 'n'],
+            $texto
+        );
+    }
+
+    /**
+     * Determina si el texto corresponde a la temática de Halloween o Día de Muertos.
+     */
+    private function esHalloweenODiaDeMuertos(string $texto): bool
+    {
+        $t = $this->normalizarTexto($texto);
+        $palabras = [
+            'dia de muerto',
+            'dia de los muerto',
+            'dia del muerto',
+            'dia de difunto',
+            'muertos',
+            'muerto',
+            'halloween',
+            'fantasma',
+            'fantasmita',
+            'fantasmas',
+            'fantasmitas',
+            'bruja',
+            'brujas',
+            'calabaza',
+            'calabazas',
+            'calavera',
+            'calaveras',
+            'calaverita',
+            'calaveritas',
+            'catrina',
+            'catrinas',
+            'catrin',
+            'esqueleto',
+            'esqueletos',
+            'terror',
+            'arana',
+            'aranas',
+            'ofrenda',
+            'cempasuchil',
+            'pan de muerto',
+        ];
+
+        foreach ($palabras as $p) {
+            if (strpos($t, $p) !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Determina la carpeta de subida para las fotos de un producto.
-     * Si detecta la palabra "fantasma" o "fantasmita" (en descripción, SKU o nombre de archivo),
-     * o si pertenece a Halloween, siempre devuelve la carpeta 'Festividades/Halloween'.
+     * Si detecta Día de Muertos, Halloween, fantasma, etc., siempre devuelve la carpeta 'Festividades/Halloween'.
      */
     private function determinarUploadPath(array $producto, ?string $clientFilename = null): string
     {
@@ -498,35 +565,21 @@ class AdminProductos extends BaseController
             ? str_replace(' ', '', ucwords(strtolower($producto['nombre_categoria']))) 
             : '';
 
-        $textos = strtolower($desc . ' ' . $sku . ' ' . ($clientFilename ?? ''));
+        $textos = $desc . ' ' . $sku . ' ' . ($clientFilename ?? '');
 
-        // Detección prioritaria: si detecta fantasma o fantasmita
-        if (
-            strpos($textos, 'fantasma') !== false ||
-            strpos($textos, 'fantasmita') !== false ||
-            strpos($textos, 'fantasmas') !== false ||
-            strpos($textos, 'fantasmitas') !== false
-        ) {
+        // Detección prioritaria: Halloween o Día de Muertos (fantasma, catrina, calavera, etc.)
+        if ($this->esHalloweenODiaDeMuertos($textos)) {
             return FCPATH . 'uploads/Festividades/Halloween';
         }
 
         // Si la categoría es Festividades, resolver subcarpeta
         if (strtolower($categoriaFolder) === 'festividades') {
-            $subfolder = $this->obtenerSubfolderFestividades($desc);
+            $subfolder = $this->obtenerSubfolderFestividades($textos);
             $path = FCPATH . 'uploads/Festividades';
             if (!empty($subfolder)) {
                 $path .= '/' . $subfolder;
             }
             return $path;
-        }
-
-        // Si no es categoría Festividades pero en el texto se detecta Halloween, calabaza, bruja, etc.
-        if (
-            strpos($textos, 'halloween') !== false ||
-            strpos($textos, 'calabaza') !== false ||
-            strpos($textos, 'bruja') !== false
-        ) {
-            return FCPATH . 'uploads/Festividades/Halloween';
         }
 
         $baseFolder = !empty($categoriaFolder) ? $categoriaFolder : 'SinCategoria';
@@ -535,41 +588,25 @@ class AdminProductos extends BaseController
 
     /**
      * Detecta si un producto de Festividades pertenece a Fiestas Patrias, Navidad, SanValentín, etc.
-     * basándose en su descripción (mismo criterio del catálogo).
+     * basándose en su descripción o texto (mismo criterio del catálogo).
      */
     private function obtenerSubfolderFestividades(string $descripcion): string
     {
-        $descLower = strtolower($descripcion);
-
-        // 1. Halloween tiene prioridad alta (especialmente fantasma / fantasmita)
-        if (
-            strpos($descLower, 'halloween') !== false ||
-            strpos($descLower, 'fantasma') !== false ||
-            strpos($descLower, 'fantasmita') !== false ||
-            strpos($descLower, 'fantasmas') !== false ||
-            strpos($descLower, 'fantasmitas') !== false ||
-            strpos($descLower, 'bruja') !== false ||
-            strpos($descLower, 'calabaza') !== false ||
-            strpos($descLower, 'terror') !== false ||
-            strpos($descLower, 'esqueleto') !== false ||
-            strpos($descLower, 'araña') !== false ||
-            strpos($descLower, 'arana') !== false ||
-            strpos($descLower, 'calavera') !== false
-        ) {
+        // 1. Halloween y Día de Muertos tienen prioridad alta
+        if ($this->esHalloweenODiaDeMuertos($descripcion)) {
             return 'Halloween';
         }
+
+        $descLower = $this->normalizarTexto($descripcion);
 
         if (
             strpos($descLower, 'patrio') !== false || 
             strpos($descLower, 'patria') !== false || 
-            strpos($descLower, 'patriótico') !== false || 
             strpos($descLower, 'patriotico') !== false || 
-            strpos($descLower, 'patriótica') !== false || 
             strpos($descLower, 'patriotica') !== false || 
             strpos($descLower, 'independencia') !== false || 
             strpos($descLower, 'septiembre') !== false || 
             strpos($descLower, 'mexico') !== false || 
-            strpos($descLower, 'méxico') !== false || 
             strpos($descLower, 'mexicano') !== false || 
             strpos($descLower, 'mexicana') !== false || 
             strpos($descLower, 'viva mex') !== false || 
@@ -585,7 +622,7 @@ class AdminProductos extends BaseController
 
         if (
             strpos($descLower, 'navidad') !== false || 
-            strpos($descLower, 'navideñ') !== false || 
+            strpos($descLower, 'naviden') !== false || 
             strpos($descLower, 'navide') !== false || 
             strpos($descLower, 'grinch') !== false || 
             strpos($descLower, 'santa') !== false || 
@@ -598,7 +635,6 @@ class AdminProductos extends BaseController
             strpos($descLower, 'guirnalda') !== false ||
             strpos($descLower, 'pino') !== false ||
             strpos($descLower, 'baston') !== false ||
-            strpos($descLower, 'bastón') !== false ||
             strpos($descLower, 'copo') !== false ||
             strpos($descLower, 'reno') !== false
         ) {
@@ -607,11 +643,9 @@ class AdminProductos extends BaseController
         
         if (
             strpos($descLower, 'valentin') !== false || 
-            strpos($descLower, 'valentín') !== false || 
             strpos($descLower, 'amor') !== false || 
             strpos($descLower, 'te amo') !== false || 
             strpos($descLower, 'te_amo') !== false || 
-            strpos($descLower, 'corazón') !== false || 
             strpos($descLower, 'corazon') !== false || 
             strpos($descLower, 'amistad') !== false ||
             strpos($descLower, 'vela') !== false ||
@@ -622,20 +656,16 @@ class AdminProductos extends BaseController
             strpos($descLower, 'ramo') !== false ||
             strpos($descLower, 'bouquet') !== false ||
             strpos($descLower, 'lazo') !== false ||
-            strpos($descLower, 'listón') !== false ||
             strpos($descLower, 'liston') !== false ||
             strpos($descLower, 'chocolate') !== false ||
             strpos($descLower, 'romantico') !== false ||
-            strpos($descLower, 'romántico') !== false ||
             strpos($descLower, 'romantica') !== false ||
-            strpos($descLower, 'romántica') !== false ||
             strpos($descLower, 'cupido') !== false
         ) {
             return 'San Valentín';
         }
         
         if (
-            strpos($descLower, 'cumpleaños') !== false ||
             strpos($descLower, 'cumpleanos') !== false ||
             strpos($descLower, 'pastel') !== false ||
             strpos($descLower, 'globo') !== false ||
@@ -645,18 +675,14 @@ class AdminProductos extends BaseController
             strpos($descLower, 'cortina') !== false ||
             strpos($descLower, 'flecos') !== false ||
             strpos($descLower, 'bolsa de regalo') !== false ||
-            strpos($descLower, 'holográfica') !== false ||
             strpos($descLower, 'holografica') !== false ||
             strpos($descLower, 'metalizada') !== false ||
-            strpos($descLower, 'piñata') !== false ||
             strpos($descLower, 'pinata') !== false ||
             strpos($descLower, 'festejo') !== false ||
-            strpos($descLower, 'celebración') !== false ||
             strpos($descLower, 'celebracion') !== false ||
             strpos($descLower, 'fiesta') !== false ||
             strpos($descLower, 'velita') !== false ||
             strpos($descLower, 'velitas') !== false ||
-            strpos($descLower, 'decoración') !== false ||
             strpos($descLower, 'decoracion') !== false
         ) {
             return 'Cumpleaños';
@@ -664,7 +690,6 @@ class AdminProductos extends BaseController
 
         if (
             strpos($descLower, 'padre') !== false ||
-            strpos($descLower, 'papá') !== false ||
             strpos($descLower, 'papa') !== false
         ) {
             return 'Día del Padre';

@@ -1335,3 +1335,248 @@ footer .text-muted {
 .font-outfit {
     font-family: 'Outfit', sans-serif;
 }
+
+/* ==========================================================================
+   ADAPTACIÓN RESPONSIVA INTEGRAL: MÓVIL Y TABLETA (800 x 1334)
+   ========================================================================== */
+
+/* --- 1. OPTIMIZACIONES PARA MÓVIL (PANTALLAS < 768px Y < 576px) --- */
+@media (max-width: 767.98px) {
+    /* Toasts en móviles: evitar desborde horizontal en pantallas angostas */
+    .toast-container {
+        width: calc(100% - 24px) !important;
+        left: 12px !important;
+        right: 12px !important;
+        bottom: 12px !important;
+        padding: 0 !important;
+    }
+    .toast-container .toast {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    /* Barra de filtros de subcategorías en catálogo (scroll horizontal táctil fluido) */
+    .btn-group[aria-label="Filtrar Subcategorías"] {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        max-width: 100% !important;
+        padding: 4px 6px !important;
+        gap: 6px;
+    }
+    .btn-group[aria-label="Filtrar Subcategorías"]::-webkit-scrollbar {
+        display: none;
+    }
+    .btn-group[aria-label="Filtrar Subcategorías"] .btn-turix-filter {
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+        font-size: 0.82rem !important;
+        padding: 0.45rem 0.9rem !important;
+    }
+
+    /* Modal de Detalle de Producto en Móvil */
+    #modalDetalle .modal-body {
+        padding: 1.25rem !important;
+    }
+    #modalDetalle .product-image-container {
+        min-height: 240px !important;
+        max-height: 300px !important;
+    }
+    #modalDetalle .product-detail-title {
+        font-size: 1.25rem !important;
+    }
+    #modalDetalle .extra-thumb {
+        width: 52px !important;
+        height: 52px !important;
+    }
+
+    /* Carrito Modal en Móvil */
+    #modalCarrito .modal-dialog {
+        margin: 0.75rem !important;
+    }
+    #modalCarrito .modal-body {
+        max-height: 50vh !important;
+        padding: 1rem !important;
+    }
+    #modalCarrito .modal-header,
+    #modalCarrito .modal-footer {
+        padding: 1rem !important;
+    }
+
+    /* Botón flotante Scroll To Top en Móvil */
+    .btn-scroll-top {
+        bottom: 18px !important;
+        right: 18px !important;
+        width: 40px !important;
+        height: 40px !important;
+        font-size: 1.1rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    /* Tarjetas de Producto en Móviles pequeños (2 columnas compactas) */
+    .contenedor-foto {
+        height: 145px !important;
+    }
+    .card-producto .card-body {
+        padding: 0.75rem 0.65rem !important;
+    }
+    .card-producto .descripcion-producto {
+        font-size: 0.8rem !important;
+        min-height: 2.1rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .card-producto .precio-tag {
+        font-size: 1.05rem !important;
+        margin-bottom: 0.5rem !important;
+    }
+    .sku-badge {
+        top: 8px !important;
+        right: 8px !important;
+        font-size: 0.52rem !important;
+        padding: 2px 7px !important;
+    }
+    .btn-quick-whatsapp {
+        width: 32px !important;
+        height: 32px !important;
+        font-size: 0.95rem !important;
+        bottom: 8px !important;
+        right: 8px !important;
+    }
+    .card-producto .btn-turix {
+        font-size: 0.78rem !important;
+        padding: 0.4rem 0.5rem !important;
+    }
+}
+
+/* --- 2. ADAPTACIÓN ESPECÍFICA PARA TABLETA (800 x 1334) VERTICAL Y PANTALLAS DE 768px - 991px --- */
+@media (min-width: 768px) and (max-width: 991.98px), (width: 800px) {
+    /* Ajuste de contenedor general */
+    .container, .container-md {
+        max-width: 100% !important;
+        padding-left: 20px !important;
+        padding-right: 20px !important;
+    }
+
+    /* Hero Banner adaptado al lienzo alto de 1334px */
+    .hero-banner {
+        min-height: 440px !important;
+        border-radius: 24px !important;
+        margin-bottom: 2.5rem !important;
+    }
+    .hero-content {
+        margin: 2rem auto !important;
+        max-width: 88% !important;
+        padding: 2.5rem !important;
+    }
+    .hero-title {
+        font-size: 2.3rem !important;
+    }
+    .hero-subtitle {
+        font-size: 1rem !important;
+        margin-bottom: 1.75rem !important;
+    }
+    .hero-buttons-container {
+        gap: 12px !important;
+    }
+
+    /* Grilla de productos en tableta: 3 columnas perfectamente equilibradas */
+    .contenedor-foto {
+        height: 190px !important;
+    }
+    .card-producto {
+        border-radius: 18px !important;
+    }
+    .card-producto .card-body {
+        padding: 1.1rem !important;
+    }
+    .card-producto .descripcion-producto {
+        font-size: 0.88rem !important;
+        min-height: 2.4rem !important;
+    }
+    .card-producto .precio-tag {
+        font-size: 1.25rem !important;
+    }
+
+    /* Sección de Categorías en Tableta */
+    .categorias-section {
+        padding: 3rem 1.75rem !important;
+        border-radius: 28px !important;
+    }
+    .cat-grid-img-wrapper {
+        height: 145px !important;
+    }
+    .cat-grid-title {
+        font-size: 0.92rem !important;
+    }
+
+    /* Modal de Detalle de Producto en Tableta (800x1334) */
+    #modalDetalle .modal-dialog {
+        max-width: 740px !important;
+        margin: 1.75rem auto !important;
+    }
+    #modalDetalle .modal-body {
+        padding: 2rem !important;
+    }
+    #modalDetalle .product-image-container {
+        min-height: 330px !important;
+        max-height: 380px !important;
+    }
+    #modalDetalle .product-detail-title {
+        font-size: 1.45rem !important;
+    }
+
+    /* Modal Carrito: aprovechar la altura de 1334px para mostrar más ítems */
+    #modalCarrito .modal-dialog {
+        max-width: 520px !important;
+    }
+    #modalCarrito .modal-body {
+        max-height: 520px !important;
+    }
+
+    /* Menú colapsado de Navbar en Tableta 800px */
+    .navbar-collapse {
+        background: rgba(15, 23, 42, 0.98) !important;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        padding: 1.25rem !important;
+        border-radius: 18px !important;
+        margin-top: 12px !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4) !important;
+    }
+    .navbar-collapse .nav-link {
+        padding: 0.65rem 1rem !important;
+        border-radius: 10px !important;
+    }
+}
+
+/* --- 3. ADAPTACIÓN PARA TABLETA EN ORIENTACIÓN HORIZONTAL / LANDSCAPE (1334 x 800) --- */
+@media (min-width: 992px) and (max-height: 850px) {
+    /* En orientación horizontal la altura es de 800px: evitar que los modales se corten */
+    .modal-dialog {
+        margin-top: 1rem !important;
+        margin-bottom: 1rem !important;
+    }
+    #modalDetalle .modal-dialog {
+        max-width: 860px !important;
+    }
+    #modalDetalle .modal-body {
+        padding: 1.5rem !important;
+        max-height: 75vh !important;
+        overflow-y: auto !important;
+    }
+    #modalDetalle .product-image-container {
+        min-height: 250px !important;
+        max-height: 290px !important;
+    }
+    #modalCarrito .modal-body {
+        max-height: 45vh !important;
+    }
+    .hero-banner {
+        min-height: 360px !important;
+    }
+}
+

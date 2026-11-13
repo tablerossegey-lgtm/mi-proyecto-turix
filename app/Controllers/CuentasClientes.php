@@ -188,12 +188,18 @@ class CuentasClientes extends BaseController
             }
 
             // Formatear Ticket Digital
-            $fechaTicket = date('d/m/y', strtotime($fechaCompra));
-            $ticketText = "*Compra del día ({$fechaTicket})*\n";
+            $fechaTicketCorta = date('d/m/y', strtotime($fechaCompra));
+            $fechaTicketLarga = date('d/m/Y', strtotime($fechaCompra));
+
+            $ticketText = "Te comparto la actualización de tu cuenta, junto con el detalle de tu compra.\n\n";
+            $ticketText .= "*TICKET DIGITAL*\n";
+            $ticketText .= "*Compra del día ({$fechaTicketCorta})*\n";
             $ticketText .= implode("\n", $itemsTicket) . "\n\n";
-            $ticketText .= "*Subtotal:* $" . number_format($totalCompraAcumulado, 2) . "\n";
+            $ticketText .= "*Subtotal de la compra:* $" . number_format($totalCompraAcumulado, 2) . "\n\n";
+            $ticketText .= "💰 Estado de cuenta actualizado\n\n";
             $ticketText .= "*Saldo Anterior:* $" . number_format($saldoAnterior, 2) . "\n";
-            $ticketText .= "*Nuevo Total:* $" . number_format($nuevoTotal, 2);
+            $ticketText .= "*Compra del {$fechaTicketLarga}:* $" . number_format($totalCompraAcumulado, 2) . "\n";
+            $ticketText .= "*Saldo total pendiente:* $" . number_format($nuevoTotal, 2);
 
             return $this->response->setJSON([
                 'success' => true,
@@ -431,25 +437,46 @@ class CuentasClientes extends BaseController
 
     public function buscarProductosJson()
     {
+        // Liberar el bloqueo de sesión de PHP para permitir peticiones AJAX simultáneas sin encolarse
+        if (session_status() === PHP_SESSION_ACTIVE) {
+            session_write_close();
+        }
+
         $term = $this->request->getVar('term');
-        if (empty($term)) {
+        if (empty($term) || mb_strlen(trim($term)) < 2) {
             return $this->response->setJSON([]);
         }
 
-        $productos = $this->productoModel->buscarProductos($term);
-        
-        $output = [];
-        foreach ($productos as $p) {
-            $output[] = [
-                'id' => $p['id'],
-                'sku' => $p['codigo_sku'],
-                'descripcion' => $p['descripcion'],
-                'precio' => $p['precio'],
-                'stock' => $p['stock']
-            ];
+        $termClean = trim($term);
+        $cacheKey = 'buscar_prod_' . md5(mb_strtolower($termClean));
+
+        $cached = cache($cacheKey);
+        if ($cached !== null && is_array($cached)) {
+            return $this->response->setJSON($cached);
         }
 
-        return $this->response->setJSON($output);
+        try {
+            $productos = $this->productoModel->buscarProductos($termClean, null, false, 25);
+            
+            $output = [];
+            foreach ($productos as $p) {
+                $output[] = [
+                    'id' => $p['id'],
+                    'sku' => $p['codigo_sku'],
+                    'descripcion' => $p['descripcion'],
+                    'precio' => $p['precio'],
+                    'stock' => $p['stock']
+                ];
+            }
+
+            // Cachear resultados por 5 minutos para que búsquedas repetidas sean instantáneas
+            cache()->save($cacheKey, $output, 300);
+
+            return $this->response->setJSON($output);
+        } catch (\Throwable $e) {
+            log_message('error', 'Error en buscarProductosJson: ' . $e->getMessage());
+            return $this->response->setJSON([]);
+        }
     }
 
     public function editarCliente($idCliente)

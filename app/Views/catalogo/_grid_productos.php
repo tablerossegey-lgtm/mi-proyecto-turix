@@ -120,6 +120,33 @@
                 ) {
                     $subcategoria = 'sanvalentin';
                 } elseif (
+                    strpos($descLower, 'halloween') !== false ||
+                    strpos($descLower, 'dia de muerto') !== false ||
+                    strpos($descLower, 'dia de muertos') !== false ||
+                    strpos($descLower, 'día de muerto') !== false ||
+                    strpos($descLower, 'día de muertos') !== false ||
+                    strpos($descLower, 'muertos') !== false ||
+                    strpos($descLower, 'muerto') !== false ||
+                    strpos($descLower, 'catrina') !== false ||
+                    strpos($descLower, 'catrin') !== false ||
+                    strpos($descLower, 'ofrenda') !== false ||
+                    strpos($descLower, 'calaverita') !== false ||
+                    strpos($descLower, 'cempasuchil') !== false ||
+                    strpos($descLower, 'cempasúchil') !== false ||
+                    strpos($descLower, 'fantasma') !== false ||
+                    strpos($descLower, 'fantasmita') !== false ||
+                    strpos($descLower, 'fantasmas') !== false ||
+                    strpos($descLower, 'fantasmitas') !== false ||
+                    strpos($descLower, 'bruja') !== false ||
+                    strpos($descLower, 'calabaza') !== false ||
+                    strpos($descLower, 'terror') !== false ||
+                    strpos($descLower, 'esqueleto') !== false ||
+                    strpos($descLower, 'araña') !== false ||
+                    strpos($descLower, 'arana') !== false ||
+                    strpos($descLower, 'calavera') !== false
+                ) {
+                    $subcategoria = 'halloween';
+                } elseif (
                     strpos($descLower, 'cumpleaños') !== false ||
                     strpos($descLower, 'cumpleanos') !== false ||
                     strpos($descLower, 'pastel') !== false ||
@@ -151,21 +178,6 @@
                     strpos($descLower, 'papa') !== false
                 ) {
                     $subcategoria = 'diadelpadre';
-                } elseif (
-                    strpos($descLower, 'halloween') !== false ||
-                    strpos($descLower, 'fantasma') !== false ||
-                    strpos($descLower, 'fantasmita') !== false ||
-                    strpos($descLower, 'fantasmas') !== false ||
-                    strpos($descLower, 'fantasmitas') !== false ||
-                    strpos($descLower, 'bruja') !== false ||
-                    strpos($descLower, 'calabaza') !== false ||
-                    strpos($descLower, 'terror') !== false ||
-                    strpos($descLower, 'esqueleto') !== false ||
-                    strpos($descLower, 'araña') !== false ||
-                    strpos($descLower, 'arana') !== false ||
-                    strpos($descLower, 'calavera') !== false
-                ) {
-                    $subcategoria = 'halloween';
                 }
             }
 

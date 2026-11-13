@@ -46,6 +46,7 @@
         <div class="col-md-6">
             <div class="position-relative">
                 <input type="search" class="form-control rounded-pill shadow-sm" placeholder="Buscar en Venta Especial..." name="q"
+                    value="<?= esc($busqueda ?? '') ?>"
                     hx-post="<?= base_url('catalogo/buscar-ofertas') ?>" hx-trigger="input changed delay:500ms" hx-target="#productos-grid"
                     hx-swap="innerHTML"
                     style="padding-left: 2.5rem; padding-right: 1rem; border: 1.5px solid #ff8c00; font-size: 0.95rem;">
@@ -56,6 +57,18 @@
                     <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                 </svg>
             </div>
+            <?php if (session()->get('isLoggedIn')): ?>
+            <!-- Botones para compartir búsqueda de ofertas -->
+            <div id="share-search-container" class="mt-2 text-md-end <?= empty($busqueda) ? 'd-none' : '' ?>">
+                <span class="text-muted small me-2"><i class="bi bi-share me-1"></i> Compartir ofertas:</span>
+                <button type="button" class="btn btn-sm btn-outline-warning text-dark rounded-pill px-3 py-1 me-1 shadow-sm" id="btn-copiar-busqueda" onclick="copiarEnlaceBusqueda(this)">
+                    <i class="bi bi-link-45deg me-1"></i> Copiar enlace
+                </button>
+                <a href="#" target="_blank" class="btn btn-sm btn-success rounded-pill px-3 py-1 shadow-sm" id="btn-whatsapp-busqueda">
+                    <i class="bi bi-whatsapp me-1"></i> WhatsApp
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 

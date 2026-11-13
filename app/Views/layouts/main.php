@@ -9,7 +9,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="<?= base_url('css/estilos.css?v=1.6') ?>">
+    <link rel="stylesheet" href="<?= base_url('css/estilos.css?v=1.7') ?>">
     <?= $this->renderSection('styles') ?>
     <link rel="icon" type="image/x-icon" href="<?= base_url('favicon_turix.ico') ?>">
     <script src="https://unpkg.com/htmx.org@1.9.10"></script>
@@ -146,6 +146,91 @@
                             toastEl.remove();
                         });
                     });
+                }
+
+                // Sincronizar enlace de compartir si hay input de búsqueda activo
+                const searchInputSwap = document.querySelector('input[name="q"]');
+                if (searchInputSwap && searchInputSwap.value) {
+                    if (typeof window.sincronizarUrlYCompartir === 'function') {
+                        window.sincronizarUrlYCompartir(searchInputSwap);
+                    }
+                }
+            });
+
+            // Sincronizar URL del navegador con la búsqueda y gestionar botones de compartir
+            window.sincronizarUrlYCompartir = function(input) {
+                if (!input) return;
+                const val = input.value.trim();
+                const url = new URL(window.location);
+                if (val) {
+                    url.searchParams.set('q', val);
+                } else {
+                    url.searchParams.delete('q');
+                }
+                window.history.replaceState({}, '', url);
+
+                const shareContainer = document.getElementById('share-search-container');
+                const btnWhatsapp = document.getElementById('btn-whatsapp-busqueda');
+                if (shareContainer) {
+                    if (val) {
+                        shareContainer.classList.remove('d-none');
+                        if (btnWhatsapp) {
+                            const shareText = `¡Hola! Te comparto estas opciones de "${val}" en TurixShop: ${url.href}`;
+                            btnWhatsapp.href = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+                        }
+                    } else {
+                        shareContainer.classList.add('d-none');
+                    }
+                }
+            };
+
+            window.copiarEnlaceBusqueda = function(btn) {
+                const url = window.location.href;
+                if (navigator.clipboard && window.isSecureContext) {
+                    navigator.clipboard.writeText(url).then(() => mostrarFeedbackCopiado(btn));
+                } else {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = url;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-9999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        mostrarFeedbackCopiado(btn);
+                    } catch (err) {
+                        console.error('Error al copiar', err);
+                    }
+                    document.body.removeChild(textArea);
+                }
+            };
+
+            function mostrarFeedbackCopiado(btn) {
+                if (!btn) return;
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<i class="bi bi-check2-circle me-1 text-success"></i> ¡Copiado!';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                }, 2000);
+            }
+
+            document.addEventListener('input', function(e) {
+                if (e.target && e.target.matches('input[name="q"]')) {
+                    window.sincronizarUrlYCompartir(e.target);
+                }
+            });
+
+            document.addEventListener('search', function(e) {
+                if (e.target && e.target.matches('input[name="q"]')) {
+                    window.sincronizarUrlYCompartir(e.target);
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', function() {
+                const searchInput = document.querySelector('input[name="q"]');
+                if (searchInput && searchInput.value) {
+                    window.sincronizarUrlYCompartir(searchInput);
                 }
             });
         })();

@@ -6,7 +6,7 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
+<link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.4') ?>">
 <div class="container py-4">
     <!-- Encabezado / Migas de pan -->
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">

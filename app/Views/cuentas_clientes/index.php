@@ -1,7 +1,7 @@
 <?= $this->extend('layouts/main') ?>
 
 <?= $this->section('content') ?>
-<link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.2') ?>">
+<link class="styles-admin-theme" rel="stylesheet" href="<?= base_url('css/admin.css?v=1.4') ?>">
 <style>
 .btn-filtro-cuenta {
     color: rgba(255, 255, 255, 0.6) !important;
@@ -607,8 +607,8 @@
             <div class="modal-body p-4 text-center">
                 <h4 class="fw-bold mb-3 text-white" id="modalTicketDigitalLabel">Ticket Digital</h4>
 
-                <div class="p-4 rounded-3 mb-4 text-start"
-                    style="background-color: #1a2238; border: 1px solid rgba(255,255,255,0.05); font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; line-height: 1.6;">
+                <div class="p-4 rounded-3 mb-4 text-start custom-scroll"
+                    style="background-color: #1a2238; border: 1px solid rgba(255,255,255,0.05); font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; line-height: 1.6; max-height: 55vh; overflow-y: auto;">
                     <div id="ticket-content" style="white-space: pre-wrap; color: #ffffff;"></div>
                 </div>
 
@@ -738,6 +738,15 @@
         if (element) {
             element.classList.add('active');
         }
+        // En móviles y tabletas verticales, desplazar suavemente al área de detalle
+        if (window.innerWidth < 992) {
+            setTimeout(() => {
+                const target = document.getElementById('compras-cliente-container');
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }, 180);
+        }
     }
 
     let listaProductos = [];
@@ -844,39 +853,103 @@
             }
         });
 
-        input.addEventListener('input', function () {
-            const query = input.value.trim();
-            if (query.length < 2) {
-                dropdown.style.display = 'none';
+        let searchTimer = null;
+        let searchAbortCtrl = null;
+        const clientSearchCache = {};
+
+        function renderSearchResults(data) {
+            dropdown.innerHTML = '';
+            if (!Array.isArray(data) || data.length === 0) {
+                dropdown.innerHTML = '<div class="text-white-50 p-2 text-center small">No se encontraron productos</div>';
+                dropdown.style.display = 'block';
                 return;
             }
 
-            fetch('<?= base_url("admin/cuentas/buscar-productos") ?>?term=' + encodeURIComponent(query))
-                .then(res => res.json())
-                .then(data => {
-                    dropdown.innerHTML = '';
-                    if (data.length === 0) {
-                        dropdown.innerHTML = '<div class="text-white-50 p-2 text-center small">No se encontraron productos</div>';
-                        dropdown.style.display = 'block';
-                        return;
-                    }
-
-                    data.forEach(p => {
-                        const btn = document.createElement('button');
-                        btn.type = 'button';
-                        btn.className = 'autocomplete-item';
-                        btn.innerHTML = `<strong>${p.sku}</strong> - ${p.descripcion} ($${p.precio}) <span class="float-end text-white-50">Stock: ${p.stock}</span>`;
-                        btn.addEventListener('click', function () {
-                            hidden.value = p.id;
-                            input.value = `${p.sku} - ${p.descripcion}`;
-                            priceInput.value = p.precio;
-                            dropdown.style.display = 'none';
-                            calcularTotal();
-                        });
-                        dropdown.appendChild(btn);
-                    });
-                    dropdown.style.display = 'block';
+            data.forEach(p => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'autocomplete-item';
+                btn.innerHTML = `<strong>${p.sku}</strong> - ${p.descripcion} ($${p.precio}) <span class="float-end text-white-50">Stock: ${p.stock}</span>`;
+                btn.addEventListener('click', function () {
+                    hidden.value = p.id;
+                    input.value = `${p.sku} - ${p.descripcion}`;
+                    priceInput.value = p.precio;
+                    dropdown.style.display = 'none';
+                    calcularTotal();
                 });
+                dropdown.appendChild(btn);
+            });
+            dropdown.style.display = 'block';
+        }
+
+        input.addEventListener('input', function () {
+            const query = input.value.trim();
+
+            if (searchTimer) {
+                clearTimeout(searchTimer);
+            }
+
+            if (query.length < 2) {
+                if (searchAbortCtrl) {
+                    searchAbortCtrl.abort();
+                }
+                dropdown.style.display = 'none';
+                dropdown.innerHTML = '';
+                return;
+            }
+
+            // Si ya está en la caché del navegador, mostrarlo al instante
+            const cacheKey = query.toLowerCase();
+            if (clientSearchCache[cacheKey]) {
+                if (searchAbortCtrl) {
+                    searchAbortCtrl.abort();
+                }
+                renderSearchResults(clientSearchCache[cacheKey]);
+                return;
+            }
+
+            // Debounce para evitar sobrecargar conexiones MySQL mientras el usuario escribe
+            searchTimer = setTimeout(() => {
+                if (searchAbortCtrl) {
+                    searchAbortCtrl.abort();
+                }
+                searchAbortCtrl = new AbortController();
+
+                dropdown.innerHTML = '<div class="text-white-50 p-2 text-center small"><i class="fas fa-spinner fa-spin me-1"></i> Buscando productos...</div>';
+                dropdown.style.display = 'block';
+
+                // Timeout de seguridad (5 seg) para que nunca se quede colgado en "Buscando productos..."
+                const timeoutId = setTimeout(() => {
+                    if (searchAbortCtrl) {
+                        searchAbortCtrl.abort();
+                    }
+                }, 5000);
+
+                fetch('<?= base_url("admin/cuentas/buscar-productos") ?>?term=' + encodeURIComponent(query), {
+                    signal: searchAbortCtrl.signal
+                })
+                    .then(res => {
+                        clearTimeout(timeoutId);
+                        if (!res.ok) {
+                            throw new Error('Error de respuesta del servidor (' + res.status + ')');
+                        }
+                        return res.json();
+                    })
+                    .then(data => {
+                        clientSearchCache[cacheKey] = data;
+                        renderSearchResults(data);
+                    })
+                    .catch(err => {
+                        clearTimeout(timeoutId);
+                        if (err.name === 'AbortError') {
+                            // Si fue abortado porque el usuario siguió escribiendo o por timeout
+                            return;
+                        }
+                        console.error('Error buscando productos:', err);
+                        dropdown.innerHTML = '<div class="text-white-50 p-2 text-center small">No se pudo obtener resultados en este momento</div>';
+                        dropdown.style.display = 'block';
+                    });
+            }, 300);
         });
 
         // Cerrar dropdown al hacer clic fuera
@@ -977,8 +1050,8 @@
         function formatTicketForDisplay(text) {
             // Reemplazar asteriscos por span con color verde/azul
             let html = text.replace(/\*(.*?)\*/g, '<span style="color: #55efc4; font-weight: bold;">$1</span>');
-            // Reemplazar montos por span con color cyan brillante
-            html = html.replace(/(\$\d+(?:\.\d{2})?)/g, '<span style="color: #00cec9; font-weight: bold;">$1</span>');
+            // Reemplazar montos por span con color cyan brillante (soportando comas en miles)
+            html = html.replace(/(\$[\d,]+(?:\.\d{2})?)/g, '<span style="color: #00cec9; font-weight: bold;">$1</span>');
             return html;
         }
 

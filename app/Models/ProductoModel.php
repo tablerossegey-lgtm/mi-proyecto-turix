@@ -146,7 +146,7 @@ class ProductoModel extends Model
     /**
      * Busca productos por término, opcionalmente filtrando por categoría
      */
-    public function buscarProductos(string $termino, ?int $categoriaId = null, bool $soloConStock = false)
+    public function buscarProductos(string $termino, ?int $categoriaId = null, bool $soloConStock = false, ?int $limit = null)
     {
         $builder = $this->select('t_inventario.*, t_categorias.nombre as nombre_categoria,
             (SELECT COALESCE(SUM(cantidad), 0) FROM t_inventario_ubicaciones WHERE id_producto = t_inventario.id AND id_ubicacion = 1) AS stock_casa,
@@ -173,6 +173,10 @@ class ProductoModel extends Model
 
         if ($soloConStock) {
             $builder->where('t_inventario.stock !=', 0);
+        }
+
+        if ($limit !== null && $limit > 0) {
+            $builder->limit($limit);
         }
 
         return $builder->orderBy('t_inventario.id', 'DESC')->findAll();
