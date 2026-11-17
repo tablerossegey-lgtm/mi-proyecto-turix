@@ -22,7 +22,15 @@ if ($totalPendiente > 0) {
     foreach ($comprasPorFecha as $fecha => $itemsDeFecha) {
         $mensaje .= "*Compra del día ({$fecha})*\n";
         foreach ($itemsDeFecha as $c) {
-            $mensaje .= "  · {$c['cantidad']} {$c['descProducto']}: $" . number_format($c['totalProduc'], 2) . "\n";
+            $descAplicado = (float)($c['descuento_aplicado'] ?? 0);
+            if ($descAplicado > 0) {
+                $impOriginal = $c['importe_original'] !== null ? (float)$c['importe_original'] : ((float)$c['totalProduc'] + $descAplicado);
+                $etiquetaDesc = !empty($c['codigo_cupon']) ? "Cupón {$c['codigo_cupon']}" : "Descuento";
+                $mensaje .= "  · {$c['cantidad']} {$c['descProducto']}: $" . number_format($impOriginal, 2)
+                    . " ({$etiquetaDesc}: -$" . number_format($descAplicado, 2) . " → Neto: $" . number_format($c['totalProduc'], 2) . ")\n";
+            } else {
+                $mensaje .= "  · {$c['cantidad']} {$c['descProducto']}: $" . number_format($c['totalProduc'], 2) . "\n";
+            }
         }
     }
     
@@ -68,6 +76,13 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                     onclick="copiarEstadoCuenta(this)">
                 <i class="fas fa-copy"></i> Copiar Cuenta
             </button>
+            <button type="button" class="btn btn-outline-info rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-2"
+                    onclick="irASeccionCupones()">
+                <i class="fas fa-ticket-alt"></i> Cupones y descuentos
+                <?php if (($resumenCupones['cantidad_activos'] ?? 0) > 0): ?>
+                    <span class="badge bg-info text-dark rounded-pill"><?= $resumenCupones['cantidad_activos'] ?></span>
+                <?php endif; ?>
+            </button>
             <?php if ($totalPendiente > 0): ?>
                 <button type="button" class="btn btn-warning text-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-2" onclick="abrirModalRegistrarAbono(<?= $cliente['idCliente'] ?>, <?= $totalPendiente ?>)">
                     <i class="fas fa-hand-holding-usd text-dark"></i> Registrar Pago
@@ -80,34 +95,222 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
     </div>
 
     <!-- Cards de Balance del Cliente -->
-    <div class="row g-3 mt-3">
-        <div class="col-12 col-sm-6 col-lg-3">
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-5 g-3 mt-3">
+        <div class="col">
             <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15); height: 100%;">
                 <div class="admin-stat-label opacity-75"><i class="fas fa-shopping-bag me-1 text-info"></i> Suma de Adeudos</div>
-                <div class="fs-4 fw-bold text-white mt-1" id="lbl-total-compras">$<?= number_format($totalComprasActivas, 2) ?></div>
+                <div class="fs-5 fw-bold text-white mt-1 text-nowrap" id="lbl-total-compras">$<?= number_format($totalComprasActivas, 2) ?></div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col">
             <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15); height: 100%;">
                 <div class="admin-stat-label opacity-75"><i class="fas fa-check-circle me-1 text-success"></i> Abonado a Cuenta</div>
-                <div class="fs-4 fw-bold text-success mt-1" id="lbl-total-pagado">$<?= number_format($totalPagadoActivo, 2) ?></div>
+                <div class="fs-5 fw-bold text-success mt-1 text-nowrap" id="lbl-total-pagado">$<?= number_format($totalPagadoActivo, 2) ?></div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col">
             <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15); height: 100%;">
                 <div class="admin-stat-label opacity-75"><i class="fas fa-hourglass-half me-1 text-danger"></i> Total Pendiente</div>
-                <div class="fs-4 fw-bold text-danger mt-1" id="lbl-total-pendiente">$<?= number_format($totalPendiente, 2) ?></div>
+                <div class="fs-5 fw-bold text-danger mt-1 text-nowrap" id="lbl-total-pendiente">$<?= number_format($totalPendiente, 2) ?></div>
             </div>
         </div>
-        <div class="col-12 col-sm-6 col-lg-3">
+        <div class="col">
             <div class="admin-stat-card border border-secondary border-opacity-25 p-3 rounded-3" style="background: rgba(0,0,0,0.15); height: 100%;">
                 <div class="admin-stat-label opacity-75"><i class="fas fa-boxes me-1 text-warning"></i> Control de Entregas</div>
-                <div class="fs-4 fw-bold text-warning mt-1" id="lbl-por-entregar" style="font-size: 1.15rem; padding-top: 4px;">
+                <div class="fw-bold text-warning mt-1" id="lbl-por-entregar" style="font-size: 1.05rem; padding-top: 2px;">
                     <span class="text-danger" id="lbl-val-por-empacar"><?= $porEmpacarCount ?? 0 ?></span> <span class="small text-white-50" style="font-size: 0.72rem;">por empacar</span>
                     <span class="mx-1 text-white-50">|</span>
                     <span class="text-info" id="lbl-val-por-entregar"><?= $porEntregarCount ?? 0 ?></span> <span class="small text-white-50" style="font-size: 0.72rem;">por entregar</span>
                 </div>
             </div>
+        </div>
+        <div class="col">
+            <div class="admin-stat-card border border-info border-opacity-25 p-3 rounded-3" style="background: rgba(13, 202, 240, 0.06); height: 100%; cursor: pointer;" onclick="irASeccionCupones()" title="Ver sección de Cupones y descuentos">
+                <div class="admin-stat-label opacity-75"><i class="fas fa-ticket-alt me-1 text-info"></i> Cupones Disponibles</div>
+                <div class="fs-5 fw-bold text-info mt-1 text-nowrap" id="lbl-cupones-disponibles">$<?= number_format($resumenCupones['total_monetario_disponible'] ?? 0, 2) ?></div>
+                <div class="small text-white-50 mt-1" style="font-size: 0.74rem;">
+                    <span class="fw-semibold text-white"><?= $resumenCupones['cantidad_activos'] ?? 0 ?></span> activo(s)
+                    <?php if (($resumenCupones['cantidad_porcentuales'] ?? 0) > 0): ?>
+                        · <span class="text-info"><?= $resumenCupones['cantidad_porcentuales'] ?> en %</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Apartado colapsable: Cupones y Descuentos -->
+<?php 
+$tieneCuponesActivos = ($resumenCupones['cantidad_activos'] ?? 0) > 0;
+$cuponesLista = $cupones ?? [];
+?>
+<div class="card border-0 shadow-sm admin-card mb-4" id="seccion-cupones-cliente">
+    <div class="card-header border-bottom border-secondary border-opacity-25 py-3 bg-transparent d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <button class="btn btn-link text-decoration-none text-white fw-bold p-0 d-inline-flex align-items-center gap-2"
+                type="button" data-bs-toggle="collapse" data-bs-target="#collapseCuponesCliente"
+                aria-expanded="<?= $tieneCuponesActivos ? 'true' : 'false' ?>" aria-controls="collapseCuponesCliente">
+            <i class="fas fa-ticket-alt text-info"></i>
+            <span>Cupones y Descuentos</span>
+            <span class="badge bg-info text-dark rounded-pill"><?= $resumenCupones['cantidad_activos'] ?? 0 ?> disponible(s)</span>
+            <i class="fas fa-chevron-down small text-white-50 ms-1"></i>
+        </button>
+
+        <div class="d-flex flex-wrap align-items-center gap-2">
+            <span class="badge bg-dark border border-secondary border-opacity-50 text-white-50 px-3 py-2" style="font-size: 0.75rem;">
+                Total descuentos aplicados: <strong class="text-info">$<?= number_format($resumenCupones['total_descuentos_utilizados'] ?? 0, 2) ?></strong>
+            </span>
+            <button type="button" class="btn btn-sm btn-info text-dark rounded-pill px-3 fw-bold d-inline-flex align-items-center gap-1"
+                    onclick="abrirModalNuevoCupon(<?= $cliente['idCliente'] ?>, '<?= htmlspecialchars($cliente['nombre'], ENT_QUOTES, 'UTF-8') ?>')">
+                <i class="fas fa-plus"></i> Nuevo cupón
+            </button>
+        </div>
+    </div>
+
+    <div class="collapse <?= $tieneCuponesActivos ? 'show' : '' ?>" id="collapseCuponesCliente">
+        <!-- Filtros de cupones -->
+        <div class="p-3 border-bottom border-secondary border-opacity-25 bg-dark bg-opacity-25">
+            <div class="row g-2 align-items-end">
+                <div class="col-12 col-sm-4 col-md-3">
+                    <label class="form-label text-white-50 small mb-1">Filtrar por estado</label>
+                    <select class="form-select form-select-sm bg-dark text-white border-secondary" id="filtro-cupon-estado" onchange="filtrarTablaCupones()">
+                        <option value="todos">Todos los estados</option>
+                        <option value="disponible">Disponible</option>
+                        <option value="programado">Programado</option>
+                        <option value="utilizado">Utilizado</option>
+                        <option value="vencido">Vencido</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="col-6 col-sm-3 col-md-3">
+                    <label class="form-label text-white-50 small mb-1">Emisión desde</label>
+                    <input type="date" class="form-control form-control-sm bg-dark text-white border-secondary" id="filtro-cupon-desde" onchange="filtrarTablaCupones()">
+                </div>
+                <div class="col-6 col-sm-3 col-md-3">
+                    <label class="form-label text-white-50 small mb-1">Emisión hasta</label>
+                    <input type="date" class="form-control form-control-sm bg-dark text-white border-secondary" id="filtro-cupon-hasta" onchange="filtrarTablaCupones()">
+                </div>
+                <div class="col-12 col-sm-2 col-md-3 text-end">
+                    <button type="button" class="btn btn-sm btn-outline-secondary w-100" onclick="limpiarFiltrosCupones()">
+                        <i class="fas fa-eraser me-1"></i> Limpiar filtros
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 admin-table" id="tabla-cupones-cliente">
+                <thead class="text-muted admin-table-thead">
+                    <tr>
+                        <th class="ps-4 py-3 admin-table-th">Código</th>
+                        <th class="py-3 admin-table-th">Concepto</th>
+                        <th class="py-3 admin-table-th">Tipo</th>
+                        <th class="py-3 text-end admin-table-th">Valor</th>
+                        <th class="py-3 admin-table-th">Emisión</th>
+                        <th class="py-3 admin-table-th">Vencimiento</th>
+                        <th class="py-3 text-center admin-table-th">Usos disp.</th>
+                        <th class="py-3 text-center admin-table-th">Estado</th>
+                        <th class="py-3 admin-table-th">Fecha uso</th>
+                        <th class="py-3 admin-table-th">Folio / Ref.</th>
+                        <th class="py-3 text-end pe-4 admin-table-th">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php if (!empty($cuponesLista)): ?>
+                        <?php foreach ($cuponesLista as $cup): ?>
+                            <?php
+                            $est = $cup['estado_resuelto'] ?? $cup['estado'];
+                            $badgeMap = [
+                                'disponible' => ['bg-success', 'Disponible'],
+                                'programado' => ['bg-info text-dark', 'Programado'],
+                                'utilizado'  => ['bg-secondary', 'Utilizado'],
+                                'vencido'    => ['bg-warning text-dark', 'Vencido'],
+                                'cancelado'  => ['bg-danger', 'Cancelado'],
+                            ];
+                            $badgeCfg = $badgeMap[$est] ?? ['bg-secondary', ucfirst($est)];
+                            $usosRestantes = max(0, (int)$cup['limite_usos'] - (int)$cup['usos_realizados']);
+                            ?>
+                            <tr class="admin-table-tr cupon-row" data-estado="<?= esc($est) ?>" data-emision="<?= esc($cup['fecha_emision']) ?>">
+                                <td class="ps-4 py-3">
+                                    <div class="d-flex align-items-center gap-1">
+                                        <span class="badge bg-dark border border-info text-info font-monospace"><?= esc($cup['codigo']) ?></span>
+                                        <button type="button" class="btn btn-sm btn-link text-white-50 p-1" title="Copiar código"
+                                                onclick="copiarCodigoCupon('<?= esc($cup['codigo']) ?>', this)">
+                                            <i class="fas fa-copy"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                                <td class="py-3 text-white">
+                                    <div class="fw-semibold" style="font-size: 0.85rem;"><?= esc($cup['concepto']) ?></div>
+                                    <?php if (!empty($cup['motivo_origen'])): ?>
+                                        <small class="text-white-50" style="font-size: 0.72rem;"><?= esc($cup['motivo_origen']) ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="py-3 text-white-50 small">
+                                    <?= $cup['tipo_descuento'] === 'porcentaje' ? 'Porcentaje' : 'Importe fijo' ?>
+                                </td>
+                                <td class="py-3 text-end text-white fw-bold">
+                                    <?php if ($cup['tipo_descuento'] === 'porcentaje'): ?>
+                                        <?= number_format((float)$cup['valor'], 2) ?>%
+                                        <?php if (!empty($cup['descuento_maximo'])): ?>
+                                            <small class="d-block text-white-50 fw-normal" style="font-size: 0.7rem;">Máx $<?= number_format((float)$cup['descuento_maximo'], 2) ?></small>
+                                        <?php endif; ?>
+                                    <?php else: ?>
+                                        $<?= number_format((float)$cup['valor'], 2) ?>
+                                    <?php endif; ?>
+                                    <?php if (!empty($cup['compra_minima']) && (float)$cup['compra_minima'] > 0): ?>
+                                        <small class="d-block text-white-50 fw-normal" style="font-size: 0.7rem;">Mín $<?= number_format((float)$cup['compra_minima'], 2) ?></small>
+                                    <?php endif; ?>
+                                </td>
+                                <td class="py-3 text-white-50 small">
+                                    <?= date('d/m/Y', strtotime($cup['fecha_emision'])) ?>
+                                </td>
+                                <td class="py-3 text-white-50 small">
+                                    <?= !empty($cup['fecha_vencimiento']) ? date('d/m/Y', strtotime($cup['fecha_vencimiento'])) : '<span class="text-muted">Sin vencimiento</span>' ?>
+                                </td>
+                                <td class="py-3 text-center text-white font-monospace small">
+                                    <?= $usosRestantes ?> / <?= (int)$cup['limite_usos'] ?>
+                                </td>
+                                <td class="py-3 text-center">
+                                    <span class="badge <?= $badgeCfg[0] ?> font-monospace" style="font-size: 0.7rem;"><?= $badgeCfg[1] ?></span>
+                                </td>
+                                <td class="py-3 text-white-50 small">
+                                    <?= !empty($cup['ultima_fecha_uso']) ? date('d/m/Y H:i', strtotime($cup['ultima_fecha_uso'])) : '-' ?>
+                                </td>
+                                <td class="py-3 text-white-50 font-monospace small">
+                                    <?= !empty($cup['ultimo_folio_compra']) ? esc($cup['ultimo_folio_compra']) : '-' ?>
+                                </td>
+                                <td class="py-3 text-end pe-4">
+                                    <div class="d-inline-flex gap-1">
+                                        <button type="button" class="btn btn-sm btn-outline-info rounded-3 p-1.5" title="Ver detalle e historial"
+                                                onclick="verDetalleCupon(<?= (int)$cup['id'] ?>)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <?php if ((int)$cup['usos_realizados'] === 0 && $est !== 'cancelado'): ?>
+                                            <button type="button" class="btn btn-sm btn-warning text-dark rounded-3 p-1.5" title="Editar cupón"
+                                                    onclick="abrirModalEditarCupon(<?= htmlspecialchars(json_encode($cup), ENT_QUOTES, 'UTF-8') ?>, '<?= htmlspecialchars($cliente['nombre'], ENT_QUOTES, 'UTF-8') ?>')">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                        <?php if (in_array($est, ['disponible', 'programado'], true)): ?>
+                                            <button type="button" class="btn btn-sm btn-outline-danger rounded-3 p-1.5" title="Cancelar cupón"
+                                                    onclick="cancelarCupon(<?= (int)$cup['id'] ?>, '<?= esc($cup['codigo']) ?>')">
+                                                <i class="fas fa-ban"></i>
+                                            </button>
+                                        <?php endif; ?>
+                                    </div>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="11" class="text-center py-4 text-white-50 small">
+                                <i class="fas fa-ticket-alt fs-3 d-block mb-2 opacity-50"></i>
+                                Este cliente aún no tiene cupones registrados. Usa <strong>Nuevo cupón</strong> para otorgar un beneficio.
+                            </td>
+                        </tr>
+                    <?php endif; ?>
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
@@ -169,7 +372,19 @@ $waUrl = "https://wa.me/{$telefonoLimpio}?text=" . urlencode($mensaje);
                                 $<?= number_format($c['precioUnit'], 2) ?>
                             </td>
                             <td class="py-3 text-end text-white fw-bold">
-                                $<?= number_format($c['totalProduc'], 2) ?>
+                                <?php $descRow = (float)($c['descuento_aplicado'] ?? 0); ?>
+                                <?php if ($descRow > 0): ?>
+                                    <?php $origRow = $c['importe_original'] !== null ? (float)$c['importe_original'] : ((float)$c['totalProduc'] + $descRow); ?>
+                                    <small class="text-white-50 text-decoration-line-through d-block fw-normal" style="font-size: 0.75rem;">
+                                        $<?= number_format($origRow, 2) ?>
+                                    </small>
+                                    <span class="badge bg-info bg-opacity-25 text-info border border-info border-opacity-25 font-monospace d-inline-block my-0.5" style="font-size: 0.65rem;">
+                                        <?= !empty($c['codigo_cupon']) ? 'Cupón ' . esc($c['codigo_cupon']) : 'Desc. manual' ?>: -$<?= number_format($descRow, 2) ?>
+                                    </span>
+                                    <div class="fw-bold text-white">$<?= number_format($c['totalProduc'], 2) ?></div>
+                                <?php else: ?>
+                                    $<?= number_format($c['totalProduc'], 2) ?>
+                                <?php endif; ?>
                             </td>
                             <td class="py-3 text-center">
                                 <div class="form-check form-switch form-switch-premium d-inline-block">

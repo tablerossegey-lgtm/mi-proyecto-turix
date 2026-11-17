@@ -21,7 +21,15 @@ class CuentaClienteModel extends Model
         'totalProduc',
         'estatusCompra',
         'idInventario',
-        'estatus_entrega'
+        'estatus_entrega',
+        'folio_compra',
+        'importe_original',
+        'descuento_aplicado',
+        'id_cupon',
+        'codigo_cupon',
+        'tipo_descuento_aplicado',
+        'motivo_descuento',
+        'gastos_envio'
     ];
 
     // Dates

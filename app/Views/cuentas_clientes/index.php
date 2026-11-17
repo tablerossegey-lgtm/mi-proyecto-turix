@@ -366,11 +366,91 @@
                         </table>
                     </div>
 
-                    <!-- Gran Total Calculado -->
-                    <div
-                        class="p-3 rounded bg-dark border border-secondary border-opacity-25 d-flex justify-content-between align-items-center">
-                        <span class="small text-white-50 fw-bold">TOTAL ESTIMADO COMPRA:</span>
-                        <span class="fs-4 fw-bold text-success" id="lbl-total-calculado">$0.00</span>
+                    <!-- Sección: Aplicar cupón o descuento -->
+                    <div class="bg-dark p-3 rounded border border-info border-opacity-25 mb-3" id="seccion-aplicar-beneficio">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                            <h6 class="fw-bold mb-0 text-info">
+                                <i class="fas fa-ticket-alt me-1"></i> Aplicar cupón o descuento
+                            </h6>
+                            <span class="badge bg-info text-dark rounded-pill" id="badge-cupones-detectados" style="display:none;">
+                                0 disponible(s)
+                            </span>
+                        </div>
+
+                        <div class="btn-group w-100 mb-3" role="group" aria-label="Modo de descuento">
+                            <input type="radio" class="btn-check" name="modo_beneficio" id="beneficio_ninguno" value="ninguno" checked onchange="cambiarModoBeneficio('ninguno')">
+                            <label class="btn btn-sm btn-outline-secondary fw-bold" for="beneficio_ninguno">Sin beneficio</label>
+
+                            <input type="radio" class="btn-check" name="modo_beneficio" id="beneficio_cupon" value="cupon" onchange="cambiarModoBeneficio('cupon')">
+                            <label class="btn btn-sm btn-outline-info fw-bold" for="beneficio_cupon" id="lbl-tab-cupon">Usar cupón</label>
+
+                            <input type="radio" class="btn-check" name="modo_beneficio" id="beneficio_manual" value="manual" onchange="cambiarModoBeneficio('manual')">
+                            <label class="btn btn-sm btn-outline-warning fw-bold" for="beneficio_manual">Descuento manual</label>
+                        </div>
+
+                        <!-- Subpanel: Cupón disponible -->
+                        <div id="panel-beneficio-cupon" style="display: none;" class="mb-2">
+                            <label for="select_cupon_compra" class="form-label modal-encargo-label">Selecciona un cupón disponible del cliente</label>
+                            <select class="form-select modal-encargo-control text-white mb-2" id="select_cupon_compra" onchange="recalcularDesgloseCompra()">
+                                <option value="">-- Selecciona un cupón --</option>
+                            </select>
+                            <div id="info-cupon-seleccionado" class="small text-white-50 p-2 rounded border border-secondary border-opacity-25" style="display:none; background: rgba(0,0,0,0.2);"></div>
+                        </div>
+
+                        <!-- Subpanel: Descuento manual -->
+                        <div id="panel-beneficio-manual" style="display: none;" class="mb-2">
+                            <div class="row g-2">
+                                <div class="col-6 col-md-4">
+                                    <label class="form-label modal-encargo-label">Tipo</label>
+                                    <select class="form-select modal-encargo-control text-white" id="manual_tipo_desc" onchange="recalcularDesgloseCompra()">
+                                        <option value="fijo">Importe fijo ($)</option>
+                                        <option value="porcentaje">Porcentaje (%)</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-4">
+                                    <label class="form-label modal-encargo-label">Valor</label>
+                                    <input type="number" step="0.01" min="0" class="form-control modal-encargo-control text-white" id="manual_valor_desc" value="0.00" oninput="recalcularDesgloseCompra()">
+                                </div>
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label modal-encargo-label">Motivo obligatorio *</label>
+                                    <input type="text" class="form-control modal-encargo-control text-white" id="manual_motivo_desc" placeholder="Ej: Cortesía por fidelidad" oninput="recalcularDesgloseCompra()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="alerta-beneficio-compra" class="alert alert-warning py-2 px-3 small mb-0 mt-2" style="display: none;"></div>
+                    </div>
+
+                    <!-- Gastos adicionales / envío (no reciben descuento) -->
+                    <div class="row g-2 align-items-center mb-3">
+                        <div class="col-12 col-sm-7">
+                            <label for="gastos_envio_compra" class="form-label modal-encargo-label mb-0">
+                                <i class="fas fa-shipping-fast me-1 text-white-50"></i> Gastos de envío / adicionales ($) <small class="text-white-50">(no aplica descuento)</small>
+                            </label>
+                        </div>
+                        <div class="col-12 col-sm-5">
+                            <input type="number" step="0.01" min="0" class="form-control form-control-sm modal-encargo-control text-white text-end" id="gastos_envio_compra" value="0.00" oninput="recalcularDesgloseCompra()">
+                        </div>
+                    </div>
+
+                    <!-- Desglose y Gran Total Calculado -->
+                    <div class="p-3 rounded bg-dark border border-secondary border-opacity-25">
+                        <div class="d-flex justify-content-between align-items-center small text-white-50 mb-1">
+                            <span>Subtotal de productos:</span>
+                            <span id="lbl-subtotal-compra">$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-info mb-1" id="row-descuento-compra" style="display:none !important;">
+                            <span id="lbl-descuento-concepto">Descuento aplicado:</span>
+                            <span id="lbl-descuento-compra">-$0.00</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center small text-white-50 mb-1" id="row-envio-compra" style="display:none !important;">
+                            <span>Gastos de envío:</span>
+                            <span id="lbl-envio-compra">$0.00</span>
+                        </div>
+                        <div class="border-top border-secondary border-opacity-25 pt-2 mt-2 d-flex justify-content-between align-items-center">
+                            <span class="small text-white-50 fw-bold">TOTAL NETO DE LA COMPRA:</span>
+                            <span class="fs-4 fw-bold text-success" id="lbl-total-calculado">$0.00</span>
+                        </div>
                     </div>
                 </div>
 
@@ -669,6 +749,163 @@
         </div>
     </div>
 </div>
+<!-- MODAL: NUEVO / EDITAR CUPÓN -->
+<div class="modal fade" id="modalCupon" tabindex="-1" aria-labelledby="modalCuponLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-encargo-content text-white">
+            <div class="modal-header modal-encargo-header py-3 px-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title fw-bold text-white" id="modalCuponLabel">
+                    <i class="fas fa-ticket-alt me-2 text-info"></i> Nuevo Cupón
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="formCupon" onsubmit="guardarCupon(event)">
+                <input type="hidden" id="cupon_id" value="">
+                <input type="hidden" id="cupon_id_cliente" value="">
+                <div class="modal-body p-4">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label modal-encargo-label">Cliente asignado</label>
+                            <input type="text" class="form-control modal-encargo-control text-info fw-bold" id="cupon_nombre_cliente" readonly>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="cupon_codigo" class="form-label modal-encargo-label">Código único del cupón *</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control modal-encargo-control text-white text-uppercase font-monospace" id="cupon_codigo" placeholder="Ej: NAV26-001" required maxlength="50">
+                                <button type="button" class="btn btn-outline-info" onclick="generarCodigoCupon()" title="Generar código único">
+                                    <i class="fas fa-magic me-1"></i> Generar
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="cupon_concepto" class="form-label modal-encargo-label">Nombre o concepto del beneficio *</label>
+                            <input type="text" class="form-control modal-encargo-control text-white" id="cupon_concepto" placeholder="Ej: Premio navideño por fidelidad" required maxlength="150">
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="cupon_tipo" class="form-label modal-encargo-label">Tipo de descuento *</label>
+                            <select class="form-select modal-encargo-control text-white" id="cupon_tipo" onchange="toggleCamposTipoCupon()">
+                                <option value="fijo">Importe fijo ($)</option>
+                                <option value="porcentaje">Porcentaje (%)</option>
+                            </select>
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <label for="cupon_valor" class="form-label modal-encargo-label" id="lbl_cupon_valor">Valor del descuento ($) *</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control modal-encargo-control text-white" id="cupon_valor" required placeholder="30.00">
+                        </div>
+                        <div class="col-6 col-md-4">
+                            <label for="cupon_limite_usos" class="form-label modal-encargo-label">Límite de usos *</label>
+                            <input type="number" min="1" class="form-control modal-encargo-control text-white" id="cupon_limite_usos" value="1" required>
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="cupon_compra_minima" class="form-label modal-encargo-label">Importe mínimo de compra (opcional)</label>
+                            <input type="number" step="0.01" min="0" class="form-control modal-encargo-control text-white" id="cupon_compra_minima" placeholder="Sin mínimo">
+                        </div>
+                        <div class="col-12 col-md-6" id="grupo_cupon_descuento_maximo" style="display:none;">
+                            <label for="cupon_descuento_maximo" class="form-label modal-encargo-label">Importe máximo de descuento (opcional)</label>
+                            <input type="number" step="0.01" min="0.01" class="form-control modal-encargo-control text-white" id="cupon_descuento_maximo" placeholder="Sin límite máximo">
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label for="cupon_fecha_emision" class="form-label modal-encargo-label">Fecha de emisión *</label>
+                            <input type="date" class="form-control modal-encargo-control text-white" id="cupon_fecha_emision" value="<?= date('Y-m-d') ?>" required>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="cupon_fecha_inicio" class="form-label modal-encargo-label">Inicio de vigencia *</label>
+                            <input type="date" class="form-control modal-encargo-control text-white" id="cupon_fecha_inicio" value="<?= date('Y-m-d') ?>" required>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="cupon_fecha_vencimiento" class="form-label modal-encargo-label">Fecha de vencimiento (opcional)</label>
+                            <input type="date" class="form-control modal-encargo-control text-white" id="cupon_fecha_vencimiento">
+                        </div>
+
+                        <div class="col-12 col-md-6">
+                            <label for="cupon_motivo_origen" class="form-label modal-encargo-label">Motivo u origen del cupón</label>
+                            <input type="text" class="form-control modal-encargo-control text-white" id="cupon_motivo_origen" list="lista_motivos_cupon" placeholder="Ej: Reconocimiento por fidelidad">
+                            <datalist id="lista_motivos_cupon">
+                                <option value="Reconocimiento por fidelidad">
+                                <option value="Dinámica navideña">
+                                <option value="Promoción especial">
+                                <option value="Cumpleaños">
+                                <option value="Aniversario">
+                                <option value="Compensación comercial">
+                            </datalist>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="cupon_estado_preview" class="form-label modal-encargo-label">Estado</label>
+                            <input type="text" class="form-control modal-encargo-control text-white-50" id="cupon_estado_preview" value="Automático según vigencia y usos" readonly>
+                        </div>
+
+                        <div class="col-12">
+                            <label for="cupon_observaciones" class="form-label modal-encargo-label">Observaciones</label>
+                            <textarea class="form-control modal-encargo-control text-white" id="cupon_observaciones" rows="2" placeholder="Notas administrativas o referencia de la tarjeta/campaña..."></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer modal-encargo-footer d-flex gap-2" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-info text-dark rounded-pill px-4 fw-bold" id="btn-guardar-cupon">
+                        <i class="fas fa-save me-1"></i> Guardar Cupón
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: DETALLE E HISTORIAL DE CUPÓN -->
+<div class="modal fade" id="modalDetalleCupon" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content modal-encargo-content text-white">
+            <div class="modal-header modal-encargo-header py-3 px-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title fw-bold text-white">
+                    <i class="fas fa-ticket-alt me-2 text-info"></i> Detalle del Cupón
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="detalle-cupon-body">
+                <div class="text-center py-4 text-white-50">
+                    <div class="spinner-border text-info" role="status"></div>
+                </div>
+            </div>
+            <div class="modal-footer modal-encargo-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: CANCELAR CUPÓN -->
+<div class="modal fade" id="modalCancelarCupon" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content modal-encargo-content text-white">
+            <div class="modal-header modal-encargo-header py-3 px-4" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="fas fa-ban me-2"></i> Cancelar Cupón
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <input type="hidden" id="cancelar_cupon_id" value="">
+                <p class="text-white-50 mb-3">
+                    ¿Deseas cancelar el cupón <strong class="text-info font-monospace" id="cancelar_cupon_codigo"></strong>?
+                    El cupón conservará su historial pero no podrá ser utilizado en futuras compras.
+                </p>
+                <label for="cancelar_cupon_motivo" class="form-label modal-encargo-label">Motivo de cancelación</label>
+                <input type="text" class="form-control modal-encargo-control text-white" id="cancelar_cupon_motivo" placeholder="Ej: Cancelado por el administrador">
+            </div>
+            <div class="modal-footer modal-encargo-footer d-flex gap-2" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-danger rounded-pill px-4 fw-bold" id="btn-confirmar-cancelar-cupon" onclick="confirmarCancelarCupon()">
+                    Confirmar Cancelación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- MODAL: REGISTRAR ABONO / PAGO -->
 <div class="modal fade" id="modalRegistrarAbono" tabindex="-1" aria-labelledby="modalRegistrarAbonoLabel"
     aria-hidden="true">
@@ -791,7 +1028,7 @@
                 </tr>
             `;
             if (btnSubmit) btnSubmit.disabled = true;
-            document.getElementById('lbl-total-calculado').innerText = '$0.00';
+            recalcularDesgloseCompra();
             return;
         }
 
@@ -821,7 +1058,7 @@
             tbody.appendChild(tr);
         });
 
-        document.getElementById('lbl-total-calculado').innerText = '$' + granTotal.toFixed(2);
+        recalcularDesgloseCompra();
     }
 
     // Eliminar producto de la lista temporal
@@ -970,13 +1207,61 @@
         initProductoSearchAutocomplete();
     }
 
+    let cuponesDisponiblesCompra = [];
+
     // Función para configurar y abrir el modal de registrar compra
     function abrirModalNuevaCompra(idCliente) {
         document.getElementById('modal_id_cliente').value = idCliente;
         document.getElementById('formNuevaCompra').reset();
         listaProductos = [];
+        cuponesDisponiblesCompra = [];
+        document.getElementById('beneficio_ninguno').checked = true;
+        cambiarModoBeneficio('ninguno');
+        document.getElementById('gastos_envio_compra').value = '0.00';
         renderListaProductos();
         toggleTipoForm('inventario');
+
+        // Detectar cupones disponibles del cliente
+        const selectCupon = document.getElementById('select_cupon_compra');
+        const badgeCupones = document.getElementById('badge-cupones-detectados');
+        const radioCupon = document.getElementById('beneficio_cupon');
+        const lblTabCupon = document.getElementById('lbl-tab-cupon');
+
+        selectCupon.innerHTML = '<option value="">Cargando cupones...</option>';
+        badgeCupones.style.display = 'none';
+        radioCupon.disabled = true;
+        lblTabCupon.classList.add('disabled', 'opacity-50');
+
+        fetch('<?= base_url("admin/cuentas/cupones/disponibles") ?>/' + idCliente)
+            .then(r => r.json())
+            .then(res => {
+                cuponesDisponiblesCompra = (res && res.success && Array.isArray(res.cupones)) ? res.cupones : [];
+                selectCupon.innerHTML = '<option value="">-- Selecciona un cupón --</option>';
+
+                if (cuponesDisponiblesCompra.length > 0) {
+                    badgeCupones.innerText = cuponesDisponiblesCompra.length + ' disponible(s)';
+                    badgeCupones.style.display = 'inline-block';
+                    radioCupon.disabled = false;
+                    lblTabCupon.classList.remove('disabled', 'opacity-50');
+
+                    cuponesDisponiblesCompra.forEach(c => {
+                        const valStr = c.tipo_descuento === 'porcentaje'
+                            ? parseFloat(c.valor).toFixed(2) + '%'
+                            : '$' + parseFloat(c.valor).toFixed(2);
+                        const opt = document.createElement('option');
+                        opt.value = c.id;
+                        opt.textContent = `${c.codigo} — ${c.concepto} (${valStr})`;
+                        selectCupon.appendChild(opt);
+                    });
+                } else {
+                    selectCupon.innerHTML = '<option value="">El cliente no tiene cupones disponibles</option>';
+                }
+                recalcularDesgloseCompra();
+            })
+            .catch(() => {
+                selectCupon.innerHTML = '<option value="">No se pudieron cargar los cupones</option>';
+            });
+
         const modal = new bootstrap.Modal(document.getElementById('modalNuevaCompra'));
         modal.show();
     }
@@ -1142,6 +1427,12 @@
                     return;
                 }
 
+                const desglose = recalcularDesgloseCompra();
+                if (!desglose.valido) {
+                    alert(desglose.error || 'Verifica el cupón o descuento seleccionado antes de confirmar.');
+                    return;
+                }
+
                 const btnSubmit = document.getElementById('btn-registrar-compra-submit');
                 if (btnSubmit) {
                     btnSubmit.disabled = true;
@@ -1156,7 +1447,9 @@
                     id_cliente: idCliente,
                     fecha_compra: fechaCompra,
                     estatus_compra: estatusCompra,
-                    productos: listaProductos
+                    productos: listaProductos,
+                    gastos_envio: desglose.gastosEnvio,
+                    beneficio: desglose.beneficio
                 };
 
                 fetch(formNuevaCompra.action, {
@@ -1652,6 +1945,438 @@
         });
     }
 
+    // =========================================================================
+    // FUNCIONES DE CUPONES Y DESCUENTOS
+    // =========================================================================
+
+    function cambiarModoBeneficio(modo) {
+        document.getElementById('panel-beneficio-cupon').style.display = (modo === 'cupon') ? 'block' : 'none';
+        document.getElementById('panel-beneficio-manual').style.display = (modo === 'manual') ? 'block' : 'none';
+        recalcularDesgloseCompra();
+    }
+
+    function recalcularDesgloseCompra() {
+        let subtotal = 0.0;
+        listaProductos.forEach(p => {
+            subtotal += (parseInt(p.cantidad, 10) || 0) * (parseFloat(p.precio_unit) || 0);
+        });
+        subtotal = Math.round(subtotal * 100) / 100;
+
+        const gastosEnvioEl = document.getElementById('gastos_envio_compra');
+        const gastosEnvio = Math.max(0, Math.round((parseFloat(gastosEnvioEl ? gastosEnvioEl.value : 0) || 0) * 100) / 100);
+
+        const modoEl = document.querySelector('input[name="modo_beneficio"]:checked');
+        const modo = modoEl ? modoEl.value : 'ninguno';
+
+        const alertaEl = document.getElementById('alerta-beneficio-compra');
+        const infoCuponEl = document.getElementById('info-cupon-seleccionado');
+        const rowDescEl = document.getElementById('row-descuento-compra');
+        const rowEnvioEl = document.getElementById('row-envio-compra');
+
+        let descuento = 0.0;
+        let valido = true;
+        let errorMsg = '';
+        let conceptoDesc = 'Descuento aplicado:';
+        let beneficio = { modo: 'ninguno' };
+
+        if (alertaEl) {
+            alertaEl.style.display = 'none';
+            alertaEl.innerText = '';
+        }
+        if (infoCuponEl) infoCuponEl.style.display = 'none';
+
+        if (modo === 'cupon') {
+            const idCupon = parseInt(document.getElementById('select_cupon_compra').value || '0', 10);
+            const cupon = cuponesDisponiblesCompra.find(c => parseInt(c.id, 10) === idCupon);
+
+            if (!cupon) {
+                valido = false;
+                errorMsg = 'Selecciona un cupón disponible de la lista o elige "Sin beneficio".';
+            } else {
+                const valCupon = parseFloat(cupon.valor) || 0;
+                const minCompra = parseFloat(cupon.compra_minima) || 0;
+                const maxDesc = parseFloat(cupon.descuento_maximo) || 0;
+                const limiteUsos = parseInt(cupon.limite_usos, 10) || 1;
+
+                if (infoCuponEl) {
+                    const valTxt = cupon.tipo_descuento === 'porcentaje' ? valCupon.toFixed(2) + '%' : '$' + valCupon.toFixed(2);
+                    const minTxt = minCompra > 0 ? 'Compra mín: $' + minCompra.toFixed(2) : 'Sin mínimo';
+                    const vigTxt = cupon.fecha_vencimiento ? 'Vence: ' + cupon.fecha_vencimiento : 'Sin vencimiento';
+                    infoCuponEl.innerHTML = `<strong class="text-info">${cupon.codigo}</strong> · ${cupon.concepto} · Valor: <strong>${valTxt}</strong> · ${minTxt} · ${vigTxt}`;
+                    infoCuponEl.style.display = 'block';
+                }
+
+                if (subtotal <= 0) {
+                    valido = false;
+                    errorMsg = 'Agrega productos a la compra para calcular el descuento del cupón.';
+                } else if (minCompra > 0 && subtotal < minCompra) {
+                    valido = false;
+                    errorMsg = `La compra requiere un mínimo de $${minCompra.toFixed(2)} para usar este cupón.`;
+                } else if (cupon.tipo_descuento === 'fijo') {
+                    if (limiteUsos === 1 && valCupon > subtotal) {
+                        valido = false;
+                        errorMsg = `El cupón ($${valCupon.toFixed(2)}) supera el subtotal elegible ($${subtotal.toFixed(2)}). Conserva este cupón de un solo uso para una compra posterior.`;
+                    } else {
+                        descuento = Math.min(valCupon, subtotal);
+                    }
+                } else if (cupon.tipo_descuento === 'porcentaje') {
+                    descuento = Math.round(subtotal * (valCupon / 100) * 100) / 100;
+                    if (maxDesc > 0) descuento = Math.min(descuento, maxDesc);
+                    descuento = Math.min(descuento, subtotal);
+                }
+
+                if (valido) {
+                    conceptoDesc = `Cupón ${cupon.codigo}:`;
+                    beneficio = { modo: 'cupon', id_cupon: idCupon };
+                }
+            }
+        } else if (modo === 'manual') {
+            const tipoManual = document.getElementById('manual_tipo_desc').value;
+            const valorManual = parseFloat(document.getElementById('manual_valor_desc').value) || 0;
+            const motivoManual = (document.getElementById('manual_motivo_desc').value || '').trim();
+
+            if (subtotal <= 0) {
+                valido = false;
+                errorMsg = 'Agrega productos antes de aplicar un descuento manual.';
+            } else if (valorManual <= 0) {
+                valido = false;
+                errorMsg = 'Ingresa un valor mayor a 0 para el descuento manual.';
+            } else if (motivoManual === '') {
+                valido = false;
+                errorMsg = 'Debes especificar el motivo obligatorio para el descuento manual.';
+            } else if (tipoManual === 'fijo') {
+                if (valorManual > subtotal) {
+                    valido = false;
+                    errorMsg = `El descuento manual no puede superar el subtotal ($${subtotal.toFixed(2)}).`;
+                } else {
+                    descuento = valorManual;
+                }
+            } else if (tipoManual === 'porcentaje') {
+                if (valorManual > 100) {
+                    valido = false;
+                    errorMsg = 'El porcentaje no puede ser mayor a 100%.';
+                } else {
+                    descuento = Math.round(subtotal * (valorManual / 100) * 100) / 100;
+                }
+            }
+
+            if (valido) {
+                conceptoDesc = `Descuento manual (${motivoManual}):`;
+                beneficio = {
+                    modo: 'manual',
+                    tipo_manual: tipoManual,
+                    valor_manual: valorManual,
+                    motivo_manual: motivoManual
+                };
+            }
+        }
+
+        if (!valido && errorMsg && alertaEl && listaProductos.length > 0) {
+            alertaEl.innerText = errorMsg;
+            alertaEl.style.display = 'block';
+        }
+
+        descuento = Math.round(descuento * 100) / 100;
+        const totalNeto = Math.max(0, Math.round((subtotal - descuento + gastosEnvio) * 100) / 100);
+
+        document.getElementById('lbl-subtotal-compra').innerText = '$' + subtotal.toFixed(2);
+        if (descuento > 0) {
+            rowDescEl.style.setProperty('display', 'flex', 'important');
+            document.getElementById('lbl-descuento-concepto').innerText = conceptoDesc;
+            document.getElementById('lbl-descuento-compra').innerText = '-$' + descuento.toFixed(2);
+        } else {
+            rowDescEl.style.setProperty('display', 'none', 'important');
+        }
+
+        if (gastosEnvio > 0) {
+            rowEnvioEl.style.setProperty('display', 'flex', 'important');
+            document.getElementById('lbl-envio-compra').innerText = '$' + gastosEnvio.toFixed(2);
+        } else {
+            rowEnvioEl.style.setProperty('display', 'none', 'important');
+        }
+
+        document.getElementById('lbl-total-calculado').innerText = '$' + totalNeto.toFixed(2);
+
+        return { valido, error: errorMsg, subtotal, descuento, gastosEnvio, totalNeto, beneficio };
+    }
+
+    function irASeccionCupones() {
+        const seccion = document.getElementById('seccion-cupones-cliente');
+        const collapseEl = document.getElementById('collapseCuponesCliente');
+        if (collapseEl && !collapseEl.classList.contains('show')) {
+            new bootstrap.Collapse(collapseEl, { toggle: true });
+        }
+        if (seccion) {
+            seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    }
+
+    function toggleCamposTipoCupon() {
+        const tipo = document.getElementById('cupon_tipo').value;
+        const grupoMax = document.getElementById('grupo_cupon_descuento_maximo');
+        const lblValor = document.getElementById('lbl_cupon_valor');
+        if (tipo === 'porcentaje') {
+            grupoMax.style.display = 'block';
+            lblValor.innerText = 'Porcentaje de descuento (%) *';
+        } else {
+            grupoMax.style.display = 'none';
+            document.getElementById('cupon_descuento_maximo').value = '';
+            lblValor.innerText = 'Valor del descuento ($) *';
+        }
+    }
+
+    function abrirModalNuevoCupon(idCliente, nombreCliente) {
+        document.getElementById('formCupon').reset();
+        document.getElementById('cupon_id').value = '';
+        document.getElementById('cupon_id_cliente').value = idCliente;
+        document.getElementById('cupon_nombre_cliente').value = nombreCliente;
+        document.getElementById('cupon_fecha_emision').value = '<?= date('Y-m-d') ?>';
+        document.getElementById('cupon_fecha_inicio').value = '<?= date('Y-m-d') ?>';
+        document.getElementById('cupon_limite_usos').value = '1';
+        document.getElementById('cupon_estado_preview').value = 'Automático según vigencia y usos';
+        document.getElementById('modalCuponLabel').innerHTML = '<i class="fas fa-ticket-alt me-2 text-info"></i> Nuevo Cupón';
+        toggleCamposTipoCupon();
+        generarCodigoCupon();
+        new bootstrap.Modal(document.getElementById('modalCupon')).show();
+    }
+
+    function abrirModalEditarCupon(cupon, nombreCliente) {
+        document.getElementById('formCupon').reset();
+        document.getElementById('cupon_id').value = cupon.id;
+        document.getElementById('cupon_id_cliente').value = cupon.id_cliente;
+        document.getElementById('cupon_nombre_cliente').value = nombreCliente;
+        document.getElementById('cupon_codigo').value = cupon.codigo;
+        document.getElementById('cupon_concepto').value = cupon.concepto;
+        document.getElementById('cupon_tipo').value = cupon.tipo_descuento;
+        document.getElementById('cupon_valor').value = cupon.valor;
+        document.getElementById('cupon_limite_usos').value = cupon.limite_usos;
+        document.getElementById('cupon_compra_minima').value = cupon.compra_minima || '';
+        document.getElementById('cupon_descuento_maximo').value = cupon.descuento_maximo || '';
+        document.getElementById('cupon_fecha_emision').value = cupon.fecha_emision;
+        document.getElementById('cupon_fecha_inicio').value = cupon.fecha_inicio;
+        document.getElementById('cupon_fecha_vencimiento').value = cupon.fecha_vencimiento || '';
+        document.getElementById('cupon_motivo_origen').value = cupon.motivo_origen || '';
+        document.getElementById('cupon_observaciones').value = cupon.observaciones || '';
+        document.getElementById('cupon_estado_preview').value = (cupon.estado_resuelto || cupon.estado || '').toUpperCase();
+        document.getElementById('modalCuponLabel').innerHTML = '<i class="fas fa-edit me-2 text-warning"></i> Editar Cupón';
+        toggleCamposTipoCupon();
+        new bootstrap.Modal(document.getElementById('modalCupon')).show();
+    }
+
+    function generarCodigoLocal(prefijo = 'CUP') {
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+        let rand = '';
+        for (let i = 0; i < 6; i++) {
+            rand += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return prefijo + '-' + rand;
+    }
+
+    function generarCodigoCupon() {
+        const inputCodigo = document.getElementById('cupon_codigo');
+        fetch('<?= base_url("admin/cuentas/cupones/generar-codigo") ?>', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+            .then(r => {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.json();
+            })
+            .then(res => {
+                if (res && res.success && res.codigo) {
+                    inputCodigo.value = res.codigo;
+                } else {
+                    inputCodigo.value = generarCodigoLocal('CUP');
+                }
+            })
+            .catch(() => {
+                inputCodigo.value = generarCodigoLocal('CUP');
+            });
+    }
+
+    function recargarPanelCliente(idCliente) {
+        const clientItem = document.getElementById('client-item-' + idCliente);
+        if (clientItem) {
+            clientItem.click();
+        }
+    }
+
+    function guardarCupon(e) {
+        e.preventDefault();
+        const idCupon = document.getElementById('cupon_id').value;
+        const idCliente = document.getElementById('cupon_id_cliente').value;
+        const btn = document.getElementById('btn-guardar-cupon');
+        btn.disabled = true;
+
+        const payload = {
+            id_cliente: idCliente,
+            codigo: document.getElementById('cupon_codigo').value.trim(),
+            concepto: document.getElementById('cupon_concepto').value.trim(),
+            tipo_descuento: document.getElementById('cupon_tipo').value,
+            valor: document.getElementById('cupon_valor').value,
+            limite_usos: document.getElementById('cupon_limite_usos').value,
+            compra_minima: document.getElementById('cupon_compra_minima').value,
+            descuento_maximo: document.getElementById('cupon_descuento_maximo').value,
+            fecha_emision: document.getElementById('cupon_fecha_emision').value,
+            fecha_inicio: document.getElementById('cupon_fecha_inicio').value,
+            fecha_vencimiento: document.getElementById('cupon_fecha_vencimiento').value,
+            motivo_origen: document.getElementById('cupon_motivo_origen').value.trim(),
+            observaciones: document.getElementById('cupon_observaciones').value.trim()
+        };
+
+        const url = idCupon
+            ? '<?= base_url("admin/cuentas/cupones/editar") ?>/' + idCupon
+            : '<?= base_url("admin/cuentas/cupones/crear") ?>';
+
+        fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify(payload)
+        })
+        .then(r => r.json())
+        .then(res => {
+            btn.disabled = false;
+            if (res && res.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalCupon'));
+                if (modal) modal.hide();
+                mostrarToastExito(res.message || 'Cupón guardado con éxito.');
+                recargarPanelCliente(idCliente);
+            } else {
+                alert((res && res.message) || 'No se pudo guardar el cupón.');
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            alert('Error de comunicación al guardar el cupón.');
+        });
+    }
+
+    function verDetalleCupon(idCupon) {
+        const body = document.getElementById('detalle-cupon-body');
+        body.innerHTML = '<div class="text-center py-4 text-white-50"><div class="spinner-border text-info"></div></div>';
+        new bootstrap.Modal(document.getElementById('modalDetalleCupon')).show();
+
+        fetch('<?= base_url("admin/cuentas/cupones/detalle") ?>/' + idCupon)
+            .then(r => r.json())
+            .then(res => {
+                if (!res || !res.success) {
+                    body.innerHTML = '<div class="alert alert-danger">No se pudo cargar el detalle del cupón.</div>';
+                    return;
+                }
+                const c = res.cupon;
+                const valTxt = c.tipo_descuento === 'porcentaje' ? parseFloat(c.valor).toFixed(2) + '%' : '$' + parseFloat(c.valor).toFixed(2);
+                let usosHtml = '<p class="text-white-50 small mb-0">Sin usos registrados.</p>';
+                if (res.usos && res.usos.length > 0) {
+                    usosHtml = '<ul class="list-group list-group-flush">' + res.usos.map(u => `
+                        <li class="list-group-item bg-transparent text-white border-secondary border-opacity-25 px-0 py-2 small">
+                            <span class="badge ${u.estado === 'aplicado' ? 'bg-success' : 'bg-secondary'} me-1">${u.estado.toUpperCase()}</span>
+                            <strong>${u.folio_compra}</strong> · ${u.fecha_uso} · Descuento: <strong class="text-info">-$${parseFloat(u.descuento_aplicado).toFixed(2)}</strong>
+                            (Subtotal: $${parseFloat(u.subtotal_original).toFixed(2)} → Neto: $${parseFloat(u.total_neto).toFixed(2)})
+                        </li>
+                    `).join('') + '</ul>';
+                }
+
+                let bitacoraHtml = '<p class="text-white-50 small mb-0">Sin movimientos en bitácora.</p>';
+                if (res.bitacora && res.bitacora.length > 0) {
+                    bitacoraHtml = '<ul class="list-group list-group-flush">' + res.bitacora.map(b => `
+                        <li class="list-group-item bg-transparent text-white-50 border-secondary border-opacity-25 px-0 py-2 small">
+                            <span class="badge bg-dark border border-secondary text-white me-1">${b.accion}</span>
+                            <span class="text-white">${b.detalle || ''}</span>
+                            <div class="text-muted mt-0.5" style="font-size: 0.72rem;">${b.creado_en} · Por: ${b.usuario_nombre || 'Sistema'}</div>
+                        </li>
+                    `).join('') + '</ul>';
+                }
+
+                body.innerHTML = `
+                    <div class="row g-3 mb-3">
+                        <div class="col-6 col-md-4"><small class="text-white-50 d-block">Código</small><strong class="text-info font-monospace fs-5">${c.codigo}</strong></div>
+                        <div class="col-6 col-md-4"><small class="text-white-50 d-block">Estado</small><span class="badge bg-info text-dark text-uppercase">${c.estado_resuelto}</span></div>
+                        <div class="col-12 col-md-4"><small class="text-white-50 d-block">Valor</small><strong class="text-white fs-5">${valTxt}</strong></div>
+                        <div class="col-12"><small class="text-white-50 d-block">Concepto</small><span class="text-white">${c.concepto}</span></div>
+                        <div class="col-6 col-md-4"><small class="text-white-50 d-block">Emisión</small><span>${c.fecha_emision}</span></div>
+                        <div class="col-6 col-md-4"><small class="text-white-50 d-block">Vigencia</small><span>${c.fecha_inicio} a ${c.fecha_vencimiento || 'Sin vencimiento'}</span></div>
+                        <div class="col-6 col-md-4"><small class="text-white-50 d-block">Usos</small><span>${c.usos_realizados} / ${c.limite_usos}</span></div>
+                        ${c.motivo_origen ? `<div class="col-12"><small class="text-white-50 d-block">Motivo / Origen</small><span>${c.motivo_origen}</span></div>` : ''}
+                        ${c.observaciones ? `<div class="col-12"><small class="text-white-50 d-block">Observaciones</small><span>${c.observaciones}</span></div>` : ''}
+                    </div>
+                    <h6 class="fw-bold text-info border-top border-secondary border-opacity-25 pt-3">Historial de usos</h6>
+                    ${usosHtml}
+                    <h6 class="fw-bold text-warning border-top border-secondary border-opacity-25 pt-3 mt-3">Bitácora de auditoría</h6>
+                    ${bitacoraHtml}
+                `;
+            })
+            .catch(() => {
+                body.innerHTML = '<div class="alert alert-danger">Error al consultar el detalle.</div>';
+            });
+    }
+
+    function cancelarCupon(idCupon, codigo) {
+        document.getElementById('cancelar_cupon_id').value = idCupon;
+        document.getElementById('cancelar_cupon_codigo').innerText = codigo;
+        document.getElementById('cancelar_cupon_motivo').value = '';
+        new bootstrap.Modal(document.getElementById('modalCancelarCupon')).show();
+    }
+
+    function confirmarCancelarCupon() {
+        const idCupon = document.getElementById('cancelar_cupon_id').value;
+        const motivo = document.getElementById('cancelar_cupon_motivo').value.trim();
+        const btn = document.getElementById('btn-confirmar-cancelar-cupon');
+        btn.disabled = true;
+
+        fetch('<?= base_url("admin/cuentas/cupones/cancelar") ?>/' + idCupon, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ motivo })
+        })
+        .then(r => r.json())
+        .then(res => {
+            btn.disabled = false;
+            if (res && res.success) {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('modalCancelarCupon'));
+                if (modal) modal.hide();
+                mostrarToastExito(res.message || 'Cupón cancelado.');
+                if (window.activeClientId) recargarPanelCliente(window.activeClientId);
+            } else {
+                alert((res && res.message) || 'No se pudo cancelar el cupón.');
+            }
+        })
+        .catch(() => {
+            btn.disabled = false;
+            alert('Error de conexión al cancelar el cupón.');
+        });
+    }
+
+    function copiarCodigoCupon(codigo, btn) {
+        navigator.clipboard.writeText(codigo).then(() => {
+            mostrarToastExito('Código ' + codigo + ' copiado al portapapeles.');
+        }).catch(() => {});
+    }
+
+    function filtrarTablaCupones() {
+        const estado = document.getElementById('filtro-cupon-estado').value;
+        const desde = document.getElementById('filtro-cupon-desde').value;
+        const hasta = document.getElementById('filtro-cupon-hasta').value;
+        const rows = document.querySelectorAll('#tabla-cupones-cliente tbody tr.cupon-row');
+
+        rows.forEach(tr => {
+            const rowEstado = tr.getAttribute('data-estado') || '';
+            const rowEmision = tr.getAttribute('data-emision') || '';
+            let visible = true;
+
+            if (estado !== 'todos' && rowEstado !== estado) visible = false;
+            if (desde && rowEmision < desde) visible = false;
+            if (hasta && rowEmision > hasta) visible = false;
+
+            tr.style.display = visible ? '' : 'none';
+        });
+    }
+
+    function limpiarFiltrosCupones() {
+        document.getElementById('filtro-cupon-estado').value = 'todos';
+        document.getElementById('filtro-cupon-desde').value = '';
+        document.getElementById('filtro-cupon-hasta').value = '';
+        filtrarTablaCupones();
+    }
+
     // Exportar funciones globales al objeto window para acceso desde atributos HTML
     window.seleccionarCliente = seleccionarCliente;
     window.toggleTipoForm = toggleTipoForm;
@@ -1667,6 +2392,20 @@
     window.mostrarToastExito = mostrarToastExito;
     window.mostrarToastError = mostrarToastError;
     window.copiarEstadoCuenta = copiarEstadoCuenta;
+    window.cambiarModoBeneficio = cambiarModoBeneficio;
+    window.recalcularDesgloseCompra = recalcularDesgloseCompra;
+    window.irASeccionCupones = irASeccionCupones;
+    window.toggleCamposTipoCupon = toggleCamposTipoCupon;
+    window.abrirModalNuevoCupon = abrirModalNuevoCupon;
+    window.abrirModalEditarCupon = abrirModalEditarCupon;
+    window.generarCodigoCupon = generarCodigoCupon;
+    window.guardarCupon = guardarCupon;
+    window.verDetalleCupon = verDetalleCupon;
+    window.cancelarCupon = cancelarCupon;
+    window.confirmarCancelarCupon = confirmarCancelarCupon;
+    window.copiarCodigoCupon = copiarCodigoCupon;
+    window.filtrarTablaCupones = filtrarTablaCupones;
+    window.limpiarFiltrosCupones = limpiarFiltrosCupones;
 })();
 </script>
 <?= $this->endSection() ?>

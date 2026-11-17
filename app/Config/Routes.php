@@ -62,6 +62,14 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->post('cuentas/crear-cliente', 'CuentasClientes::crearCliente');
     $routes->get('cuentas/buscar-productos', 'CuentasClientes::buscarProductosJson');
 
+    // Rutas de Cupones y Descuentos en Cuentas de Clientes
+    $routes->get('cuentas/cupones/generar-codigo', 'Cupones::generarCodigo');
+    $routes->get('cuentas/cupones/disponibles/(:num)', 'Cupones::disponibles/$1');
+    $routes->get('cuentas/cupones/detalle/(:num)', 'Cupones::detalle/$1');
+    $routes->post('cuentas/cupones/crear', 'Cupones::crear');
+    $routes->post('cuentas/cupones/editar/(:num)', 'Cupones::editar/$1');
+    $routes->post('cuentas/cupones/cancelar/(:num)', 'Cupones::cancelar/$1');
+
     // Rutas de Caja Chica
     $routes->get('caja', 'CajaChica::index');
     $routes->post('caja/crear', 'CajaChica::crear');
