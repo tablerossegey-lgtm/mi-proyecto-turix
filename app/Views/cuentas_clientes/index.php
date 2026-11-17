@@ -24,7 +24,11 @@
                 tus clientes fijos.</p>
             <div class="admin-subtitle-line" style="background-color: #28a745;"></div>
         </div>
-        <div>
+        <div class="d-flex flex-wrap gap-2">
+            <a href="<?= base_url('admin/cuentas/ranking') ?>"
+                class="btn btn-warning rounded-pill px-4 fw-bold d-inline-flex align-items-center gap-2 shadow-sm">
+                <i class="fas fa-trophy"></i> Ranking de Fidelidad
+            </a>
             <a href="<?= base_url('admin/productos') ?>"
                 class="btn btn-outline-dark rounded-pill px-4 fw-semibold d-inline-flex align-items-center gap-2">
                 <i class="fas fa-arrow-left"></i> Volver a Productos

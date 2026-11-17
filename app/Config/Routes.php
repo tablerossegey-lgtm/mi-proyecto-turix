@@ -48,6 +48,9 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
 
     // Rutas de Cuentas de Clientes
     $routes->get('cuentas', 'CuentasClientes::index');
+    $routes->get('cuentas/ranking', 'RankingFidelidad::index');
+    $routes->get('cuentas/ranking/detalle/(:num)', 'RankingFidelidad::detalle/$1');
+    $routes->get('cuentas/ranking/exportar', 'RankingFidelidad::exportar');
     $routes->get('cuentas/compras/(:num)', 'CuentasClientes::obtenerCompras/$1');
     $routes->post('cuentas/crear', 'CuentasClientes::crear');
     $routes->post('cuentas/abonar', 'CuentasClientes::registrarAbono');

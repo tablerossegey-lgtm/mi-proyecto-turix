@@ -331,6 +331,12 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-ranking"
+                                        id="admin-item-ranking" href="<?= base_url('admin/cuentas/ranking') ?>">
+                                        <i class="bi bi-trophy text-warning"></i> Ranking de Fidelidad
+                                    </a>
+                                </li>
+                                <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-caja"
                                         id="admin-item-caja" href="<?= base_url('admin/caja') ?>">
                                         <i class="bi bi-cash-coin"></i> Consultar mi Caja
