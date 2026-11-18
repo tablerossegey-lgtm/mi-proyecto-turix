@@ -337,6 +337,12 @@
                                     </a>
                                 </li>
                                 <li>
+                                    <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-dinamicas"
+                                        id="admin-item-dinamicas" href="<?= base_url('admin/dinamicas') ?>">
+                                        <i class="bi bi-gift text-warning"></i> Rifas y dinámicas
+                                    </a>
+                                </li>
+                                <li>
                                     <a class="dropdown-item d-flex align-items-center gap-2 py-2 px-3 rounded admin-item-caja"
                                         id="admin-item-caja" href="<?= base_url('admin/caja') ?>">
                                         <i class="bi bi-cash-coin"></i> Consultar mi Caja

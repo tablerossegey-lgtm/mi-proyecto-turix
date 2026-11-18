@@ -695,6 +695,7 @@
                     style="background-color: #1a2238; border: 1px solid rgba(255,255,255,0.05); font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; line-height: 1.6; max-height: 55vh; overflow-y: auto;">
                     <div id="ticket-content" style="white-space: pre-wrap; color: #ffffff;"></div>
                 </div>
+                <div id="ticket-dinamicas-avisos" class="text-start mb-3 d-none"></div>
 
                 <button type="button"
                     class="btn w-100 py-3 rounded-pill fw-bold text-dark d-flex align-items-center justify-content-center gap-2 mb-2"
@@ -1486,6 +1487,22 @@
 
                         // Cargar y formatear texto en el modal del ticket
                         document.getElementById('ticket-content').innerHTML = formatTicketForDisplay(data.ticket);
+
+                        // Mostrar avisos informativos de dinámicas activas sin interferir
+                        const avisosEl = document.getElementById('ticket-dinamicas-avisos');
+                        if (avisosEl) {
+                            const avisos = Array.isArray(data.dinamicas_avisos) ? data.dinamicas_avisos : [];
+                            if (avisos.length > 0) {
+                                avisosEl.innerHTML = avisos.map(a => {
+                                    const cls = a.tipo === 'success' ? 'alert-success' : (a.tipo === 'warning' ? 'alert-warning' : 'alert-info');
+                                    return `<div class="alert ${cls} py-2 px-3 small mb-2 d-flex align-items-center gap-2"><i class="bi bi-gift-fill"></i><span>${a.mensaje}</span></div>`;
+                                }).join('');
+                                avisosEl.classList.remove('d-none');
+                            } else {
+                                avisosEl.innerHTML = '';
+                                avisosEl.classList.add('d-none');
+                            }
+                        }
 
                         // Guardar datos en los botones del ticket
                         const btnCopiar = document.getElementById('btn-copiar-resumen-ticket');

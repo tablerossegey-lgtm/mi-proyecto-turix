@@ -95,4 +95,22 @@ $routes->group('admin', ['filter' => 'adminAuth'], function($routes) {
     $routes->get('compras/editar/(:num)', 'ComprasProveedores::editar/$1');
     $routes->post('compras/actualizar/(:num)', 'ComprasProveedores::actualizar/$1');
     $routes->post('compras/eliminar/(:num)', 'ComprasProveedores::eliminar/$1');
+
+    // Rutas de Rifas y Dinámicas
+    $routes->get('dinamicas', 'RifasDinamicas::index');
+    $routes->post('dinamicas/guardar', 'RifasDinamicas::guardar');
+    $routes->post('dinamicas/actualizar/(:num)', 'RifasDinamicas::actualizar/$1');
+    $routes->post('dinamicas/estado/(:num)', 'RifasDinamicas::cambiarEstado/$1');
+    $routes->get('dinamicas/detalle/(:num)', 'RifasDinamicas::detalle/$1');
+    $routes->post('dinamicas/sincronizar/(:num)', 'RifasDinamicas::sincronizar/$1');
+    $routes->post('dinamicas/participantes/manual/(:num)', 'RifasDinamicas::registrarParticipanteManual/$1');
+    $routes->post('dinamicas/participantes/estado/(:num)/(:num)', 'RifasDinamicas::cambiarEstadoParticipante/$1/$2');
+    $routes->post('dinamicas/participantes/notificar/(:num)/(:num)', 'RifasDinamicas::marcarNotificado/$1/$2');
+    $routes->post('dinamicas/cerrar/(:num)', 'RifasDinamicas::cerrarParticipaciones/$1');
+    $routes->post('dinamicas/premios/guardar/(:num)', 'RifasDinamicas::guardarPremio/$1');
+    $routes->post('dinamicas/premios/eliminar/(:num)/(:num)', 'RifasDinamicas::eliminarPremio/$1/$2');
+    $routes->post('dinamicas/ganadores/registrar/(:num)', 'RifasDinamicas::registrarGanador/$1');
+    $routes->post('dinamicas/ganadores/entrega/(:num)/(:num)', 'RifasDinamicas::actualizarEntregaPremio/$1/$2');
+    $routes->get('dinamicas/imprimir/(:num)', 'RifasDinamicas::imprimir/$1');
+    $routes->get('dinamicas/exportar/(:num)', 'RifasDinamicas::exportar/$1');
 });

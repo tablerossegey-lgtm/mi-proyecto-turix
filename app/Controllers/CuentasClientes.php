@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use App\Libraries\CuponCalculator;
+use App\Libraries\DinamicaService;
 use App\Models\ClienteModel;
 use App\Models\CuentaClienteModel;
 use App\Models\CuponBitacoraModel;
@@ -398,12 +399,15 @@ class CuentasClientes extends BaseController
             $ticketText .= "*Compra del {$fechaTicketLarga}:* $" . number_format($totalCompraAcumulado, 2) . "\n";
             $ticketText .= "*Saldo total pendiente:* $" . number_format($nuevoTotal, 2);
 
+            $dinamicaAvisos = (new DinamicaService($db))->evaluarCompraClienteEnDinamicasActivas($idCliente, $fechaCompra);
+
             return $this->response->setJSON([
                 'success' => true,
                 'folio'   => $folioCompra,
                 'ticket'  => $ticketText,
                 'cel'     => $cliente['cel'] ?? '',
                 'totalPendiente' => number_format($saldoPendienteActual, 2),
+                'dinamicas_avisos' => $dinamicaAvisos,
                 'message' => 'Compra registrada con éxito.'
             ]);
         }
@@ -672,6 +676,7 @@ class CuentasClientes extends BaseController
         $db->transCommit();
 
         $this->recalcularEstatusCompras($idCliente);
+        (new DinamicaService($db))->evaluarCompraClienteEnDinamicasActivas($idCliente, $fechaCompra);
 
         if ($this->request->getHeaderLine('HX-Request')) {
             $data = $this->obtenerDatosCliente($idCliente);
@@ -775,6 +780,7 @@ class CuentasClientes extends BaseController
         $db->transCommit();
 
         $this->recalcularEstatusCompras($idCliente);
+        (new DinamicaService($db))->evaluarCompraClienteEnDinamicasActivas($idCliente);
 
         if ($this->request->getHeaderLine('HX-Request')) {
             $data = $this->obtenerDatosCliente($idCliente);
@@ -1189,12 +1195,15 @@ class CuentasClientes extends BaseController
             $resumenCupones['total_descuentos_utilizados'] = round($totalDescuentosCupon + $totalDescuentosManuales, 2);
         }
 
+        $dinamicasResumen = (new DinamicaService($db))->obtenerResumenClienteEnDinamicas($idCliente);
+
         return [
             'cliente' => $cliente,
             'compras' => $compras,
             'abonos'  => $abonos,
             'cupones' => $cupones,
             'resumenCupones' => $resumenCupones,
+            'dinamicasResumen' => $dinamicasResumen,
             'totalPendiente' => $totalPendiente,
             'totalPagadoActivo' => $abonadoActivo,
             'totalComprasActivas' => $totalComprasActivas,

@@ -551,6 +551,110 @@ $cuponesLista = $cupones ?? [];
 </div>
 </div>
 
+<!-- Apartado colapsable: Participación en dinámicas -->
+<?php
+$dinActivas = $dinamicasResumen['activas'] ?? [];
+$dinHistorial = $dinamicasResumen['historial'] ?? [];
+$dinPremios = $dinamicasResumen['premios'] ?? [];
+?>
+<div class="card border-0 shadow-sm admin-card mb-4 mt-4" id="seccion-dinamicas-cliente">
+    <div class="card-header bg-transparent border-secondary border-opacity-25 p-3 d-flex justify-content-between align-items-center">
+        <button class="btn btn-link text-decoration-none text-white fw-bold p-0 d-flex align-items-center gap-2"
+                type="button" data-bs-toggle="collapse" data-bs-target="#collapseDinamicasCliente"
+                aria-expanded="false" aria-controls="collapseDinamicasCliente">
+            <i class="bi bi-gift-fill text-warning"></i>
+            <span>Participación en dinámicas</span>
+            <?php if (!empty($dinActivas)): ?>
+                <span class="badge bg-warning text-dark rounded-pill"><?= count($dinActivas) ?> activa(s)</span>
+            <?php endif; ?>
+            <?php if (!empty($dinPremios)): ?>
+                <span class="badge bg-success rounded-pill"><?= count($dinPremios) ?> premio(s)</span>
+            <?php endif; ?>
+        </button>
+        <a href="<?= base_url('admin/dinamicas') ?>" class="btn btn-sm btn-outline-warning rounded-pill px-3">
+            Ver módulo
+        </a>
+    </div>
+    <div class="collapse" id="collapseDinamicasCliente">
+        <div class="card-body p-3">
+            <?php if (empty($dinActivas) && empty($dinHistorial)): ?>
+                <div class="text-white-50 small text-center py-2">
+                    Este cliente aún no tiene participación en dinámicas o rifas registradas.
+                </div>
+            <?php else: ?>
+                <?php if (!empty($dinActivas)): ?>
+                    <h6 class="text-warning small fw-bold text-uppercase mb-2">Dinámicas activas</h6>
+                    <div class="row g-2 mb-3">
+                        <?php foreach ($dinActivas as $da): ?>
+                            <div class="col-12 col-md-6">
+                                <div class="p-3 rounded-3 border border-secondary border-opacity-25" style="background: rgba(0,0,0,0.2);">
+                                    <div class="d-flex justify-content-between align-items-start mb-1">
+                                        <a href="<?= base_url('admin/dinamicas/detalle/' . $da['id_dinamica']) ?>" class="fw-bold text-white text-decoration-none">
+                                            <?= esc($da['nombre']) ?>
+                                        </a>
+                                        <?php if ($da['num_participaciones'] > 0): ?>
+                                            <span class="badge bg-success">Participando (<?= (int) $da['num_participaciones'] ?>)</span>
+                                        <?php elseif ($da['estado_cliente'] === 'no_elegible'): ?>
+                                            <span class="badge bg-danger">No elegible</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-warning text-dark">En progreso</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <div class="small text-white-50">
+                                        Acumulado válido: <strong class="text-info">$<?= number_format((float) $da['importe_acumulado'], 2) ?></strong>
+                                        <?php if ($da['importe_faltante'] > 0): ?>
+                                            · Faltan: <strong class="text-warning">$<?= number_format((float) $da['importe_faltante'], 2) ?></strong>
+                                        <?php endif; ?>
+                                    </div>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($dinHistorial)): ?>
+                    <h6 class="text-white-50 small fw-bold text-uppercase mb-2">Historial de dinámicas</h6>
+                    <div class="table-responsive mb-2">
+                        <table class="table table-sm table-dark mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Dinámica</th>
+                                    <th>Estado</th>
+                                    <th class="text-end">Acumulado</th>
+                                    <th class="text-center">Partic.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php foreach ($dinHistorial as $dh): ?>
+                                    <tr>
+                                        <td><a href="<?= base_url('admin/dinamicas/detalle/' . $dh['id_dinamica']) ?>" class="text-white text-decoration-none"><?= esc($dh['dinamica_nombre']) ?></a></td>
+                                        <td><span class="badge <?= $dh['estado'] === 'elegible' ? 'bg-success' : 'bg-danger' ?>"><?= $dh['estado'] === 'elegible' ? 'Elegible' : 'No elegible' ?></span></td>
+                                        <td class="text-end">$<?= number_format((float) $dh['importe_acumulado'], 2) ?></td>
+                                        <td class="text-center"><?= (int) $dh['num_participaciones'] ?></td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($dinPremios)): ?>
+                    <h6 class="text-success small fw-bold text-uppercase mt-3 mb-2">Premios obtenidos</h6>
+                    <ul class="list-unstyled mb-0 small text-white">
+                        <?php foreach ($dinPremios as $dp): ?>
+                            <li>
+                                <i class="bi bi-trophy-fill text-warning me-1"></i>
+                                <strong><?= esc($dp['premio_nombre']) ?></strong> en <?= esc($dp['dinamica_nombre']) ?>
+                                <span class="badge bg-secondary ms-1"><?= esc($dp['estado_entrega']) ?></span>
+                            </li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>
+
 <!-- OOB Swap para actualizar en caliente la barra lateral izquierda de clientes -->
 <div id="client-item-<?= $cliente['idCliente'] ?>" hx-swap-oob="true"
     class="list-group-item client-item p-3 border-bottom border-secondary border-opacity-25 text-white d-flex justify-content-between align-items-center active"

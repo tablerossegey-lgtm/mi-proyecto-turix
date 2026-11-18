@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Libraries\DinamicaService;
 use App\Models\ClienteModel;
 use App\Models\CuentaClienteModel;
 use App\Models\VentaSemillaModel;
@@ -229,6 +230,10 @@ class VentasSemillas extends BaseController
             return redirect()->back()->withInput()->with('error', 'Error al registrar la venta en la base de datos.');
         }
 
+        if ($id_cliente > 0) {
+            (new DinamicaService($db))->evaluarCompraClienteEnDinamicasActivas($id_cliente, $fecha);
+        }
+
         session()->setFlashdata('success', 'Venta registrada con éxito.');
 
         if ($this->request->getHeaderLine('HX-Request')) {
@@ -316,6 +321,10 @@ class VentasSemillas extends BaseController
                 return $this->response->setStatusCode(500)->setBody('Error al eliminar el registro de venta.');
             }
             return redirect()->back()->with('error', 'Error al eliminar el registro de venta.');
+        }
+
+        if (!empty($venta['id_cliente'])) {
+            (new DinamicaService($db))->evaluarCompraClienteEnDinamicasActivas((int) $venta['id_cliente']);
         }
 
         session()->setFlashdata('success', 'Venta eliminada correctamente.');
