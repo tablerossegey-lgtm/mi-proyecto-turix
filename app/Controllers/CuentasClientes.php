@@ -385,18 +385,20 @@ class CuentasClientes extends BaseController
             $ticketText .= "*TICKET DIGITAL*\n";
             $ticketText .= "*Compra del día ({$fechaTicketCorta})*\n";
             $ticketText .= implode("\n", $itemsTicket) . "\n\n";
-            $ticketText .= "*Subtotal de productos:* $" . number_format($subtotalElegible, 2) . "\n";
-            if ($descuentoTotal > 0) {
-                $etiquetaDesc = $codigoCuponAplicado ? "Cupón {$codigoCuponAplicado}" : "Descuento aplicado";
-                $ticketText .= "*{$etiquetaDesc}:* -$" . number_format($descuentoTotal, 2) . "\n";
+            if ($descuentoTotal > 0 || $gastosEnvio > 0) {
+                $ticketText .= "*Subtotal de productos:* $" . number_format($subtotalElegible, 2) . "\n";
+                if ($descuentoTotal > 0) {
+                    $etiquetaDesc = $codigoCuponAplicado ? "Cupón {$codigoCuponAplicado}" : "Descuento aplicado";
+                    $ticketText .= "*{$etiquetaDesc}:* -$" . number_format($descuentoTotal, 2) . "\n";
+                }
+                if ($gastosEnvio > 0) {
+                    $ticketText .= "*Gastos de envío:* $" . number_format($gastosEnvio, 2) . "\n";
+                }
             }
-            if ($gastosEnvio > 0) {
-                $ticketText .= "*Gastos de envío:* $" . number_format($gastosEnvio, 2) . "\n";
-            }
-            $ticketText .= "*Total de la compra:* $" . number_format($totalCompraAcumulado, 2) . "\n\n";
-            $ticketText .= "💰 Estado de cuenta actualizado\n\n";
-            $ticketText .= "*Saldo Anterior:* $" . number_format($saldoAnterior, 2) . "\n";
-            $ticketText .= "*Compra del {$fechaTicketLarga}:* $" . number_format($totalCompraAcumulado, 2) . "\n";
+            $etiquetaPago = $estatusCompra == '1' ? ' (Pagada)' : '';
+            $ticketText .= "*Total de la compra:* $" . number_format($totalCompraAcumulado, 2) . "{$etiquetaPago}\n\n";
+            $ticketText .= "💰 *Estado de cuenta actualizado*\n";
+            $ticketText .= "*Saldo anterior:* $" . number_format($saldoAnterior, 2) . "\n";
             $ticketText .= "*Total pendiente:* $" . number_format($nuevoTotal, 2);
 
             $dinamicaAvisos = (new DinamicaService($db))->evaluarCompraClienteEnDinamicasActivas($idCliente, $fechaCompra);
