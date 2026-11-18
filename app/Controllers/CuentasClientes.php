@@ -397,7 +397,7 @@ class CuentasClientes extends BaseController
             $ticketText .= "💰 Estado de cuenta actualizado\n\n";
             $ticketText .= "*Saldo Anterior:* $" . number_format($saldoAnterior, 2) . "\n";
             $ticketText .= "*Compra del {$fechaTicketLarga}:* $" . number_format($totalCompraAcumulado, 2) . "\n";
-            $ticketText .= "*Saldo total pendiente:* $" . number_format($nuevoTotal, 2);
+            $ticketText .= "*Total pendiente:* $" . number_format($nuevoTotal, 2);
 
             $dinamicaAvisos = (new DinamicaService($db))->evaluarCompraClienteEnDinamicasActivas($idCliente, $fechaCompra);
 

@@ -137,13 +137,13 @@ $listadoRestantesTexto = implode("\n", $lineasRestantes);
         <div class="col">
             <div class="admin-stat-card h-100" style="border-left: 3px solid #10b981 !important; background: #1f222b !important;">
                 <div class="admin-stat-label"><i class="fab fa-whatsapp text-success me-1"></i> Notificados</div>
-                <div class="admin-stat-value text-success"><?= (int) $indicadores['notificados'] ?></div>
+                <div class="admin-stat-value text-success" id="kpi-notificados"><?= (int) $indicadores['notificados'] ?></div>
             </div>
         </div>
         <div class="col">
             <div class="admin-stat-card h-100" style="border-left: 3px solid #f97316 !important; background: #1f222b !important;">
                 <div class="admin-stat-label"><i class="bi bi-bell-slash me-1" style="color:#fb923c;"></i> Pendientes notificar</div>
-                <div class="admin-stat-value" style="color:#fb923c;"><?= (int) $indicadores['pendientes_notificar'] ?></div>
+                <div class="admin-stat-value" id="kpi-pendientes-notificar" style="color:#fb923c;"><?= (int) $indicadores['pendientes_notificar'] ?></div>
             </div>
         </div>
         <div class="col">
@@ -1177,6 +1177,14 @@ function confirmarNotificacionWA(idDinamica, idParticipante, btn) {
             if (fila) {
                 fila.querySelector('.notif-badge-cell').innerHTML = '<span class="badge bg-success"><i class="bi bi-check2 me-1"></i>Sí</span>';
                 fila.querySelector('.notif-fecha-cell').textContent = data.fecha_notificacion;
+            }
+            if (typeof data.notificados !== 'undefined') {
+                const kpiNotif = document.getElementById('kpi-notificados');
+                if (kpiNotif) kpiNotif.textContent = data.notificados;
+            }
+            if (typeof data.pendientes_notificar !== 'undefined') {
+                const kpiPend = document.getElementById('kpi-pendientes-notificar');
+                if (kpiPend) kpiPend.textContent = data.pendientes_notificar;
             }
             btn.remove();
             mostrarToastDinamica(data.message);

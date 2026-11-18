@@ -557,10 +557,23 @@ class RifasDinamicas extends BaseController
         ]);
 
         if ($this->request->isAJAX()) {
+            $notificados = $this->participanteModel
+                ->where('id_dinamica', (int) $idDinamica)
+                ->where('estado', 'elegible')
+                ->where('notificado_whatsapp', 1)
+                ->countAllResults();
+            $pendientes = $this->participanteModel
+                ->where('id_dinamica', (int) $idDinamica)
+                ->where('estado', 'elegible')
+                ->where('notificado_whatsapp', 0)
+                ->countAllResults();
+
             return $this->response->setJSON([
-                'success'            => true,
-                'fecha_notificacion' => date('d/m/Y H:i', strtotime($ahora)),
-                'message'            => 'Participante marcado como notificado.',
+                'success'              => true,
+                'fecha_notificacion'   => date('d/m/Y H:i', strtotime($ahora)),
+                'notificados'          => $notificados,
+                'pendientes_notificar' => $pendientes,
+                'message'              => 'Participante marcado como notificado.',
             ]);
         }
 
