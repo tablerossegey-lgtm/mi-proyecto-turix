@@ -4,6 +4,12 @@ namespace App\Libraries;
 
 class DinamicaCalculator
 {
+    /**
+     * IDs de clientes excluidos de dinámicas y rifas (cuentas internas o no participantes).
+     * 63 = Noemí Carrillo, 399 = Pueblo Estadis
+     */
+    public const CLIENTES_EXCLUIDOS = [63, 399];
+
     public const ESTADOS_DINAMICA = [
         'borrador'                => 'Borrador',
         'programada'              => 'Programada',
@@ -154,7 +160,7 @@ class DinamicaCalculator
 
         foreach ($operaciones as $op) {
             $idCliente = (int) ($op['idCliente'] ?? 0);
-            if ($idCliente <= 0 || in_array($idCliente, FidelidadCalculator::CLIENTES_EXCLUIDOS, true) || !isset($clientesMap[$idCliente])) {
+            if ($idCliente <= 0 || in_array($idCliente, self::CLIENTES_EXCLUIDOS, true) || !isset($clientesMap[$idCliente])) {
                 continue;
             }
 

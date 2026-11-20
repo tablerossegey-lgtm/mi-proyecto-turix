@@ -45,11 +45,13 @@ final class DinamicaCalculatorTest extends TestCase
             4  => ['idCliente' => 4, 'nombre' => 'Cliente D', 'cel' => '9994445566'],
             5  => ['idCliente' => 5, 'nombre' => 'Cliente E', 'cel' => '9995556677'],
             63 => ['idCliente' => 63, 'nombre' => 'Noemí Carrillo', 'cel' => ''],
+            399 => ['idCliente' => 399, 'nombre' => 'Pueblo Estadis', 'cel' => ''],
         ];
 
         $operaciones = [
-            // Cliente 63 (cuenta interna excluida): aunque compre $500 no debe participar
+            // Clientes 63 y 399 (excluidos): aunque compren >= $100 no deben participar
             ['id_registro' => 9, 'origen_tabla' => 'cuenta', 'idCliente' => 63, 'fecha' => '2026-11-17', 'monto' => 500.00, 'estatus' => '1', 'descripcion' => 'Compra interna'],
+            ['id_registro' => 8, 'origen_tabla' => 'cuenta', 'idCliente' => 399, 'fecha' => '2026-11-19', 'monto' => 181.00, 'estatus' => '1', 'descripcion' => 'Teclado'],
             // Cliente A: compra de $115 a crédito (estatus 0) -> 1 participación
             ['id_registro' => 10, 'origen_tabla' => 'cuenta', 'idCliente' => 1, 'fecha' => '2026-11-17', 'monto' => 115.00, 'estatus' => '0', 'descripcion' => 'Termo'],
             // Cliente B: dos compras $60 y $40 -> 1 participación (cumple el 2026-11-25)
@@ -76,6 +78,7 @@ final class DinamicaCalculatorTest extends TestCase
         $this->assertArrayNotHasKey(4, $res['elegibles']);
         $this->assertArrayNotHasKey(5, $res['elegibles']);
         $this->assertArrayNotHasKey(63, $res['elegibles']);
+        $this->assertArrayNotHasKey(399, $res['elegibles']);
 
         $this->assertSame(1, $res['elegibles'][1]['num_participaciones']);
         $this->assertSame('2026-11-17', $res['elegibles'][1]['fecha_cumplimiento']);

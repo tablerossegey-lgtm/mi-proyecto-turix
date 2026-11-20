@@ -46,8 +46,8 @@ class DinamicaService
         $builder = $this->db->table('t_clientes')
             ->select('idCliente, nombre, cel, tipoCliente');
 
-        if (!empty(FidelidadCalculator::CLIENTES_EXCLUIDOS)) {
-            $builder->whereNotIn('idCliente', FidelidadCalculator::CLIENTES_EXCLUIDOS);
+        if (!empty(DinamicaCalculator::CLIENTES_EXCLUIDOS)) {
+            $builder->whereNotIn('idCliente', DinamicaCalculator::CLIENTES_EXCLUIDOS);
         }
 
         $rows = $builder->get()->getResultArray();
@@ -157,15 +157,23 @@ class DinamicaService
                 $detalleJson = json_encode($datos['compras_detalle'], JSON_UNESCAPED_UNICODE);
                 if (isset($existentesPorCliente[$idCliente])) {
                     $ex = $existentesPorCliente[$idCliente];
+                    $motivoActual = (string) ($ex['motivo_estado'] ?? '');
+                    $fueDesactivadoPorSistema = $ex['estado'] === 'no_elegible' && (
+                        $motivoActual === ''
+                        || str_starts_with($motivoActual, 'Sin compras válidas')
+                        || str_starts_with($motivoActual, 'Importe acumulado actual')
+                    );
+                    $mantenerNoElegibleManual = ($ex['estado'] === 'no_elegible' && !$fueDesactivadoPorSistema);
+
                     $updateData = [
                         'nombre_participante'  => $datos['nombre'],
                         'telefono'             => $datos['telefono'] ?: $ex['telefono'],
                         'importe_acumulado'    => $datos['importe_acumulado'],
                         'num_compras_validas'  => $datos['num_compras_validas'],
-                        'num_participaciones'  => $datos['num_participaciones'],
+                        'num_participaciones'  => $mantenerNoElegibleManual ? 0 : $datos['num_participaciones'],
                         'fecha_cumplimiento'   => $ex['fecha_cumplimiento'] ?: $datos['fecha_cumplimiento'],
-                        'estado'               => 'elegible',
-                        'motivo_estado'        => null,
+                        'estado'               => $mantenerNoElegibleManual ? 'no_elegible' : 'elegible',
+                        'motivo_estado'        => $mantenerNoElegibleManual ? $motivoActual : null,
                         'detalle_compras_json' => $detalleJson,
                     ];
                     $this->participanteModel->update((int) $ex['id'], $updateData);
@@ -204,7 +212,7 @@ class DinamicaService
                 $nuevoNumCompras = $infoEval ? $infoEval['num_compras_validas'] : 0;
                 $detalleJson = $infoEval ? json_encode($infoEval['compras_detalle'], JSON_UNESCAPED_UNICODE) : json_encode([]);
 
-                $motivo = in_array($idCliente, FidelidadCalculator::CLIENTES_EXCLUIDOS, true)
+                $motivo = in_array($idCliente, DinamicaCalculator::CLIENTES_EXCLUIDOS, true)
                     ? 'Cuenta interna excluida de dinámicas.'
                     : ($nuevoNumCompras === 0
                         ? 'Sin compras válidas vigentes en el periodo (compra cancelada, eliminada o fuera de periodo).'
@@ -268,7 +276,7 @@ class DinamicaService
      */
     public function evaluarCompraClienteEnDinamicasActivas(int $idCliente, ?string $fechaCompra = null): array
     {
-        if ($idCliente <= 0 || in_array($idCliente, FidelidadCalculator::CLIENTES_EXCLUIDOS, true) || !$this->tablasDisponibles()) {
+        if ($idCliente <= 0 || in_array($idCliente, DinamicaCalculator::CLIENTES_EXCLUIDOS, true) || !$this->tablasDisponibles()) {
             return [];
         }
 
@@ -351,7 +359,7 @@ class DinamicaService
      */
     public function obtenerResumenClienteEnDinamicas(int $idCliente): array
     {
-        if ($idCliente <= 0 || in_array($idCliente, FidelidadCalculator::CLIENTES_EXCLUIDOS, true) || !$this->tablasDisponibles()) {
+        if ($idCliente <= 0 || in_array($idCliente, DinamicaCalculator::CLIENTES_EXCLUIDOS, true) || !$this->tablasDisponibles()) {
             return [
                 'activas'   => [],
                 'historial' => [],

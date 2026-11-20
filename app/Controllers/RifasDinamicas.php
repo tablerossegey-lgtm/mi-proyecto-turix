@@ -322,7 +322,7 @@ class RifasDinamicas extends BaseController
         );
 
         $clientes = $this->clienteModel
-            ->whereNotIn('idCliente', FidelidadCalculator::CLIENTES_EXCLUIDOS)
+            ->whereNotIn('idCliente', DinamicaCalculator::CLIENTES_EXCLUIDOS)
             ->orderBy('nombre', 'ASC')
             ->findAll();
         $productos = $this->productoModel->orderBy('descripcion', 'ASC')->findAll();
@@ -409,7 +409,7 @@ class RifasDinamicas extends BaseController
         $telefono = trim((string) $this->request->getPost('telefono')) ?: null;
 
         if ($idCliente) {
-            if (in_array($idCliente, FidelidadCalculator::CLIENTES_EXCLUIDOS, true)) {
+            if (in_array($idCliente, DinamicaCalculator::CLIENTES_EXCLUIDOS, true)) {
                 return redirect()->back()->with('error', 'Este cliente corresponde a una cuenta interna excluida de dinámicas.');
             }
             $cliente = $this->clienteModel->find($idCliente);
@@ -517,6 +517,7 @@ class RifasDinamicas extends BaseController
 
         $this->participanteModel->update((int) $idParticipante, [
             'estado'                => $nuevoEstado,
+            'num_participaciones'   => $nuevoEstado === 'elegible' ? max(1, (int) $part['num_participaciones']) : 0,
             'motivo_estado'         => $motivo ?: ($nuevoEstado === 'no_elegible' ? 'Marcado manualmente como no elegible' : null),
             'en_listado_definitivo' => (!empty($dinamica['listado_cerrado']) && $nuevoEstado === 'elegible') ? 1 : 0,
         ]);
